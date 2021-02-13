@@ -86,13 +86,11 @@ bool nstd::operator==( const string &lhs, const string &rhs )
    {
    if ( lhs.length() != rhs.length() )
       return false;
-   else
+
+   for ( int i = 0;  i < lhs.length();  ++i )
       {
-      for ( int i = 0;  i < lhs.length();  ++i )
-         {
-         if ( lhs[ i ] != rhs[ i ] )
-            return false;
-         }
+      if ( lhs[ i ] != rhs[ i ] )
+         return false;
       }
    return true;
    } // end operator ==()
@@ -102,8 +100,7 @@ char* nstd::strcpy( char *dest, const char *src )
    if (dest == nullptr)
       return nullptr;
    
-   while ( (*dest++ = *src++) != '\0' )
-   *dest = '\0';
+   while ( (*dest++ = *src++) != '\0' );
    
    return dest;
    } // end strcpy( char *dest, const char *src )

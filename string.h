@@ -1,6 +1,6 @@
 
-#ifndef STRING_H // include guard
-#define STRING_H
+#ifndef _NSTD_STRING_H // include guard
+#define _NSTD_STRING_H
 
 #include <iostream>
 #include <stdlib.h>
