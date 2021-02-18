@@ -1,6 +1,9 @@
 #include <cstddef> // for size_t
 #include <iostream> //for ostream
 
+#ifndef _NSTD_STRING_H
+#define _NSTD_STRING_H
+
 char* strcpy( char *dest, const char *src );
 char* strncpy( char *dest, const char *src, size_t num );
 size_t strlen(const char *str);
@@ -245,3 +248,6 @@ int strcmp (const char *left, const char *right)
       }
    return *left - *right;
    }
+
+
+#endif
