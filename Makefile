@@ -1,24 +1,31 @@
-CC=g++ -g3 -std=c++17 -Wall -pedantic -Wconversion -Wextra -Wreorder -fno-builtin
+CC=g++ -g3 -std=c++11 -Wall -pedantic -Wconversion -Wextra -Wreorder -fno-builtin
 
 SOURCES=$(wildcard *.cpp)
 OBJS=${SOURCES:.cpp=.o}
 
-EXECDIR=tests/bin
+all: test
+
 TESTDIR=tests
+EXECDIR=tests/bin
+OUTPUT=tests/output
+STDEXECDIR=tests/std_bin
+ 
+# Rule for compiling all files found in tests/ into executables using apesearch::string first then std::string
+# (I compiled them separately for testing)
+# creates output directories if non-existent
+TEST_SRC:=$(basename $(wildcard ${TESTDIR}/*.cpp))
+$(TEST_SRC): %: %.cpp
+	@mkdir -p ${EXECDIR}
+	@mkdir -p ${STDEXECDIR}
+	@mkdir -p ${OUTPUT}
+	${CC} -o ${EXECDIR}/$(notdir $@) $^ 
+	${CC} -D STD -o ${STDEXECDIR}/$(notdir $@) $^ 
 
-all: string_test
+test: ${TEST_SRC}
 
-# Compile the file server and tag this compilation
-string_test: ${OBJS}
-	${CC} -o $@ $^
-
-# ld -r -o $@ ${OBJS}
-
-# TEST_SRC:=$(basename $(wildcard ${TESTDIR}/*.cpp))
-# $(TEST_SRC): %: %.cpp query
-# 	${CC} -D LOCAL -o ${EXECDIR}/$(notdir $@) $^ 
-
-test: ${TEST_SRC} 
+run_test: test
+	@echo
+	@./bin/run_tests.sh
 
 # Generic rules for compiling a source file to an object file
 %.o: %.cpp
@@ -27,4 +34,4 @@ test: ${TEST_SRC}
 	${CC} -c $<
 
 clean:
-	rm -f ${OBJS} string_test
+	rm -f ${OBJS} ${EXECDIR}/* ${STDEXECDIR}/* ${OUTPUT}/*
