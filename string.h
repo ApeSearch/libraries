@@ -173,7 +173,7 @@ class string
       // EFFECTS: Returns whether *this is lexigraphically greater than other
       bool operator> ( const string& other ) const
          {
-         return strcmp(buffer, other.begin()) >= 0;
+         return strcmp(buffer, other.begin()) > 0;
          }
 
       // Less Than Or Equal Operator
