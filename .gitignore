@@ -1,0 +1,3 @@
+tests/bin/*
+tests/std_bin/*
+tests/output/*
