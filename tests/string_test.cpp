@@ -1,10 +1,11 @@
 #ifdef STD
     #include <string>
     using std::string;
-    #include <iostream>
 #else // Used for Autograder
     #include "../string.h"
 #endif
+
+#include <iostream>
 
 int main() {
     // Test Default Constructor
