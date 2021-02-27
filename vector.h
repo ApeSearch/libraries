@@ -1,271 +1,199 @@
-// -*- C++ -*- (Specify language)
-//===------------------------------ vector --------------------------------===//
-//
-// Our Implementation of the vector abstract data type. 
-// Please proceed with caution as it is not standard and may have
-// bugs. 
-//
-//===----------------------------------------------------------------------===//
+#include "assert.h"
+#include <unistd.h>
 
-#ifndef _NSTD_VECTOR
-#define _NSTD_VECTOR
-#include "memory.h"
+#ifndef _NSTD_STRING_H
+#define _NSTD_STRING_H
 
-namespace nstd
-{
+#define BUCKET_SIZE 8
 
-template <class T, class Allocator = allocator<T> >
+template<typename T>
 class vector
-{
-public:
-    typedef T                                        value_type;
-    typedef Allocator                                allocator_type;
-    typedef typename allocator_type::reference       reference;
-    typedef typename allocator_type::const_reference const_reference;
-    typedef implementation-defined                   iterator;
-    typedef implementation-defined                   const_iterator;
-    typedef typename allocator_type::size_type       size_type;
-    typedef typename allocator_type::difference_type difference_type;
-    typedef typename allocator_type::pointer         pointer;
-    typedef typename allocator_type::const_pointer   const_pointer;
-    typedef std::reverse_iterator<iterator>          reverse_iterator;
-    typedef std::reverse_iterator<const_iterator>    const_reverse_iterator;
+   {
+   public:
 
-    vector()
-        noexcept(is_nothrow_default_constructible<allocator_type>::value);
-    explicit vector(const allocator_type&);
-    explicit vector(size_type n);
-    explicit vector(size_type n, const allocator_type&); // C++14
-    vector(size_type n, const value_type& value, const allocator_type& = allocator_type());
-    template <class InputIterator>
-        vector(InputIterator first, InputIterator last, const allocator_type& = allocator_type());
-    vector(const vector& x);
-    vector(vector&& x)
-        noexcept(is_nothrow_move_constructible<allocator_type>::value);
-    vector(initializer_list<value_type> il);
-    vector(initializer_list<value_type> il, const allocator_type& a);
-    ~vector();
-    vector& operator=(const vector& x);
-    vector& operator=(vector&& x)
-        noexcept(
-             allocator_type::propagate_on_container_move_assignment::value ||
-             allocator_type::is_always_equal::value); // C++17
-    vector& operator=(initializer_list<value_type> il);
-    template <class InputIterator>
-        void assign(InputIterator first, InputIterator last);
-    void assign(size_type n, const value_type& u);
-    void assign(initializer_list<value_type> il);
+      // Default Constructor
+      // REQUIRES: Nothing
+      // MODIFIES: *this
+      // EFFECTS: Constructs an empty vector with capacity 0
+      vector ( ) : _size(0), _capacity(0), _elts(0)
+         {
+         }
 
-    allocator_type get_allocator() const noexcept;
+      // Destructor
+      // REQUIRES: Nothing
+      // MODIFIES: Destroys *this
+      // EFFECTS: Performs any neccessary clean up operations
+      ~vector ( )
+         {
+            delete [] _elts;
+         }
 
-    iterator               begin() noexcept;
-    const_iterator         begin()   const noexcept;
-    iterator               end() noexcept;
-    const_iterator         end()     const noexcept;
+      // Resize Constructor
+      // REQUIRES: Nothing
+      // MODIFIES: *this
+      // EFFECTS: Constructs a vector with size num_elements,
+      //    all default constructed
+      vector ( size_t num_elements )
+         {
+         }
 
-    reverse_iterator       rbegin() noexcept;
-    const_reverse_iterator rbegin()  const noexcept;
-    reverse_iterator       rend() noexcept;
-    const_reverse_iterator rend()    const noexcept;
+      // Fill Constructor
+      // REQUIRES: Capacity > 0
+      // MODIFIES: *this
+      // EFFECTS: Creates a vector with size num_elements, all assigned to val
+      vector ( size_t num_elements, const T& val )
+         {
+         }
 
-    const_iterator         cbegin()  const noexcept;
-    const_iterator         cend()    const noexcept;
-    const_reverse_iterator crbegin() const noexcept;
-    const_reverse_iterator crend()   const noexcept;
+      // Copy Constructor
+      // REQUIRES: Nothing
+      // MODIFIES: *this
+      // EFFECTS: Creates a clone of the vector other
+      vector ( const vector<T>& other )
+         {
+         }
 
-    size_type size() const noexcept;
-    size_type max_size() const noexcept;
-    size_type capacity() const noexcept;
-    bool empty() const noexcept;
-    void reserve(size_type n);
-    void shrink_to_fit() noexcept;
+      // Assignment operator
+      // REQUIRES: Nothing
+      // MODIFIES: *this
+      // EFFECTS: Duplicates the state of other to *this
+      vector operator= ( const vector<T>& other )
+         {
+         }
 
-    reference       operator[](size_type n);
-    const_reference operator[](size_type n) const;
-    reference       at(size_type n);
-    const_reference at(size_type n) const;
+      // Move Constructor
+      // REQUIRES: Nothing
+      // MODIFIES: *this, leaves other in a default constructed state
+      // EFFECTS: Takes the data from other into a newly constructed vector
+      vector ( vector<T>&& other )
+         {
+         }
 
-    reference       front();
-    const_reference front() const;
-    reference       back();
-    const_reference back() const;
+      // Move Assignment Operator
+      // REQUIRES: Nothing
+      // MODIFIES: *this, leaves otherin a default constructed state
+      // EFFECTS: Takes the data from other in constant time
+      vector operator= ( vector<T>&& other )
+         {
+         }
 
-    value_type*       data() noexcept;
-    const value_type* data() const noexcept;
+      // REQUIRES: new_capacity > capacity()
+      // MODIFIES: capacity()
+      // EFFECTS: Ensures that the vector can contain size() = new_capacity
+      //    elements before having to reallocate
+      void reserve ( size_t newCapacity )
+         {
+            if (newCapacity <= _capacity) return;
 
-    void push_back(const value_type& x);
-    void push_back(value_type&& x);
-    template <class... Args>
-        reference emplace_back(Args&&... args); // reference in C++17
-    void pop_back();
+            T* newElements = new T[newCapacity];
 
-    template <class... Args> iterator emplace(const_iterator position, Args&&... args);
-    iterator insert(const_iterator position, const value_type& x);
-    iterator insert(const_iterator position, value_type&& x);
-    iterator insert(const_iterator position, size_type n, const value_type& x);
-    template <class InputIterator>
-        iterator insert(const_iterator position, InputIterator first, InputIterator last);
-    iterator insert(const_iterator position, initializer_list<value_type> il);
+            // 
+            for (size_t i = 0; i < _size; ++i) 
+               newElements[i] = _elts[i];
 
-    iterator erase(const_iterator position);
-    iterator erase(const_iterator first, const_iterator last);
+            delete [] _elts;
+            _elts = newElements;
+            _capacity = newCapacity;
+         }
 
-    void clear() noexcept;
+      // REQUIRES: Nothing
+      // MODIFIES: Nothing
+      // EFFECTS: Returns the number of elements in the vector
+      size_t size() const
+         { 
+            return _size;
+         }
 
-    void resize(size_type sz);
-    void resize(size_type sz, const value_type& c);
+      // REQUIRES: Nothing
+      // MODIFIES: Nothing
+      // EFFECTS: Returns the maximum size the vector can attain before resizing
+      size_t capacity() const
+         {
+            return _capacity;
+         }
 
-    void swap(vector&)
-        noexcept(allocator_traits<allocator_type>::propagate_on_container_swap::value ||
-                 allocator_traits<allocator_type>::is_always_equal::value);  // C++17
+      // REQUIRES: 0 <= i < size()
+      // MODIFIES: Allows modification of data[i]
+      // EFFECTS: Returns a mutable reference to the i'th element
+      T& operator[ ] ( size_t i )
+         {
+            assert (i >= 0 && i < _size);
+            return _elts[i];
+         }
 
-    bool __invariants() const;
-};
+      // REQUIRES: 0 <= i < size()
+      // MODIFIES: Nothing
+      // EFFECTS: Get a const reference to the ith element
+      const T& operator[ ] ( size_t i ) const
+         {
+            assert (i >= 0 && i < _size);
+            return _elts[i];
+         }
 
-template <class Allocator = allocator<T> >
-class vector<bool, Allocator>
-{
-public:
-    typedef bool                                     value_type;
-    typedef Allocator                                allocator_type;
-    typedef implementation-defined                   iterator;
-    typedef implementation-defined                   const_iterator;
-    typedef typename allocator_type::size_type       size_type;
-    typedef typename allocator_type::difference_type difference_type;
-    typedef iterator                                 pointer;
-    typedef const_iterator                           const_pointer;
-    typedef std::reverse_iterator<iterator>          reverse_iterator;
-    typedef std::reverse_iterator<const_iterator>    const_reverse_iterator;
+      // REQUIRES: Nothing
+      // MODIFIES: this, size(), capacity()
+      // EFFECTS: Appends the element x to the vector, allocating
+      //    additional space if neccesary
+      void pushBack ( const T& x )
+         {
+            if (_capacity == 0)
+               reserve(BUCKET_SIZE);
+            else if (_capacity == _size) 
+               reserve(2 * _capacity);
+            
+            _elts[_size++] = x;
+         }
 
-    class reference
-    {
-    public:
-        reference(const reference&) noexcept;
-        operator bool() const noexcept;
-        reference& operator=(const bool x) noexcept;
-        reference& operator=(const reference& x) noexcept;
-        iterator operator&() const noexcept;
-        void flip() noexcept;
-    };
+      // REQUIRES: Nothing
+      // MODIFIES: this, size()
+      // EFFECTS: Removes the last element of the vector,
+      //    leaving capacity unchanged
+      void popBack ( )
+         {
+            if (_size == 0) return;
+            _elts[--_size].~T();
+         }
 
-    class const_reference
-    {
-    public:
-        const_reference(const reference&) noexcept;
-        operator bool() const noexcept;
-        const_iterator operator&() const noexcept;
-    };
+      // REQUIRES: Nothing
+      // MODIFIES: Allows mutable access to the vector's contents
+      // EFFECTS: Returns a mutable random access iterator to the 
+      //    first element of the vector
+      T* begin ( )
+         {
+            return &_elts[0];
+         }
 
-    vector()
-        noexcept(is_nothrow_default_constructible<allocator_type>::value);
-    explicit vector(const allocator_type&);
-    explicit vector(size_type n, const allocator_type& a = allocator_type()); // C++14
-    vector(size_type n, const value_type& value, const allocator_type& = allocator_type());
-    template <class InputIterator>
-        vector(InputIterator first, InputIterator last, const allocator_type& = allocator_type());
-    vector(const vector& x);
-    vector(vector&& x)
-        noexcept(is_nothrow_move_constructible<allocator_type>::value);
-    vector(initializer_list<value_type> il);
-    vector(initializer_list<value_type> il, const allocator_type& a);
-    ~vector();
-    vector& operator=(const vector& x);
-    vector& operator=(vector&& x)
-        noexcept(
-             allocator_type::propagate_on_container_move_assignment::value ||
-             allocator_type::is_always_equal::value); // C++17
-    vector& operator=(initializer_list<value_type> il);
-    template <class InputIterator>
-        void assign(InputIterator first, InputIterator last);
-    void assign(size_type n, const value_type& u);
-    void assign(initializer_list<value_type> il);
+      // REQUIRES: Nothing
+      // MODIFIES: Allows mutable access to the vector's contents
+      // EFFECTS: Returns a mutable random access iterator to 
+      //    one past the last valid element of the vector
+      T* end ( )
+         {
+            return &_elts[size];
+         }
 
-    allocator_type get_allocator() const noexcept;
+      // REQUIRES: Nothing
+      // MODIFIES: Nothing
+      // EFFECTS: Returns a random access iterator to the first element of the vector
+      const T* begin ( ) const
+         {
+            return _elts;
+         }
 
-    iterator               begin() noexcept;
-    const_iterator         begin()   const noexcept;
-    iterator               end() noexcept;
-    const_iterator         end()     const noexcept;
+      // REQUIRES: Nothing
+      // MODIFIES: Nothing
+      // EFFECTS: Returns a random access iterator to 
+      //    one past the last valid element of the vector
+      const T* end ( ) const
+         {
+            return _elts + size;
+         }
 
-    reverse_iterator       rbegin() noexcept;
-    const_reverse_iterator rbegin()  const noexcept;
-    reverse_iterator       rend() noexcept;
-    const_reverse_iterator rend()    const noexcept;
+   private:
 
-    const_iterator         cbegin()  const noexcept;
-    const_iterator         cend()    const noexcept;
-    const_reverse_iterator crbegin() const noexcept;
-    const_reverse_iterator crend()   const noexcept;
-
-    size_type size() const noexcept;
-    size_type max_size() const noexcept;
-    size_type capacity() const noexcept;
-    bool empty() const noexcept;
-    void reserve(size_type n);
-    void shrink_to_fit() noexcept;
-
-    reference       operator[](size_type n);
-    const_reference operator[](size_type n) const;
-    reference       at(size_type n);
-    const_reference at(size_type n) const;
-
-    reference       front();
-    const_reference front() const;
-    reference       back();
-    const_reference back() const;
-
-    void push_back(const value_type& x);
-    template <class... Args> reference emplace_back(Args&&... args);  // C++14; reference in C++17
-    void pop_back();
-
-    template <class... Args> iterator emplace(const_iterator position, Args&&... args);  // C++14
-    iterator insert(const_iterator position, const value_type& x);
-    iterator insert(const_iterator position, size_type n, const value_type& x);
-    template <class InputIterator>
-        iterator insert(const_iterator position, InputIterator first, InputIterator last);
-    iterator insert(const_iterator position, initializer_list<value_type> il);
-
-    iterator erase(const_iterator position);
-    iterator erase(const_iterator first, const_iterator last);
-
-    void clear() noexcept;
-
-    void resize(size_type sz);
-    void resize(size_type sz, value_type x);
-
-    void swap(vector&)
-        noexcept(allocator_traits<allocator_type>::propagate_on_container_swap::value ||
-                 allocator_traits<allocator_type>::is_always_equal::value);  // C++17
-    void flip() noexcept;
-
-    bool __invariants() const;
-};
-
-template <class InputIterator, class Allocator = allocator<typename iterator_traits<InputIterator>::value_type>>
-   vector(InputIterator, InputIterator, Allocator = Allocator())
-   -> vector<typename iterator_traits<InputIterator>::value_type, Allocator>;
-
-template <class Allocator> struct hash<std::vector<bool, Allocator>>;
-
-template <class T, class Allocator> bool operator==(const vector<T,Allocator>& x, const vector<T,Allocator>& y);
-template <class T, class Allocator> bool operator< (const vector<T,Allocator>& x, const vector<T,Allocator>& y);
-template <class T, class Allocator> bool operator!=(const vector<T,Allocator>& x, const vector<T,Allocator>& y);
-template <class T, class Allocator> bool operator> (const vector<T,Allocator>& x, const vector<T,Allocator>& y);
-template <class T, class Allocator> bool operator>=(const vector<T,Allocator>& x, const vector<T,Allocator>& y);
-template <class T, class Allocator> bool operator<=(const vector<T,Allocator>& x, const vector<T,Allocator>& y);
-
-template <class T, class Allocator>
-void swap(vector<T,Allocator>& x, vector<T,Allocator>& y)
-    noexcept(noexcept(x.swap(y)));
-
-template <class T, class Allocator, class U>
-    void erase(vector<T, Allocator>& c, const U& value);       // C++20
-template <class T, class Allocator, class Predicate>
-    void erase_if(vector<T, Allocator>& c, Predicate pred);    // C++20
-
-} 
-
-
-
-
+      T* _elts;
+      size_t _size;
+      size_t _capacity;
+   };
+   
 #endif
