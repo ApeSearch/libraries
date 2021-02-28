@@ -11,7 +11,7 @@ void testConstructors();
 int main() {
     vector<int> testVector;
 
-    if (testVector.size() != 0 || testVector.capacity() != DEFAULT_BUCKET_SIZE)
+    if (testVector.size() != 0 || testVector.capacity() != 0 )
         {
         cout << "Vector Default constructor failed" << endl;
         }
@@ -45,6 +45,8 @@ int main() {
     if (testVector.size() != (DEFAULT_BUCKET_SIZE + 1) || testVector.capacity() != (DEFAULT_BUCKET_SIZE * 2))
         {
             cout << "Vector multiple pushBack failed: " << testVector.capacity() << endl;
+            cout << "Size: " << testVector.size() << '\n';
+            cout << "Capacity: " << testVector.capacity() << endl;
         }
 
     // Test popBack
@@ -114,6 +116,51 @@ void testConstructors()
                 break;
                 }
             } // end for
+        vector<int> testCopyOP = testVector;
+
+        if ( testVector.capacity() != 16 && testVector.size() != 10 )
+            {
+            cout << "Vector size constructor for vector failed" << endl;
+            }
+        for ( size_t n = 0; n < testVector.size() ; ++n )
+            {
+            if ( testVector[ n ] != 1 )
+                {
+                cout << "Vector fill constructor failed got : " <<  testVector[ n ]  << " instead of 0" << endl;
+                break;
+                }
+            } // end for
+        }
+
+
+
+        {
+        vector<int> testVector( 10 , 1 );
+
+        vector<int> movedTestVector( std::move( testVector ) );
+
+
+        vector<int> defaultVector;
+
+        cout << "Checking move constructor capacity and size" << endl;
+        if ( testVector.capacity() != defaultVector.capacity() || testVector.size() != defaultVector.size() )
+            {
+            cout << "Move Constructor failed... TestVector shoudl've been left in a default state" << endl;
+            cout << "orig Capacity: " << testVector.capacity() << endl;
+            cout << "orig size: " << testVector.size() << endl;
+            exit(1);
+            }
+        cout << "Checking that elements in orignal vector has been changed to default state" << endl;
+        for ( size_t n = 0; n < testVector.size(); ++n )
+            {
+            if ( testVector[ n ] )
+                {
+                cout << "Move Constructor failed... TestVector shoudl've been left in a default state" << endl;
+                exit(1);
+                } //end if
+            } // end for
+
+
         }
 
     } // end testConstructor()

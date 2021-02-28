@@ -45,7 +45,7 @@ class vector
       // EFFECTS: Constructs a vector with size num_elements,
       //    all default constructed
       // ! It is okay to call new[0] but dlete must also be done
-      vector ( size_t num_elements ) : _capacity( num_elements > DEFAULT_BUCKET_SIZE ? computeTwosPowCeiling(num_elements) : DEFAULT_BUCKET_SIZE )
+      vector ( size_t num_elements ) : _capacity( num_elements ? computeTwosPowCeiling(num_elements) : 0 )
             , _size( num_elements ) ,_elts(new T[ _capacity ]())
          {
          }
@@ -54,7 +54,7 @@ class vector
       // REQUIRES: Capacity > 0
       // MODIFIES: *this
       // EFFECTS: Creates a vector with size num_elements, all assigned to val
-      vector ( size_t num_elements, const T& val ) : _capacity( num_elements > DEFAULT_BUCKET_SIZE ? computeTwosPowCeiling(num_elements) : DEFAULT_BUCKET_SIZE )
+      vector ( size_t num_elements, const T& val ) : _capacity( num_elements ? computeTwosPowCeiling(num_elements) : 0 )
             , _size( num_elements ) ,_elts(new T[ _capacity ]())
          {
          for (T *ptr = _elts, * const end = _elts + _size; ptr != end; )
@@ -65,7 +65,7 @@ class vector
       // REQUIRES: Nothing
       // MODIFIES: *this
       // EFFECTS: Creates a clone of the vector other
-      vector ( const vector& other ) : vector ( other._size ) 
+      vector ( const vector& other ) : _capacity( other._capacity ), _size( other._size ), _elts( new T[ _capacity ] )
          {
          for (T *ptr = _elts, *otherPtr = other._elts, * const end = _elts + _size; ptr != end; )
             *ptr++ = *otherPtr++;
@@ -75,7 +75,7 @@ class vector
       // REQUIRES: Nothing
       // MODIFIES: *this
       // EFFECTS: Duplicates the state of other to *this
-      vector &operator= ( const vector<T>& other )
+      vector& operator= ( const vector<T>& other )
          {
          // Doesn't check %other != *this since it's the programmer's responsiblity to make sure such isn't the case
          vector<T> temp( other ); // utilize copy constructor
@@ -83,6 +83,23 @@ class vector
          return *this;
          }
 
+      void swap( vector<T> &other ) 
+         {
+         swap( _elts, other._elts );
+         swap( _size, other._size );
+         swap( _capacity, other._capacity );
+         }
+
+      template<typename Type> void swap( Type&& itemOne, Type&& itemTwo )
+         {
+         swap( std::forward<Type>(itemOne), std::forward<Type>(itemTwo) );
+         }
+      template<typename Type> void swap( Type& itemF, Type& itemS )
+         {
+         Type temp( itemF );
+         itemF =  itemS;
+         itemS =  temp;
+         } 
       // Move Constructor
       // REQUIRES: Nothing
       // MODIFIES: *this, leaves other in a default constructed state
@@ -90,7 +107,8 @@ class vector
       vector ( vector&& other ) : _size( other._size  ), _capacity( other._capacity  ), _elts( other._elts  )
          {
          other._elts = nullptr; // To ensure no double deletes
-         swap( other, vector() );
+         other._capacity = 0;
+         other._size = 0;
          }
 
       // Move Assignment Operator
@@ -103,8 +121,10 @@ class vector
          _elts = other._elts;
          other._elts = nullptr;
          _size = other._size;
-         _capacity = other.capacity;
-         swap( other, vector<T>() );
+         _capacity = other._capacity;
+
+         other._size = 0;
+         other._capacity = 0;
          return *this;
          }
 
@@ -118,9 +138,8 @@ class vector
 
             T* newElements = new T[newCapacity];
 
-            // 
-            for (size_t i = 0; i < _size; ++i) 
-               newElements[i] = _elts[i];
+            for (T *ptr = newElements, *otherPtr = _elts, * const end = ptr + _size; ptr != end; )
+               *ptr++ = *otherPtr++;
 
             delete [] _elts;
             _elts = newElements;
@@ -149,7 +168,7 @@ class vector
       T& operator[ ] ( size_t i )
          {
             assert (i >= 0 && i < _size);
-            return _elts[i];
+            return *( _elts + i );
          }
 
       // REQUIRES: 0 <= i < size()
@@ -158,7 +177,7 @@ class vector
       const T& operator[ ] ( size_t i ) const
          {
             assert (i >= 0 && i < _size);
-            return _elts[i];
+            return *( _elts + i );
          }
 
       // REQUIRES: Nothing
@@ -167,12 +186,11 @@ class vector
       //    additional space if neccesary
       void pushBack ( const T& x )
          {
-            if (_capacity == 0)
-               reserve(DEFAULT_BUCKET_SIZE);
-            else if (_capacity == _size) 
-               reserve( _capacity << 1);
-            
-            _elts[_size++] = x;
+         if (_size == _capacity)
+            {
+            reserve( _capacity ? _capacity << 1 : DEFAULT_BUCKET_SIZE );
+            }
+         *( _elts + _size++ ) = x;
          }
 
       // REQUIRES: Nothing
@@ -181,8 +199,8 @@ class vector
       //    leaving capacity unchanged
       void popBack ( )
          {
-            if (_size == 0) return;
-            _elts[--_size].~T();
+            //if (_size == 0) return;
+            (_elts + --_size)->~T();
          }
 
       // REQUIRES: Nothing
@@ -191,7 +209,7 @@ class vector
       //    first element of the vector
       T* begin ( )
          {
-            return &_elts[0];
+            return _elts;
          }
 
       // REQUIRES: Nothing
@@ -200,7 +218,7 @@ class vector
       //    one past the last valid element of the vector
       T* end ( )
          {
-            return &_elts[_size];
+            return _elts + _size;
          }
 
       // REQUIRES: Nothing
@@ -226,23 +244,7 @@ class vector
       size_t _size;
       T* _elts;
 
-      void swap( vector<T> &other ) 
-         {
-         swap( _elts, other._elts );
-         swap( _size, other._size );
-         swap( _capacity, other.capacity );
-         }
 
-      template<typename Type> void swap( Type&& itemOne, Type&& itemTwo )
-         {
-         swap( std::forward<Type>(itemOne), std::forward<Type>(itemTwo) );
-         }
-      template<typename Type> void swap( Type& itemF, Type& itemS )
-         {
-         Type temp( itemF );
-         itemF =  itemS;
-         itemS =  temp;
-         } 
 
 
 
