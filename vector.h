@@ -1,11 +1,21 @@
 #include "assert.h"
 #include <unistd.h>
 #include <utility>
+#include <iostream>
 
 #ifndef _NSTD_STRING_H
 #define _NSTD_STRING_H
 
 #define DEFAULT_BUCKET_SIZE 8
+
+size_t computeTwosPowCeiling(size_t num) 
+   {
+   size_t powerNum = 1;
+   for (; num; num >>=1 )
+      powerNum <<= 1;
+   return powerNum;
+   }
+
 
 template<typename T>
 class vector
@@ -26,7 +36,7 @@ class vector
       // EFFECTS: Performs any neccessary clean up operations
       ~vector ( )
          {
-            delete [] _elts;
+         delete [] _elts;
          }
 
       // Resize Constructor
@@ -35,7 +45,8 @@ class vector
       // EFFECTS: Constructs a vector with size num_elements,
       //    all default constructed
       // ! It is okay to call new[0] but dlete must also be done
-      vector ( size_t num_elements ) : _elts(new T[ num_elements ]()), _size( num_elements ), _capacity( num_elements )
+      vector ( size_t num_elements ) : _capacity( num_elements > DEFAULT_BUCKET_SIZE ? computeTwosPowCeiling(num_elements) : DEFAULT_BUCKET_SIZE )
+            , _size( num_elements ) ,_elts(new T[ _capacity ]())
          {
          }
 
@@ -43,9 +54,10 @@ class vector
       // REQUIRES: Capacity > 0
       // MODIFIES: *this
       // EFFECTS: Creates a vector with size num_elements, all assigned to val
-      vector ( size_t num_elements, const T& val ) : _elts(new T[ num_elements ]()), _size( num_elements ), _capacity( num_elements ) 
+      vector ( size_t num_elements, const T& val ) : _capacity( num_elements > DEFAULT_BUCKET_SIZE ? computeTwosPowCeiling(num_elements) : DEFAULT_BUCKET_SIZE )
+            , _size( num_elements ) ,_elts(new T[ _capacity ]())
          {
-         for (T *ptr = _elts, * const end = _elts + _size; _elts != end; )
+         for (T *ptr = _elts, * const end = _elts + _size; ptr != end; )
               *ptr++ = val;
          }
 
@@ -55,8 +67,8 @@ class vector
       // EFFECTS: Creates a clone of the vector other
       vector ( const vector& other ) : vector ( other._size ) 
          {
-            for (T *ptr = _elts, *otherPtr = other._elts, * const end = _elts + _size; _elts != end; )
-               *ptr++ = *otherPtr++;
+         for (T *ptr = _elts, *otherPtr = other._elts, * const end = _elts + _size; ptr != end; )
+            *ptr++ = *otherPtr++;
          }
 
       // Assignment operator
@@ -87,7 +99,7 @@ class vector
       // EFFECTS: Takes the data from other in constant time
       vector& operator= ( vector&& other )
          {
-         delete[] _elts;
+         delete[ ] _elts;
          _elts = other._elts;
          other._elts = nullptr;
          _size = other._size;
@@ -158,7 +170,7 @@ class vector
             if (_capacity == 0)
                reserve(DEFAULT_BUCKET_SIZE);
             else if (_capacity == _size) 
-               reserve(2 * _capacity);
+               reserve( _capacity << 1);
             
             _elts[_size++] = x;
          }
@@ -210,9 +222,9 @@ class vector
 
    private:
 
-      T* _elts;
-      size_t _size;
       size_t _capacity;
+      size_t _size;
+      T* _elts;
 
       void swap( vector<T> &other ) 
          {

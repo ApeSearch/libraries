@@ -1,2 +1,6 @@
 .vscode
 extras
+tests/std_bin
+tests/bin
+!.gitignore
+*.dSYM
