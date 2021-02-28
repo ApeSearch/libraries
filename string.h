@@ -4,6 +4,9 @@
 #ifndef _NSTD_STRING_H
 #define _NSTD_STRING_H
 
+#define NULLCHAR 1
+#include <assert.h>
+
 char* strcpy( char *dest, const char *src );
 char* strncpy( char *dest, const char *src, size_t num );
 size_t strlen(const char *str);
@@ -19,7 +22,7 @@ class string
       // EFFECTS: Creates an empty string
       string( ) : length( 0 )
          {
-         buffer = new char[1];
+         buffer = new char[NULLCHAR];
          *buffer = '\0';
          }
 
@@ -30,23 +33,11 @@ class string
       string (const char* cstr )
          {
          // Captures a cast to string on comparison to empty c_string; implenting other relational operators is way, way better
-         if (strlen(cstr) == 0)
-            {
-            buffer = new char[1];
-            *buffer = '\0';
-            length = 0;
-            }
-         else 
-            {
-            const char *ptr = cstr;
-            while ( *ptr++ )
-            length = (ptr-cstr);
-            buffer =  new char[ length + 1];
-            strncpy( buffer, cstr, length ); 
-            buffer[length] = '\0';
-            }
+         length = strlen( cstr );
+         buffer = new char [ length + NULLCHAR ];
+         strncpy( buffer, cstr, length );
+         * ( buffer + length ) = '\0';
          }
-      
       ~string()
          {
          length = 0;
@@ -98,7 +89,7 @@ class string
       // EFFECTS: Returns the i'th character of the string
       char& operator [ ] ( size_t i )
          {
-         return buffer[i];
+         return * ( buffer + i );
          }
 
       // string Append
@@ -108,7 +99,7 @@ class string
       //      memory at most once
       void operator+= ( const string& other )
          {
-         auto newbuf = new char[length + other.size() + 1];
+         char *newbuf = new char[length + other.size() + NULLCHAR];
          strncpy(newbuf, buffer, length);
          strncpy(newbuf + length, other.cstr(), other.size());
          length += other.size();
@@ -137,8 +128,9 @@ class string
       // EFFECTS: Removes the last charater of the string
       void popBack ( )
          {
-         if (length == 0) return;
+         assert(length); // For our safety...
          buffer[--length] = '\0';
+         //! Should the size be shrunk?
          }
 
       // Equality Operator
@@ -204,8 +196,8 @@ class string
 
 std::ostream& operator<< ( std::ostream& os, const string& s )
    {
-   for ( size_t i = 0;  i < s.size();  ++i )
-      os << s.cstr()[i];
+   for ( const char *ptr = s.begin(), *const end = s.end(); ptr != end; )
+      os << *ptr++;
    return os;
    }
 

@@ -20,6 +20,11 @@ int main() {
     if (one != "hello")
         std::cout << "Failed c-string Constructor: " << one << " " << std::endl;
 
+    // Test Nullchar cstr constructor
+    string null("");
+    if (null != "")
+        std::cout << "Failed Null character Constructor" << null << " " << std::endl;
+
     // Test size()
     if (one.size() != 5)
         std::cout << "Failed size(): " << one << " " << std::endl;

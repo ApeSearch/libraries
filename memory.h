@@ -201,30 +201,6 @@ template <class ForwardIterator, class Size>
 
 template <class Y> struct auto_ptr_ref {};      // deprecated in C++11, removed in C++17
 
-template<class X>
-class auto_ptr                                  // deprecated in C++11, removed in C++17
-{
-public:
-    typedef X element_type;
-
-    explicit auto_ptr(X* p =0) throw();
-    auto_ptr(auto_ptr&) throw();
-    template<class Y> auto_ptr(auto_ptr<Y>&) throw();
-    auto_ptr& operator=(auto_ptr&) throw();
-    template<class Y> auto_ptr& operator=(auto_ptr<Y>&) throw();
-    auto_ptr& operator=(auto_ptr_ref<X> r) throw();
-    ~auto_ptr() throw();
-
-    typename add_lvalue_reference<X>::type operator*() const throw();
-    X* operator->() const throw();
-    X* get() const throw();
-    X* release() throw();
-    void reset(X* p =0) throw();
-
-    auto_ptr(auto_ptr_ref<X>) throw();
-    template<class Y> operator auto_ptr_ref<Y>() throw();
-    template<class Y> operator auto_ptr<Y>() throw();
-};
 
 template <class T>
 struct default_delete
