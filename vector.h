@@ -55,7 +55,7 @@ class vector
       // MODIFIES: *this
       // EFFECTS: Creates a vector with size num_elements, all assigned to val
       vector ( size_t num_elements, const T& val ) : _capacity( num_elements ? computeTwosPowCeiling(num_elements) : 0 )
-            , _size( num_elements ) ,_elts(new T[ _capacity ]())
+            , _size( num_elements ) ,_elts(new T[ _capacity ] )
          {
          for (T *ptr = _elts, * const end = _elts + _size; ptr != end; )
               *ptr++ = val;
@@ -167,8 +167,8 @@ class vector
       // EFFECTS: Returns a mutable reference to the i'th element
       T& operator[ ] ( size_t i )
          {
-            assert (i >= 0 && i < _size);
-            return *( _elts + i );
+         assert (i >= 0 && i < _size);
+         return *( _elts + i );
          }
 
       // REQUIRES: 0 <= i < size()
@@ -176,8 +176,8 @@ class vector
       // EFFECTS: Get a const reference to the ith element
       const T& operator[ ] ( size_t i ) const
          {
-            assert (i >= 0 && i < _size);
-            return *( _elts + i );
+         assert (i >= 0 && i < _size);
+         return *( _elts + i );
          }
 
       // REQUIRES: Nothing
