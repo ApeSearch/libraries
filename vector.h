@@ -1,10 +1,11 @@
 #include "assert.h"
 #include <unistd.h>
+#include <utility>
 
 #ifndef _NSTD_STRING_H
 #define _NSTD_STRING_H
 
-#define BUCKET_SIZE 8
+#define DEFAULT_BUCKET_SIZE 8
 
 template<typename T>
 class vector
@@ -34,7 +35,7 @@ class vector
       // EFFECTS: Constructs a vector with size num_elements,
       //    all default constructed
       // ! It is okay to call new[0] but dlete must also be done
-      vector ( size_t num_elements ) : _size( num_elements ), _capacity( num_elements ), _elts(new T[ num_elements ]())
+      vector ( size_t num_elements ) : _elts(new T[ num_elements ]()), _size( num_elements ), _capacity( num_elements )
          {
          }
 
@@ -42,7 +43,7 @@ class vector
       // REQUIRES: Capacity > 0
       // MODIFIES: *this
       // EFFECTS: Creates a vector with size num_elements, all assigned to val
-      vector ( size_t num_elements, const T& val ) : _size( num_elements ), _capacity( num_elements ), _elts(new T[ num_elements ]())
+      vector ( size_t num_elements, const T& val ) : _elts(new T[ num_elements ]()), _size( num_elements ), _capacity( num_elements ) 
          {
          for (T *ptr = _elts, * const end = _elts + _size; _elts != end; )
               *ptr++ = val;
@@ -52,10 +53,10 @@ class vector
       // REQUIRES: Nothing
       // MODIFIES: *this
       // EFFECTS: Creates a clone of the vector other
-      vector ( const vector<T>& other ) : vector ( other.num_elements ) 
+      vector ( const vector& other ) : vector ( other._size ) 
          {
             for (T *ptr = _elts, *otherPtr = other._elts, * const end = _elts + _size; _elts != end; )
-               *ptr++ = otherPtr++;
+               *ptr++ = *otherPtr++;
          }
 
       // Assignment operator
@@ -74,17 +75,17 @@ class vector
       // REQUIRES: Nothing
       // MODIFIES: *this, leaves other in a default constructed state
       // EFFECTS: Takes the data from other into a newly constructed vector
-      vector ( vector<T>&& other ) : _size( std::move( other._size ) ), _capacity( std::move( other._capacity ) ), _elts( std::move( other._elts ) )
+      vector ( vector&& other ) : _size( other._size  ), _capacity( other._capacity  ), _elts( other._elts  )
          {
          other._elts = nullptr; // To ensure no double deletes
-         swap( other, vector<T>() );
+         swap( other, vector() );
          }
 
       // Move Assignment Operator
       // REQUIRES: Nothing
       // MODIFIES: *this, leaves otherin a default constructed state
       // EFFECTS: Takes the data from other in constant time
-      vector& operator= ( vector<T>&& other )
+      vector& operator= ( vector&& other )
          {
          delete[] _elts;
          _elts = other._elts;
@@ -155,7 +156,7 @@ class vector
       void pushBack ( const T& x )
          {
             if (_capacity == 0)
-               reserve(BUCKET_SIZE);
+               reserve(DEFAULT_BUCKET_SIZE);
             else if (_capacity == _size) 
                reserve(2 * _capacity);
             
@@ -213,8 +214,27 @@ class vector
       size_t _size;
       size_t _capacity;
 
+      void swap( vector<T> &other ) 
+         {
+         swap( _elts, other._elts );
+         swap( _size, other._size );
+         swap( _capacity, other.capacity );
+         }
+
+      template<typename Type> void swap( Type&& itemOne, Type&& itemTwo )
+         {
+         swap( std::forward<Type>(itemOne), std::forward<Type>(itemTwo) );
+         }
+      template<typename Type> void swap( Type& itemF, Type& itemS )
+         {
+         Type temp( itemF );
+         itemF =  itemS;
+         itemS =  temp;
+         } 
 
 
+
+   /*
       void swap( vector<T> &other ) 
          {
          swap( _elts, other._elts );
@@ -228,6 +248,7 @@ class vector
          itemF = std::move( itemS );
          itemS = std::move( temp );
          } 
+   */
    };
    
 #endif

@@ -24,7 +24,7 @@ int main() {
         cout << "Vector [] operator failed" << endl;
         }
 
-    for (int i = 1; i <= BUCKET_SIZE; ++i) 
+    for (int i = 1; i <= DEFAULT_BUCKET_SIZE; ++i) 
         {
             testVector.pushBack(i);
             if (testVector.size() != (i+1))
@@ -37,7 +37,7 @@ int main() {
                 }
         }
 
-    if (testVector.size() != (BUCKET_SIZE + 1) || testVector.capacity() != (BUCKET_SIZE * 2))
+    if (testVector.size() != (DEFAULT_BUCKET_SIZE + 1) || testVector.capacity() != (DEFAULT_BUCKET_SIZE * 2))
         {
             cout << "Vector multiple pushBack failed: " << testVector.capacity() << endl;
         }
