@@ -8,6 +8,9 @@
  * THe purpose of ALlocator is to contruct copies of objects. 
 */
 
+namespace APESEARCH
+{
+
 template<typename T>
 class Allocator
 {
@@ -72,8 +75,7 @@ public:
     inline bool operator!=( Allocator const& a) { return !operator==(a); }
 }; // end Allocator
 
-
-
+} // end namespace
 
 #endif // end ALLOCATOR_APE_SEARCH
 

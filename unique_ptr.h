@@ -12,15 +12,15 @@ namespace APESEARCH
     class unique_ptr
     {
         public:
-            unique_ptr() : rawPtr(nullptr) {}
+            unique_ptr() : rawPtr( nullptr) {}
 
-            explicit unique_ptr(T *_ptr) : rawPtr(_ptr) {}
+            explicit unique_ptr( T *_ptr ) : rawPtr( _ptr ) {}
             ~unique_ptr() { delete rawPtr; }
 
 
             // Binds to nullptr for clarity
-            unique_ptr(std::nullptr_t) : rawPtr(nullptr) {}
-            unique_ptr& operator=(std::nullptr_t)
+            unique_ptr( std::nullptr_t ) : rawPtr(nullptr) {}
+            unique_ptr& operator=( std::nullptr_t )
                {
                reset(); // Deletes data inside
                return *this;
@@ -56,9 +56,9 @@ namespace APESEARCH
                 return *this;
                } // end move operator()
 
-               // Delete compiler generated copy constructor/operator
-               unique_ptr( const unique_ptr& )=delete;
-               unique_ptr& operator=(const unique_ptr& )=delete;
+            // Delete compiler generated copy constructor/operator
+            unique_ptr( const unique_ptr& )=delete;
+            unique_ptr& operator=(const unique_ptr& )=delete;
 
 
             // Returns raw pointer, giving up self-management.

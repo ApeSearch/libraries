@@ -7,13 +7,17 @@
 
 #include <unordered_map>
 #include "utilites.h"
+#include "allocator.h"
 using APESEARCH::pair;
+
+
+
 
 namespace APESEARCH
 {
 
 template<class Key, class T, class Hash = hash<Key>, class Pred = equal_to<Key>,
-    class Alloc = allocator<pair<const Key, T>>>
+    class Alloc = APESEARCH::Allocator<pair<const Key, T>>>
 clas unordered_map
 {
 public:

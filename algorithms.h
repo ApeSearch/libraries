@@ -10,7 +10,7 @@
 //------------------------------------------------------------------------------------------------
 // A bunch of functions that aid in creating efficent, well know algorithms.
 
-#include <cctype>
+#include <cctype> // For tolower and toupper
 #include <utility> // for std::move
 
 namespace APESEARCH
