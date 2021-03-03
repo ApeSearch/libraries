@@ -11,7 +11,7 @@
 // A bunch of functions that aid in creating efficent, well know algorithms.
 
 #include <cctype>
-#include <utility>
+#include <utility> // for std::move
 
 namespace APESEARCH
 {
