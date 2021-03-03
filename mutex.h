@@ -3,7 +3,6 @@
 #define MUTEX_H_APE_SEARCH
 
 #include <pthread.h>
-#include <mutex>
 
 namespace APESEARCH
 {
@@ -35,8 +34,8 @@ inline constexpr defer_lock_t  defer_lock{};
 inline constexpr try_to_lock_t try_to_lock{};
 inline constexpr adopt_lock_t  adopt_lock{};
 
-
 // FOr RAII
+//TODO Implement
 
 template <class Mutex>
 class unique_lock
@@ -68,12 +67,16 @@ public:
     bool owns_lock() const noexcept;
     explicit operator bool () const noexcept;
     mutex_type* mutex() const noexcept;
+private:
+    mutex_type* mutexOf; // Reference to mutex
 };
 
 template <class Mutex>
   void swap(unique_lock<Mutex>& x, unique_lock<Mutex>& y) noexcept;
 
 
-}
+} // end namespace APESEARCH
+
+#include "mutex.inl"
 
 #endif
