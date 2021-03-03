@@ -77,7 +77,7 @@ class vector
       // EFFECTS: Duplicates the state of other to *this
       vector& operator= ( const vector<T>& other )
          {
-         // Doesn't check %other != *this since it's the programmer's responsiblity to make sure such isn't the case
+         // Doesn't check other != *this since it's the programmer's responsiblity to make sure such isn't the case
          vector<T> temp( other ); // utilize copy constructor
          swap( temp );
          return *this;
@@ -104,7 +104,7 @@ class vector
       // REQUIRES: Nothing
       // MODIFIES: *this, leaves other in a default constructed state
       // EFFECTS: Takes the data from other into a newly constructed vector
-      vector ( vector&& other ) : _size( other._size  ), _capacity( other._capacity  ), _elts( other._elts  )
+      vector ( vector&& other ) : _capacity( other._capacity  ), _size( other._size  ), _elts( other._elts  )
          {
          other._elts = nullptr; // To ensure no double deletes
          other._capacity = 0;
@@ -134,16 +134,16 @@ class vector
       //    elements before having to reallocate
       void reserve ( size_t newCapacity )
          {
-            if (newCapacity <= _capacity) return;
+         if (newCapacity <= _capacity) return;
 
-            T* newElements = new T[newCapacity];
+         T* newElements = new T[newCapacity];
 
-            for (T *ptr = newElements, *otherPtr = _elts, * const end = ptr + _size; ptr != end; )
-               *ptr++ = *otherPtr++;
+         for (T *ptr = newElements, *otherPtr = _elts, * const end = ptr + _size; ptr != end; )
+            *ptr++ = *otherPtr++;
 
-            delete [] _elts;
-            _elts = newElements;
-            _capacity = newCapacity;
+         delete [] _elts;
+         _elts = newElements;
+         _capacity = newCapacity;
          }
 
       // REQUIRES: Nothing
@@ -199,8 +199,8 @@ class vector
       //    leaving capacity unchanged
       void popBack ( )
          {
-            //if (_size == 0) return;
-            (_elts + --_size)->~T();
+         //if (_size == 0) return;
+         (_elts + --_size)->~T();
          }
 
       // REQUIRES: Nothing
@@ -209,7 +209,7 @@ class vector
       //    first element of the vector
       T* begin ( )
          {
-            return _elts;
+         return _elts;
          }
 
       // REQUIRES: Nothing
@@ -218,7 +218,7 @@ class vector
       //    one past the last valid element of the vector
       T* end ( )
          {
-            return _elts + _size;
+         return _elts + _size;
          }
 
       // REQUIRES: Nothing
@@ -226,7 +226,7 @@ class vector
       // EFFECTS: Returns a random access iterator to the first element of the vector
       const T* begin ( ) const
          {
-            return _elts;
+         return _elts;
          }
 
       // REQUIRES: Nothing
@@ -235,7 +235,7 @@ class vector
       //    one past the last valid element of the vector
       const T* end ( ) const
          {
-            return _elts + _size;
+         return _elts + _size;
          }
 
    private:

@@ -14,7 +14,7 @@ STDEXECDIR=tests/std_bin
 # (I compiled them separately for testing)
 # creates output directories if non-existent
 TEST_SRC:=$(basename $(wildcard ${TESTDIR}/*.cpp))
-$(TEST_SRC): %: %.cpp
+$(TEST_SRC): %: %.cpp ${OBJS}
 	@mkdir -p ${EXECDIR}
 	@mkdir -p ${STDEXECDIR}
 	@mkdir -p ${OUTPUT}

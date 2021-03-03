@@ -4,3 +4,4 @@ tests/std_bin
 tests/bin
 !.gitignore
 *.dSYM
+*.o
