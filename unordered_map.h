@@ -10,6 +10,7 @@
 using APESEARCH::pair;
 
 namespace APESEARCH
+{
 
 template<class Key, class T, class Hash = hash<Key>, class Pred = equal_to<Key>,
     class Alloc = allocator<pair<const Key, T>>>
@@ -50,5 +51,6 @@ public:
 
 }; // end unordered_map
 
+} // end namespace
 
 #endif // end UNORDERED_MAP_APE_SEARCH

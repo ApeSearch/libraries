@@ -4,6 +4,8 @@
 #ifndef _NSTD_STRING_H
 #define _NSTD_STRING_H
 
+//TODO: Implement short-string optimization
+
 #define NULLCHAR 1
 #include <assert.h>
 

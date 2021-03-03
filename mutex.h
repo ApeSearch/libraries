@@ -35,6 +35,9 @@ inline constexpr defer_lock_t  defer_lock{};
 inline constexpr try_to_lock_t try_to_lock{};
 inline constexpr adopt_lock_t  adopt_lock{};
 
+
+// FOr RAII
+
 template <class Mutex>
 class unique_lock
 {
