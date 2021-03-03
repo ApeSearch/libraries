@@ -49,7 +49,7 @@ template<typename T> void swap(T& lhs, T& rhs)
    lhs = std::move( rhs );
    rhs = std::move( temp );
    }
-}
+} // end namespace APESEARCH
 
 
 #endif // end ALGORITHMS_H_APE_SEARCH
