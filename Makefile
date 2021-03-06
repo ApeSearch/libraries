@@ -19,8 +19,8 @@ $(TEST_SRC): %: %.cpp ${OBJS}
 	@mkdir -p ${EXECDIR}
 	@mkdir -p ${STDEXECDIR}
 	@mkdir -p ${OUTPUT}
-	${CC} -o ${EXECDIR}/$(notdir $@) $^ 
-	${CC} -D STD -o ${STDEXECDIR}/$(notdir $@) $^ 
+	${CC} -o ${EXECDIR}/$(notdir $@) $^ -pthread
+	${CC} -D STD -o ${STDEXECDIR}/$(notdir $@) $^ -pthread
 
 test: ${TEST_SRC}
 	make unit_test
@@ -30,8 +30,8 @@ ${UNITTESTDIR}/unit_test_framework.o:
 
 UNIT_TEST_SRC:=$(basename $(wildcard ${UNITTESTDIR}/*.cpp))
 $(UNIT_TEST_SRC): %: %.cpp ${UNITTESTDIR}/unit_test_framework.o ${OBJS}
-	${CC} -o ${EXECDIR}/$(notdir $@) $^ 
-	${CC} -D STD -o ${STDEXECDIR}/$(notdir $@) $^ 
+	${CC} -o ${EXECDIR}/$(notdir $@) $^ -pthread
+	${CC} -D STD -o ${STDEXECDIR}/$(notdir $@) $^ -pthread
 
 unit_test: ${UNIT_TEST_SRC}
 

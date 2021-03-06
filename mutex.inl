@@ -57,7 +57,7 @@ unique_lock<Mutex>::unique_lock(Mutex& m, APESEARCH::defer_lock_t) noexcept : mu
 
 // tries to acquire ownership of the mutex without blocking
 template<class Mutex>
-unique_lock<Mutex>::unique_lock(Mutex& m, APESEARCH::try_to_lock_t) : mutexOf( &m ), hasLock( try_lock() )
+unique_lock<Mutex>::unique_lock(Mutex& m, APESEARCH::try_to_lock_t) : mutexOf( &m ), hasLock( m.try_lock() )
    {
    }
 
@@ -102,7 +102,6 @@ inline void unique_lock<Mutex>::lock()
 template<class Mutex>
 inline bool unique_lock<Mutex>::try_lock()
    {
-   assert( mutexOf );
    if ( owns_lock() )
       {
       throw std::system_error( EDEADLK, std::generic_category(), "Attempting to try_lock when lock is already owned");
