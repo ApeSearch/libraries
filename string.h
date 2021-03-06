@@ -42,7 +42,6 @@ class string
          }
       ~string()
          {
-         length = 0;
          delete[] buffer;
          } // end ~string()
 
@@ -105,7 +104,7 @@ class string
          strncpy(newbuf, buffer, length);
          strncpy(newbuf + length, other.cstr(), other.size());
          length += other.size();
-         newbuf[length] = '\0';
+         * ( newbuf + length ) = '\0';
          delete[] buffer;
          buffer = newbuf;
          }

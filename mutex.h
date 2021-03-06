@@ -16,6 +16,7 @@ class mutex
 
 public:
     mutex() noexcept;
+    ~mutex();
     mutex( const mutex& ) = delete;
     mutex& operator=( const mutex& ) = delete;
 

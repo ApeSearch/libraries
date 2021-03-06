@@ -2,6 +2,7 @@
 
 #include "mutex.h"
 #include <stdio.h>
+#include<mutex>
 
 
 
@@ -12,6 +13,11 @@ APESEARCH::mutex::mutex() noexcept
        perror("Pthread_mutex_init failed:") ;
        }
     } // end mutex()
+
+APESEARCH::mutex::~mutex()
+   {
+   pthread_mutex_destroy( &pThreadLock );
+   }
 
 
 void APESEARCH::mutex::lock()
