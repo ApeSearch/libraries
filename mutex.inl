@@ -103,9 +103,7 @@ template<class Mutex>
 inline bool unique_lock<Mutex>::try_lock()
    {
    if ( owns_lock() )
-      {
       throw std::system_error( EDEADLK, std::generic_category(), "Attempting to try_lock when lock is already owned");
-      }
    return hasLock = mutexOf->try_lock();
    }
    

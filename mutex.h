@@ -77,8 +77,9 @@ public:
     bool owns_lock() const noexcept;
     explicit operator bool () const noexcept;
     mutex_type* mutex() const noexcept;
+
 private:
-    mutex_type* mutexOf; // Reference to mutex
+    mutex_type *mutexOf; // Reference to mutex
     bool hasLock = false;
 };
 

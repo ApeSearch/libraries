@@ -29,9 +29,9 @@ namespace APESEARCH
 
             // Move constructor
             unique_ptr( unique_ptr&& other) noexcept
-            {
-                other.swap( *this ); // Swaps other allowing other to delete object 
-            }
+               {
+               other.swap( *this ); // Swaps other allowing other to delete object 
+               }
             // Move operator
             unique_ptr& operator=( unique_ptr&& other ) noexcept
                {
@@ -43,10 +43,10 @@ namespace APESEARCH
 
             template<typename S>
             unique_ptr(unique_ptr<S> && other )
-            {
+               {
                 unique_ptr<T> temp( other.release() ); // Move U's pointer into temp (U now has a nullptr )
                 temp.swap( *this ); // move other's pointer into T
-            }
+               }
 
             template<typename S>
             unique_ptr& operator=( unique_ptr<S>&& other )
@@ -78,9 +78,9 @@ namespace APESEARCH
             T* get() { return rawPtr; }
             explicit operator bool() const { return rawPtr; } // to treat unique_ptr as a bool if not nullptr
 
-            void swap( unique_ptr &uniPtr ) noexcept
+            void swap( unique_ptr &uniqPtr ) noexcept
                {
-               APESEARCH::swap( rawPtr, uniPtr.rawPtr);
+               APESEARCH::swap( rawPtr, uniqPtr.rawPtr );
                }
 
             void reset()
@@ -88,8 +88,6 @@ namespace APESEARCH
                 T *temp = release();
                 delete temp;
                }
-
-
 
 
         private:
