@@ -40,13 +40,12 @@ inline constexpr defer_lock_t  defer_lock{};
 inline constexpr try_to_lock_t try_to_lock{};
 inline constexpr adopt_lock_t  adopt_lock{};
 #else
-extern _LIBCPP_EXPORTED_FROM_ABI const defer_lock_t  defer_lock;
-extern _LIBCPP_EXPORTED_FROM_ABI const try_to_lock_t try_to_lock;
-extern _LIBCPP_EXPORTED_FROM_ABI const adopt_lock_t  adopt_lock;
+extern const defer_lock_t  defer_lock;
+extern const try_to_lock_t try_to_lock;
+extern const adopt_lock_t  adopt_lock;
 #endif
 
-// FOr RAII
-//TODO Implement
+// For RAII
 
 template <class Mutex>
 class unique_lock
