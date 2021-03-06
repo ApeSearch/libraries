@@ -94,8 +94,7 @@ unique_lock<Mutex>& unique_lock<Mutex>::operator=( unique_lock<Mutex>&& u ) noex
 template<class Mutex>
 inline void unique_lock<Mutex>::lock()
    {
-   assert( !hasLock );
-   assert( mutexOf );
+   assert( mutexOf && !hasLock );
    mutexOf->lock();
    hasLock = true;
    }
@@ -114,8 +113,7 @@ inline bool unique_lock<Mutex>::try_lock()
 template<class Mutex>
 void unique_lock<Mutex>::unlock()
    {
-   assert( hasLock );
-   assert( mutexOf );
+   assert( owns_lock() );
    mutexOf->unlock();
    hasLock = false;
    }
