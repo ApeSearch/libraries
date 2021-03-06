@@ -32,7 +32,8 @@ public:
     id get_id() const noexcept;
     native_handle_type native_handle();
 
-    static unsigned hardware_concurrency() noexcept;
+    // Returns number of concurrent htreads supported by implementation
+    static unsigned hardware_concurrency() noexcept { return 0; }
 };
 
 void swap(thread& x, thread& y) noexcept;
