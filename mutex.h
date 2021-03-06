@@ -1,8 +1,13 @@
 
+#pragma once
+
 #ifndef MUTEX_H_APE_SEARCH
 #define MUTEX_H_APE_SEARCH
 
 #include <pthread.h>
+#include "assert.h"
+#include "algorithms.h"
+#include <system_error>
 
 namespace APESEARCH
 {
@@ -30,9 +35,15 @@ struct defer_lock_t { explicit defer_lock_t() = default; };
 struct try_to_lock_t { explicit try_to_lock_t() = default; };
 struct adopt_lock_t { explicit adopt_lock_t() = default; };
 
+#if __cplusplus == 201703L
 inline constexpr defer_lock_t  defer_lock{};
 inline constexpr try_to_lock_t try_to_lock{};
 inline constexpr adopt_lock_t  adopt_lock{};
+#else
+extern _LIBCPP_EXPORTED_FROM_ABI const defer_lock_t  defer_lock;
+extern _LIBCPP_EXPORTED_FROM_ABI const try_to_lock_t try_to_lock;
+extern _LIBCPP_EXPORTED_FROM_ABI const adopt_lock_t  adopt_lock;
+#endif
 
 // FOr RAII
 //TODO Implement
@@ -69,6 +80,7 @@ public:
     mutex_type* mutex() const noexcept;
 private:
     mutex_type* mutexOf; // Reference to mutex
+    bool hasLock = false;
 };
 
 template <class Mutex>

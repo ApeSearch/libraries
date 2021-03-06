@@ -6,6 +6,7 @@ OBJS=${SOURCES:.cpp=.o}
 all: test
 
 TESTDIR=tests
+UNITTESTDIR=unitTests
 EXECDIR=tests/bin
 OUTPUT=tests/output
 STDEXECDIR=tests/std_bin
@@ -22,6 +23,18 @@ $(TEST_SRC): %: %.cpp ${OBJS}
 	${CC} -D STD -o ${STDEXECDIR}/$(notdir $@) $^ 
 
 test: ${TEST_SRC}
+	make unit_test
+
+${UNITTESTDIR}/unit_test_framework.o:
+	${CC} -c ${UNITTESTDIR}/dependencies/unit_test_framework.cpp -o ${UNITTESTDIR}/$(notdir $@)
+
+UNIT_TEST_SRC:=$(basename $(wildcard ${UNITTESTDIR}/*.cpp))
+$(UNIT_TEST_SRC): %: %.cpp ${UNITTESTDIR}/unit_test_framework.o ${OBJS}
+	${CC} -o ${EXECDIR}/$(notdir $@) $^ 
+	${CC} -D STD -o ${STDEXECDIR}/$(notdir $@) $^ 
+
+unit_test: ${UNIT_TEST_SRC}
+
 
 run_test: test
 	@echo
@@ -34,4 +47,4 @@ run_test: test
 	${CC} -c $<
 
 clean:
-	rm -f ${OBJS} ${EXECDIR}/* ${STDEXECDIR}/* ${OUTPUT}/*
+	rm -rf ${OBJS} ${EXECDIR}/* ${STDEXECDIR}/* ${OUTPUT}/* ${UNITTESTDIR}/unit_test_framework.o

@@ -28,6 +28,7 @@ ForwardIterator lower_bound(ForwardIterator first, ForwardIterator last, const T
     return first;
 } // end lower_bound()
 
+/*
 int stricmp(const char *a, const char *b) {
     int letterA, letterB;
 
@@ -42,8 +43,9 @@ int stricmp(const char *a, const char *b) {
     while ( letterA == letterB && letterA != '\0');
     return letterA - letterB;
 }
+*/
 
-template<typename T> void swap(T& lhs, T& rhs)
+template<typename T> void swap(T& lhs, T& rhs) noexcept
    {
    T temp = std::move( lhs );
    lhs = std::move( rhs );
