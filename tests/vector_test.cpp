@@ -1,5 +1,6 @@
 #include "../vector.h"
 #include <vector>
+using APESEARCH::vector;
 
 #include <iostream>
 using std::cout;
@@ -19,32 +20,32 @@ int main() {
 
 
     
-    testVector.pushBack(0);
+    testVector.push_back(0);
     if (testVector.size() != 1 || testVector.capacity() != 8)
         {
-        cout << "Vector pushBack failed: " << testVector.capacity() << endl;
+        cout << "Vector push_back failed: " << testVector.capacity() << endl;
         }
     if (testVector[0] != 0) 
         {
         cout << "Vector [] operator failed" << endl;
         }
 
-    for (int i = 1; i <= DEFAULT_BUCKET_SIZE; ++i) 
+    for (size_t i = 1; i <= DEFAULT_BUCKET_SIZE; ++i) 
         {
-            testVector.pushBack(i);
+            testVector.push_back(static_cast<int>(i));
             if (testVector.size() != (i+1))
                 {
                 cout << "Vector size increase failed: " << testVector.capacity() << endl;
                 }
-            if (testVector[i] != i) 
+            if (testVector[i] != static_cast<int>(i)) 
                 {
-                cout << "Vector []/pushBack operator failed: " << testVector[i] << endl;
+                cout << "Vector []/push_back operator failed: " << testVector[i] << endl;
                 }
         }
 
     if (testVector.size() != (DEFAULT_BUCKET_SIZE + 1) || testVector.capacity() != (DEFAULT_BUCKET_SIZE * 2))
         {
-            cout << "Vector multiple pushBack failed: " << testVector.capacity() << endl;
+            cout << "Vector multiple push_back failed: " << testVector.capacity() << endl;
             cout << "Size: " << testVector.size() << '\n';
             cout << "Capacity: " << testVector.capacity() << endl;
         }
@@ -53,12 +54,12 @@ int main() {
     const size_t len = testVector.size();
     for (size_t i = 0; i < len; ++i) 
         {
-        testVector.popBack();
+        testVector.pop_back();
         }
 
     if (testVector.size() != 0)
         {
-        cout << "Vector popBack failed: " << testVector.size() << endl;
+        cout << "Vector pop_back failed: " << testVector.size() << endl;
         }
 
     testConstructors();

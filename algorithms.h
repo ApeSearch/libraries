@@ -28,8 +28,7 @@ ForwardIterator lower_bound(ForwardIterator first, ForwardIterator last, const T
     return first;
 } // end lower_bound()
 
-/*
-int stricmp(const char *a, const char *b) {
+int strIcmp(const char *a, const char *b) {
     int letterA, letterB;
 
     do {
@@ -43,7 +42,6 @@ int stricmp(const char *a, const char *b) {
     while ( letterA == letterB && letterA != '\0');
     return letterA - letterB;
 }
-*/
 
 template<typename T> void swap(T& lhs, T& rhs) noexcept
    {
@@ -51,7 +49,23 @@ template<typename T> void swap(T& lhs, T& rhs) noexcept
    lhs = std::move( rhs );
    rhs = std::move( temp );
    }
+
+template<class InputIterator, class OutputIterator>
+OutputIterator copy( InputIterator first, const InputIterator last, OutputIterator destIter )
+   {
+   while( first != last )
+       *destIter++ = *first++;
+    return destIter;
+   }
+
+template<class InputIterator, class Function>
+Function for_each( InputIterator first, InputIterator last, Function fn )
+   {
+   while (first!=last)
+      fn ( *first++ );
+   return std::move( fn );
+   }
+
+
 } // end namespace APESEARCH
-
-
 #endif // end ALGORITHMS_H_APE_SEARCH

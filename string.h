@@ -113,7 +113,7 @@ class string
       // REQUIRES: Nothing
       // MODIFIES: *this
       // EFFECTS: Appends c to the string
-      void pushBack ( char c )
+      void push_back ( char c )
          {
          auto newbuf = new char[length + 2];
          strcpy(newbuf, buffer);
@@ -127,7 +127,7 @@ class string
       // REQUIRES: string is not empty
       // MODIFIES: *this
       // EFFECTS: Removes the last charater of the string
-      void popBack ( )
+      void pop_back ( )
          {
          assert(length); // For our safety...
          buffer[--length] = '\0';

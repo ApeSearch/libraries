@@ -6,7 +6,6 @@
 
 #include <pthread.h>
 #include "assert.h"
-#include "algorithms.h"
 #include <system_error>
 
 namespace APESEARCH

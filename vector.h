@@ -8,7 +8,7 @@
 
 #define DEFAULT_BUCKET_SIZE 8
 
-size_t computeTwosPowCeiling(size_t num) 
+static inline size_t computeTwosPowCeiling(size_t num) 
    {
    size_t powerNum = 1;
    for (; num; num >>=1 )
@@ -16,6 +16,8 @@ size_t computeTwosPowCeiling(size_t num)
    return powerNum;
    }
 
+namespace APESEARCH
+{
 
 template<typename T>
 class vector
@@ -184,7 +186,7 @@ class vector
       // MODIFIES: this, size(), capacity()
       // EFFECTS: Appends the element x to the vector, allocating
       //    additional space if neccesary
-      void pushBack ( const T& x )
+      void push_back ( const T& x )
          {
          if (_size == _capacity)
             {
@@ -197,7 +199,7 @@ class vector
       // MODIFIES: this, size()
       // EFFECTS: Removes the last element of the vector,
       //    leaving capacity unchanged
-      void popBack ( )
+      void pop_back ( )
          {
          //if (_size == 0) return;
          (_elts + --_size)->~T();
@@ -265,4 +267,5 @@ class vector
    */
    };
    
+} // end namespace APESEARCH
 #endif

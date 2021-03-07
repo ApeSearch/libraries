@@ -37,23 +37,16 @@ int main() {
         std::cout << "Failed += operator: " << base << " " << std::endl;
 
     // Test pushBack()
-    #ifdef STD
         // cmoooon Hamilton use the same interface smh
-        base.push_back('A');
-    #else
-        base.pushBack('A');
-    #endif
+        // I gotcha bro changed it back now that we've submitted
+    base.push_back('A');
     if (base != "help meA")
-        std::cout << "Failed pushBack: " << base << " " << std::endl;
+        std::cout << "Failed push_back: " << base << " " << std::endl;
 
     // Test popBack()
-    #ifdef STD
-        base.pop_back();
-    #else
-        base.popBack();
-    #endif
+    base.pop_back();
     if (base != "help me")
-        std::cout << "Failed popBack: " << base << " " << std::endl;
+        std::cout << "Failed pop_back: " << base << " " << std::endl;
     
     // Test relational operators, these tests are not good; they check that it "works", no edge cases
     string left = "left";
