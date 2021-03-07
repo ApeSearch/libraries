@@ -1,6 +1,6 @@
 
 #include "dependencies/unit_test_framework.h"
-#include "../mutex.h"
+#include "../include/mutex.h"
 using APESEARCH::unique_lock;
 using APESEARCH::mutex;
 #include <iostream>

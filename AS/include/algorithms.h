@@ -28,20 +28,7 @@ ForwardIterator lower_bound(ForwardIterator first, ForwardIterator last, const T
     return first;
 } // end lower_bound()
 
-int strIcmp(const char *a, const char *b) {
-    int letterA, letterB;
-
-    do {
-        // Accounts for non-2's complement as well as 2's coplmenet platforms.
-        // Since +0 and -0 would fold to a unsigned 0 but in reality only +0 should be converted to 0.
-        letterA = *((unsigned char *)a++);
-        letterB = *((unsigned char *)b++);
-        letterA = tolower(toupper(letterA));
-        letterB = tolower(toupper(letterB));
-    }
-    while ( letterA == letterB && letterA != '\0');
-    return letterA - letterB;
-}
+int stricmp(const char *a, const char *b);
 
 template<typename T> void swap(T& lhs, T& rhs) noexcept
    {

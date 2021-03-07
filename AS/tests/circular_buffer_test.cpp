@@ -4,7 +4,7 @@ using std::cout;
 #include <stdlib.h>
 #include <assert.h>
 
-#include "../circular_buffer.h"
+#include "../include/circular_buffer.h"
 using APESEARCH::circular_buffer;
 
 template<typename T, class buffer_type>

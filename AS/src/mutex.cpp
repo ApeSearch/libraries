@@ -1,8 +1,13 @@
 
 
-#include "mutex.h"
-#include <stdio.h>
+#include "../include/mutex.h"
+#include <stdio.h> // for perror()
 
+//------------------------------------------------------------------------------------------------
+//
+//                                  Mutex Definition 
+//
+//------------------------------------------------------------------------------------------------
 
 
 APESEARCH::mutex::mutex() noexcept

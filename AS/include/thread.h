@@ -5,6 +5,8 @@
 #ifndef THREAD_H_APESEARCH
 #define THREAD_H_APESEARCH
 
+#include<thread>
+
 namespace APESEARCH
 {
 

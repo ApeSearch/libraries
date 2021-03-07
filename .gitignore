@@ -6,3 +6,4 @@ tests/output
 !.gitignore
 *.dSYM
 *.o
+.DS_Store

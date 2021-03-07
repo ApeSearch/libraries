@@ -1,6 +1,7 @@
 CC=g++ -g3 -std=c++11 -Wall -pedantic -Wconversion -Wextra -Wreorder -fno-builtin
 
-SOURCES=$(wildcard *.cpp)
+SRC=src
+SOURCES=$(wildcard ${SRC}/*.cpp)
 OBJS=${SOURCES:.cpp=.o}
 
 all: test
@@ -42,9 +43,9 @@ run_test: test
 
 # Generic rules for compiling a source file to an object file
 %.o: %.cpp
-	${CC} -c $<
+	${CC} -c $< -o $@
 %.o: %.cc
 	${CC} -c $<
 
 clean:
-	rm -rf ${OBJS} ${EXECDIR}/* ${STDEXECDIR}/* ${OUTPUT}/* ${UNITTESTDIR}/unit_test_framework.o
+	rm -rf ${OBJS} ${EXECDIR}/* ${STDEXECDIR}/* ${OUTPUT}/* ${UNITTESTDIR}/unit_test_framework.o ${STDEXECDIR}/*
