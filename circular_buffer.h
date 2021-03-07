@@ -8,6 +8,8 @@
 #include <iostream> // for std::ostream
 #include <assert.h> // for assert()
 
+//! Inferface for circular_buffer below
+
 namespace APESEARCH
 {
 //------------------------------------------------------------------------------------------------
@@ -15,7 +17,17 @@ namespace APESEARCH
 //                                  Buffer Declaration
 //
 //------------------------------------------------------------------------------------------------
-
+/*
+ * Purely abstract class
+ * The rationale for creating an interface for the buffer used in circular_buffer 
+ * is to allow for both dynamic and local memory to be utilized; that is if the programmer
+ * knows what the size will be (determined by experimentation) it is better to just declare a
+ * static size (T arr[KNOWNSIZE]) to avoid dynamic allocation.
+ * 
+ * However, this allows for an implemenation for dynamic memory (Just it has to be overrided)
+ * 
+ * An example buffer (defaultBuffer is declared and defined in circular_buffer.inl)
+*/
 // Purely abstract clas
 // Use this as the interface when deciding to use a buffer
 template<typename T>
@@ -49,7 +61,10 @@ struct defaultBuffer;
 //                                  circular_buffer Declaration
 //
 //------------------------------------------------------------------------------------------------
-
+/*
+ * A buffer which takes advantage of a constant capacity in order to maximize spacial locality.
+ * //!Not thread safe however (needs to be augmented for such)
+*/
 // The current “tail” position (incremented when elements are added)
 //The current “head” (incremented when elements are removed)
 template <class T, class buffer_type = DEFAULT::defaultBuffer<T> >
