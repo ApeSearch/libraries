@@ -2,7 +2,7 @@
     #include <string>
     using std::string;
 #else // Used for Autograder
-    #include "../include/string.h"
+    #include "../include/AS/string.h"
 #endif
 
 #include <iostream>
