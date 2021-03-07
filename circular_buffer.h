@@ -5,12 +5,16 @@
 #define CIRCULAR_BUFFER_H_APESEARCH
 
 #include <initializer_list> // for std::initializer_list
-#include <exception> // for std::run_time
 #include <iostream> // for std::ostream
 #include <assert.h> // for assert()
 
 namespace APESEARCH
 {
+//------------------------------------------------------------------------------------------------
+//
+//                                  Buffer Declaration
+//
+//------------------------------------------------------------------------------------------------
 
 // Purely abstract clas
 // Use this as the interface when deciding to use a buffer
@@ -33,67 +37,18 @@ struct Buffer
     // virtual Buffer( const size_t ) = 0;
 };
 
-namespace DEFAULT
-{
-#define CAPACITY 20
-static const size_t capacity = CAPACITY;
-// An example
+// An example of an implementation of Buffer
+namespace DEFAULT{
 template<typename T>
-struct defaultBuffer : public Buffer<T>
-{
-   typedef T value_type;
-   defaultBuffer() {}
-   defaultBuffer( const defaultBuffer& )
-      {
-       // Does nothing in this case since there's no 
-      }
-   defaultBuffer( const size_t numOfElem )
-      {
-       if ( static_cast<size_t>( max() ) < numOfElem )
-          {
-          throw std::runtime_error("Attempted to create a buffer larger than max");
-          }
-      }
-   inline value_type *getBuffer() noexcept
-      {
-       return buf;
-      }
-   inline void insert(const T& val, size_t index) noexcept
-      {
-       assert( index < CAPACITY );
-       buf[ index ] = val;
-      }
-   inline virtual T& get(size_t index)
-      {
-       assert( index < CAPACITY );
-       return buf[ index ];
-      }
-   inline size_t getCapacity() const
-      {
-       return CAPACITY;
-      }
-   inline value_type *begin() noexcept
-      {
-      return buf;
-      }
-   inline static ssize_t max() 
-      {
-      return CAPACITY;
-      }
-    void print( std::ostream& os, const size_t head, const size_t sizeOf ) const
-       {
-        assert( sizeOf <= CAPACITY );
-        os << "[ ";
-        for (size_t n = 0; n < sizeOf; ++n )
-           {
-            os << buf[ ( head + n ) % CAPACITY ] << ' ';
-           }
-        os << "]";
-       }
-private:
-   T buf[ CAPACITY ];
-};
-} // end namespace DEFAULT
+struct defaultBuffer;
+}
+
+
+//------------------------------------------------------------------------------------------------
+//
+//                                  circular_buffer Declaration
+//
+//------------------------------------------------------------------------------------------------
 
 // The current “tail” position (incremented when elements are added)
 //The current “head” (incremented when elements are removed)
@@ -141,9 +96,6 @@ private:
 
 } // end namespace APESEARCH
 
-#include "circular_buffer.inl"
-
-
-
+#include "circular_buffer.inl" // circular_buffer Inline Implementation ( defaultBuffer and circular_buffer )
 
 #endif // CIRCULAR_BUFFER_H_APESEARCH

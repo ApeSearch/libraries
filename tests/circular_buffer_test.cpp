@@ -27,10 +27,9 @@ int main(void)
 
     print_buffer_status( cbuf );
 
-    while( !cbuf.empty() )
-	{
-		cbuf.get();
-	}
+    // Reset
+    printf("Resetting...\n");
+    cbuf.reset();
 
     print_buffer_status( cbuf );
 
