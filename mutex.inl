@@ -7,10 +7,7 @@
 //------------------------------------------------------------------------------------------------
 
 
-#include "mutex.h"
-#include <stdio.h>
-
-
+#include <stdio.h> // for perror()
 
 APESEARCH::mutex::mutex() noexcept
     {
@@ -54,7 +51,7 @@ pthread_mutex_t* APESEARCH::mutex::native_handle()
 //------------------------------------------------------------------------------------------------
 //*** Look at mutex.h For full interface
 
-#include "algorithms.h"
+#include "algorithms.h" // for APESEARCH::swap()
 
 namespace APESEARCH
 {
