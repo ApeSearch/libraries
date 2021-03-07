@@ -102,12 +102,3 @@ void APESEARCH::circular_buffer<T, buffer_type>::retreat_ptr()
         head = 0;
    } // end retreat_ptr()
 
-/*
-template<typename T, class buffer_type>
-std::ostream& APESEARCH::operator<<(std::ostream& os, const APESEARCH::circular_buffer<T, buffer_type>& cbuf)
-   {
-    cbuf.buffer.print( os, cbuf.head, cbuf.size() );
-    return os;
-   }
-*/
-

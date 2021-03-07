@@ -4,25 +4,16 @@
 #ifndef CIRCULAR_BUFFER_H_APESEARCH
 #define CIRCULAR_BUFFER_H_APESEARCH
 
-#ifdef testing
-    #include <vector>
-    using std::vector;
-#else
-    #include "vector.h"
-    using APESEARCH::vector;
-#endif
-
-#include <initializer_list>
-#include <utility>
-#include <exception>
-#include <iostream>
-#include <assert.h>
+#include <initializer_list> // for std::initializer_list
+#include <exception> // for std::run_time
+#include <iostream> // for std::ostream
+#include <assert.h> // for assert()
 
 namespace APESEARCH
 {
 
 // Purely abstract clas
-// Use this when using a particular buffer
+// Use this as the interface when deciding to use a buffer
 template<typename T>
 struct Buffer
 {
@@ -36,7 +27,7 @@ struct Buffer
     inline virtual T *begin() noexcept = 0;
     virtual void print( std::ostream& os, const size_t head, const size_t size ) const = 0;
 
-    //! Required for circular_buffer
+    //! Required for circular_buffer ( however cannot be virtual due to the nature of c++ )
     // virtual Buffer() = 0;
     // virtual Buffer( const Buffer&& buf ) noexcept = 0;
     // virtual Buffer( const size_t ) = 0;
