@@ -90,6 +90,6 @@ template <class Mutex>
 
 } // end namespace APESEARCH
 
-#include "mutex.inl"
+#include "mutex.inl" // unique_lock Inline Definition 
 
 #endif

@@ -5,10 +5,9 @@ using APESEARCH::unique_lock;
 using APESEARCH::mutex;
 #include <iostream>
 
-APESEARCH::mutex lock;
+static APESEARCH::mutex lock;
 
-
-TEST(DEFAULT_Constructor){
+TEST(DEFAULT_Constructor){ 
 {
     unique_lock<mutex> uniqLk;
     // implicitly testing bool as well
