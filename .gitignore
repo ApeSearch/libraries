@@ -1,9 +1,5 @@
 .vscode
 extras
-tests/std_bin
-tests/bin
-tests/output
-!.gitignore
 *.dSYM
 *.o
 .DS_Store

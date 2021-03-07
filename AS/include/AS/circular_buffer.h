@@ -105,8 +105,8 @@ private:
     size_t tail = 0;
     bool _full = false;
 
-    void advance_ptr();
-    void retreat_ptr();
+    void interal_push();
+    void internal_pop();
 };
 
 } // end namespace APESEARCH

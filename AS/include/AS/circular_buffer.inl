@@ -40,7 +40,7 @@ template <class T, class buffer_type>
 void APESEARCH::circular_buffer<T, buffer_type>::putOverwrite( const T& val ) noexcept
    {
     buffer.insert( val, tail );
-    advance_ptr();
+    interal_push();
    }
 
 template <class T, class buffer_type>
@@ -50,7 +50,7 @@ bool APESEARCH::circular_buffer<T, buffer_type>::put( const T& val ) noexcept
        return false;
 
     buffer.insert( val, tail );
-    advance_ptr();
+    interal_push();
     return true;
    }
 
@@ -66,7 +66,7 @@ T APESEARCH::circular_buffer<T, buffer_type>::get()
    {
     assert( !empty() );
     size_t currHead = head;
-    retreat_ptr();
+    internal_pop();
     return buffer.get( currHead );
    }
 
@@ -80,7 +80,7 @@ size_t APESEARCH::circular_buffer<T, buffer_type>::size() const
    }
 
 template <class T, class buffer_type>
-void APESEARCH::circular_buffer<T, buffer_type>::advance_ptr()
+void APESEARCH::circular_buffer<T, buffer_type>::interal_push()
    {
     
     if( _full )
@@ -92,15 +92,15 @@ void APESEARCH::circular_buffer<T, buffer_type>::advance_ptr()
     if ( ++tail == buffer.getCapacity() )
         tail = 0;
     _full = tail == head;
-   }
+   } // end internal_push()
 
 template <class T, class buffer_type>
-void APESEARCH::circular_buffer<T, buffer_type>::retreat_ptr()
+void APESEARCH::circular_buffer<T, buffer_type>::internal_pop()
    {
     _full = false;
     if ( ++head == buffer.getCapacity() )
         head = 0;
-   } // end retreat_ptr()
+   } // end internal_pop()
    
 
 //------------------------------------------------------------------------------------------------
