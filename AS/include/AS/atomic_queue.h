@@ -18,7 +18,13 @@
 #include "mutex.h"
 #include <utility>
 #include <queue>
-#include <optional>
+#if __cplusplus >= 201703L
+   #include <optional>
+   using std::optional;
+#else
+   #include <experimental/optional>
+   using std::experimental::optional;
+#endif
 
 namespace APESEARCH
 {
@@ -74,7 +80,7 @@ public:
         safeQueue.emplace( std::forward<Args>(args)... );
        }
    
-    std::optional<T> dequeue()
+    optional<T> dequeue()
        {
        unique_lock<mutex> uniqLock( queueMutex );
 

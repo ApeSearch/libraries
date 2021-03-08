@@ -30,7 +30,13 @@
 #include <mutex>
 #include <condition_variable> //! Need to create own
 #include <utility> // for std::forward
-#include <optional> // for std::optional
+#if __cplusplus >= 201703L
+   #include <optional>
+   using std::optional;
+#else
+   #include <experimental/optional>
+   using std::experimental::optional;
+#endif
 #include <atomic> // for std::atomic_bool
 #include <exception>
 
@@ -58,7 +64,7 @@ class PThreadPool
     // Used by threads 
     void operator()()
         {
-        std::optional<std::function<void()>> func;
+        optional<std::function<void()>> func;
         while ( true ) // runs until party ends
            {
             //pool->consumerSema.acquire();
@@ -83,7 +89,7 @@ class PThreadPool
    //std::counting_semaphore consumerSema; => Requires c++20
    std::mutex cvMutex;
    std::condition_variable cv;
-   std::atomic<bool> halt = false;
+   std::atomic<bool> halt;
 
    static void *indirectionStrikesAgain( void *func )
        {
@@ -97,6 +103,7 @@ class PThreadPool
 public:
    PThreadPool( size_t numThreads, defer_init_t ) noexcept : _threads( numThreads), _numThreads( numThreads )
       {
+      halt.store( false );
       }
    PThreadPool( size_t numThreads ) noexcept : PThreadPool( numThreads, defer_init )
       {
