@@ -15,7 +15,7 @@ auto rnd = std::bind(dist, mt);
 
 
 void simulate_hard_computation() {
-  std::this_thread::sleep_for(std::chrono::milliseconds(2000 + rnd()));
+  //std::this_thread::sleep_for(std::chrono::milliseconds(2000 + rnd()));
 }
 
 // Simple function that adds multiplies two numbers and prints the result
@@ -43,15 +43,15 @@ int multiply_return(const int a, const int b) {
 
 int main()
 {
-  // Create pool with 3 threads
-  PThreadPool pool(10u, APESEARCH::defer_init);
+  // Create pool with X threads
+  PThreadPool pool(100u, APESEARCH::defer_init);
 
   // Initialize pool
   pool.init();
 
   // Submit (partial) multiplication table
-  for (int i = 1; i < 3; ++i) {
-    for (int j = 1; j < 10; ++j) {
+  for (int i = 1; i < 100; ++i) {
+    for (int j = 1; j < 1000000; ++j) {
       pool.submit(multiply, i, j);
     }
   }

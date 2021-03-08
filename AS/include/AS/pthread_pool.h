@@ -28,10 +28,11 @@
 #include <pthread.h> // for pthread
 //#include <semaphore> // for std::counting_semaphore
 #include <mutex>
-#include <condition_variable> //! Need ot create own
+#include <condition_variable> //! Need to create own
 #include <utility> // for std::forward
 #include <optional> // for std::optional
 #include <atomic> // for std::atomic_bool
+#include <exception>
 
 namespace APESEARCH
 {
@@ -91,7 +92,7 @@ class PThreadPool
 
         delete funcPtr;
         return nullptr;
-       }
+       } // end indirectionStrikesAgain()
 
 public:
    PThreadPool( size_t numThreads, defer_init_t ) noexcept : _threads( numThreads), _numThreads( numThreads )
