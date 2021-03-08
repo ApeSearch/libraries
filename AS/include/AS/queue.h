@@ -4,6 +4,8 @@
 #ifndef QUEUE_H_APESEARCH
 #define QUEUE_H_APESEARCH
 
+#include <queue>
+
 namespace APESEARCH
 {
 
@@ -173,5 +175,6 @@ template <class T, class Container, class Compare>
             noexcept(noexcept(x.swap(y)));
 
 }  // std
+
 
 #endif

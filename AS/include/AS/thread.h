@@ -36,6 +36,28 @@ public:
 
     // Returns number of concurrent htreads supported by implementation
     static unsigned hardware_concurrency() noexcept { return 0; }
+private:
+    template<typename Functor, typename ...Args>
+    class argsWrapper
+    {
+     public:
+        argsWrapper( Functor && _func, Args&& ..._args ) : func( std::forward<Functor>( _func ) ), 
+           args( std::forward<...Args>(_args)... ) {}
+
+        void operator()()
+           {
+            reconstructAndRun( std::make_index_sequence< sizeof...(Args)>{} );
+           }
+    private:
+       Functor func;
+       std::tuple< std::decay_t<Types>... > args;
+
+       template< std::size_t... Indices>
+       void reconstructAndRun( std::index_sequence<...indices> )
+          {
+           func( std::move( std::get<Indices>( args ) )... );
+          }
+    };
 };
 
 void swap(thread& x, thread& y) noexcept;

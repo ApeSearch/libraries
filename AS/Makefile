@@ -1,4 +1,4 @@
-CC=g++ -g3 -std=c++11 -Wall -pedantic -Wconversion -Wextra -Wreorder -fno-builtin
+CC=g++ -g3 -std=c++17 -Wall -pedantic -Wconversion -Wextra -Wreorder -fno-builtin
 
 SRC=src
 SOURCES=$(wildcard ${SRC}/*.cpp)
@@ -20,8 +20,8 @@ $(TEST_SRC): %: %.cpp ${OBJS}
 	@mkdir -p ${EXECDIR}
 	@mkdir -p ${STDEXECDIR}
 	@mkdir -p ${OUTPUT}
-	${CC} -o ${EXECDIR}/$(notdir $@) $^ -pthread
-	${CC} -D STD -o ${STDEXECDIR}/$(notdir $@) $^ -pthread
+	${CC} -Dtesting -o  ${EXECDIR}/$(notdir $@) $^ -pthread
+	${CC} -D STD -Dtesting -o ${STDEXECDIR}/$(notdir $@) $^ -pthread
 
 test: ${TEST_SRC}
 	make unit_test
