@@ -1,10 +1,17 @@
-
 #pragma once
 
 #ifndef QUEUE_H_APESEARCH
 #define QUEUE_H_APESEARCH
 
-#include <queue>
+#ifdef testing
+    #include <deque>
+    using std::deque;
+#else
+    #include "deque.h"
+    using APESEARCH::deque;
+#endif
+#include <type_traits> // for std::is_nothrow_swappable
+#include "algorithms.h" // for swap
 
 namespace APESEARCH
 {
@@ -18,6 +25,7 @@ public:
     typedef typename container_type::reference       reference;
     typedef typename container_type::const_reference const_reference;
     typedef typename container_type::size_type       size_type;
+    //static_assert((is_same<T, value_type>::value), "" );
 
 protected:
     container_type c;
@@ -32,8 +40,11 @@ public:
     queue& operator=(const queue& q) = default;
     queue& operator=(queue&& q) = default;
 
-    explicit queue(const container_type& c);
-    explicit queue(container_type&& c)
+    explicit queue(const container_type& _c) : c( _c ) {}
+
+    explicit queue(container_type&& _c) : c( std::move( _c ) ) {}
+
+    /*    
     template <class Alloc>
         explicit queue(const Alloc& a);
     template <class Alloc>
@@ -44,51 +55,67 @@ public:
         queue(const queue& q, const Alloc& a);
     template <class Alloc>
         queue(queue&& q, const Alloc& a);
+    */
 
-    bool      empty() const;
-    size_type size() const;
+    bool      empty() const { return c.empty(); }
+    size_type size() const { return c.size(); }
 
-    reference       front();
-    const_reference front() const;
-    reference       back();
-    const_reference back() const;
+    reference front() { return c.front(); }
+    const_reference front() const { return c.front(); }
+    //reference       back() { return c.back(); } Not allowed
+    const_reference back() const { return c.back(); }
 
-    void push(const value_type& v);
-    void push(value_type&& v);
-    template <class... Args> reference emplace(Args&&... args); // reference in C++17
-    void pop();
+    void push(const value_type& v) { c.push_back( v ); }
+    void push(value_type&& v) { c.push_back( std::move( v ) ); }
 
-    void swap(queue& q) noexcept(is_nothrow_swappable_v<Container>)
+    template <class... Args> 
+    decltype( auto ) emplace(Args&&... args)
+    {
+        return c.emplace_back( std::forward<Args>( args )... );
+    }
+    void pop() { c.pop_front(); }
+
+    void swap(queue& q) noexcept(std::is_nothrow_swappable<Container>() )
+       {
+        APESEARCH::swap( c, q.c );
+       } // end swap()
+    
 };
 
+#if __cplusplus >= 201703L
 template<class Container>
   queue(Container) -> queue<typename Container::value_type, Container>; // C++17
 
 template<class Container, class Allocator>
   queue(Container, Allocator) -> queue<typename Container::value_type, Container>; // C++17
+#endif
 
 template <class T, class Container>
-  bool operator==(const queue<T, Container>& x,const queue<T, Container>& y);
+  bool operator==(const queue<T, Container>& x,const queue<T, Container>& y) { return x.c == y.c; }
 
 template <class T, class Container>
-  bool operator< (const queue<T, Container>& x,const queue<T, Container>& y);
+  bool operator< (const queue<T, Container>& x,const queue<T, Container>& y) { return x.c < y.c; }
 
 template <class T, class Container>
-  bool operator!=(const queue<T, Container>& x,const queue<T, Container>& y);
+  bool operator!=(const queue<T, Container>& x,const queue<T, Container>& y) { return x.c != y.c; }
 
 template <class T, class Container>
-  bool operator> (const queue<T, Container>& x,const queue<T, Container>& y);
+  bool operator> (const queue<T, Container>& x,const queue<T, Container>& y) { return x.c > y.c; }
 
 template <class T, class Container>
-  bool operator>=(const queue<T, Container>& x,const queue<T, Container>& y);
+  bool operator>=(const queue<T, Container>& x,const queue<T, Container>& y) { return x.c >= y.c; }
 
 template <class T, class Container>
-  bool operator<=(const queue<T, Container>& x,const queue<T, Container>& y);
+  bool operator<=(const queue<T, Container>& x,const queue<T, Container>& y) { return x.c <= y.c; }
 
 template <class T, class Container>
   void swap(queue<T, Container>& x, queue<T, Container>& y)
   noexcept(noexcept(x.swap(y)));
 
+
+//TODO Implement
+
+/*
 template <class T, class Container = vector<T>,
           class Compare = less<typename Container::value_type>>
 class priority_queue
@@ -173,6 +200,8 @@ template <class T, class Container, class Compare>
   void swap(priority_queue<T, Container, Compare>& x,
             priority_queue<T, Container, Compare>& y)
             noexcept(noexcept(x.swap(y)));
+
+*/ // For priority_queue
 
 }  // std
 

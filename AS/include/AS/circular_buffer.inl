@@ -55,10 +55,17 @@ bool APESEARCH::circular_buffer<T, buffer_type>::put( const T& val ) noexcept
    }
 
 template <class T, class buffer_type>
-const T& APESEARCH::circular_buffer<T, buffer_type>::front() const noexcept
+T& APESEARCH::circular_buffer<T, buffer_type>::front() noexcept
    {
     assert( !empty() );
     return buffer.get( head );
+   }
+
+template <class T, class buffer_type>
+const T& APESEARCH::circular_buffer<T, buffer_type>::back() const noexcept 
+   {
+   assert( !empty() );
+   return buffer.get( tail );
    }
 
 template <class T, class buffer_type>
@@ -85,13 +92,18 @@ void APESEARCH::circular_buffer<T, buffer_type>::interal_push()
     
     if( _full )
        {
-        if( ++head == buffer.getCapacity() )
-            head = 0;
+       assert( head == tail );
+       if( ++tail == buffer.getCapacity() )
+          head = tail = 0;
+       else
+          ++head;
        }
-       
-    if ( ++tail == buffer.getCapacity() )
-        tail = 0;
-    _full = tail == head;
+    else
+       {
+       if ( ++tail == buffer.getCapacity() )
+          tail = 0;
+       _full = tail == head;
+       }
    } // end internal_push()
 
 template <class T, class buffer_type>
@@ -113,12 +125,11 @@ namespace APESEARCH
 {
 namespace DEFAULT
 {
-#define CAPACITY 20
-static const size_t capacity = CAPACITY;
 // An example
-template<typename T>
+template<typename T, size_t _Sizeu = 20u>
 struct defaultBuffer : public Buffer<T>
 {
+   static const size_t capacity = _Sizeu;
    typedef T value_type;
    defaultBuffer() {}
    defaultBuffer( const defaultBuffer& )
@@ -138,17 +149,17 @@ struct defaultBuffer : public Buffer<T>
       }
    inline void insert(const T& val, size_t index) noexcept
       {
-       assert( index < CAPACITY );
+       assert( index < defaultBuffer::capacity );
        buf[ index ] = val;
       }
    inline virtual T& get(size_t index)
       {
-       assert( index < CAPACITY );
+       assert( index < defaultBuffer::capacity );
        return buf[ index ];
       }
    inline size_t getCapacity() const
       {
-       return CAPACITY;
+       return defaultBuffer::capacity;
       }
    inline value_type *begin() noexcept
       {
@@ -156,20 +167,21 @@ struct defaultBuffer : public Buffer<T>
       }
    inline static ssize_t max() 
       {
-      return CAPACITY;
+      return defaultBuffer::capacity;
       }
-    void print( std::ostream& os, const size_t head, const size_t sizeOf ) const
+      //! Not every time can be printed
+    void print( std::ostream& os, const size_t , const size_t sizeOf ) const
        {
-        assert( sizeOf <= CAPACITY );
+        assert( sizeOf <= defaultBuffer::capacity );
         os << "[ ";
         for (size_t n = 0; n < sizeOf; ++n )
            {
-            os << buf[ ( head + n ) % CAPACITY ] << ' ';
+            //os << buf[ ( head + n ) % defaultBuffer::capacity ] << ' ';
            }
         os << "]";
        }
 private:
-   T buf[ CAPACITY ];
+   T buf[ defaultBuffer::capacity ];
 };
 } // end namespace DEFAULT
 } // end namespace APESEARCH

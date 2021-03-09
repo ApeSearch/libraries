@@ -7,6 +7,7 @@
 #include <initializer_list> // for std::initializer_list
 #include <iostream> // for std::ostream
 #include <assert.h> // for assert()
+#include <utility> // using std::forward<T>
 
 //! Inferface for circular_buffer below
 
@@ -24,7 +25,7 @@ namespace APESEARCH
  * knows what the size will be (determined by experimentation) it is better to just declare a
  * static size (T arr[KNOWNSIZE]) to avoid dynamic allocation.
  * 
- * However, this allows for an implemenation for dynamic memory (Just it has to be overrided)
+ * However, this allows for an implementation for dynamic memory (Just it has to be overrided)
  * 
  * An example buffer (defaultBuffer is declared and defined in circular_buffer.inl)
 */
@@ -51,7 +52,7 @@ struct Buffer
 
 // An example of an implementation of Buffer
 namespace DEFAULT{
-template<typename T>
+template<typename T, size_t _Sizeu>
 struct defaultBuffer;
 }
 
@@ -67,12 +68,15 @@ struct defaultBuffer;
 */
 // The current “tail” position (incremented when elements are added)
 //The current “head” (incremented when elements are removed)
-template <class T, class buffer_type = DEFAULT::defaultBuffer<T> >
+template <class T, class buffer_type = DEFAULT::defaultBuffer<T,20u> >
 class circular_buffer
 {
 
 public:
-    typedef T value_type;
+    typedef T                     value_type;
+    typedef value_type&           reference;
+    typedef const value_type&     const_reference;
+    typedef std::size_t           size_type;
 
     circular_buffer() noexcept {}
     circular_buffer( size_t ) noexcept;
@@ -83,15 +87,21 @@ public:
     void reset();
 
     void putOverwrite( const value_type & ) noexcept;
-    bool put( const value_type & ) noexcept;
+    inline bool put( const value_type & ) noexcept;
+    void push_back( const value_type & val) noexcept { put( std::forward<const value_type&>( val ) ); }
 
-    const value_type& front() const noexcept;
+    reference front() noexcept;
+    const_reference front() const noexcept { return std::move( front() ); }
+    const_reference& back() const noexcept;
     value_type get();
+    void pop_front() { get(); }
 
     inline bool empty() const { return !_full && head == tail; }
     inline bool full() const { return _full; } // return ( head + 1 ) % capacity == tail;
     inline size_t capacity() const { return buffer.getCapacity(); }
     size_t size() const;
+    size_t getHead() const { return head; }
+    size_t getTail() const { return tail; }
 
     friend std::ostream& operator<<(std::ostream& os, const circular_buffer& cbuf)
        {

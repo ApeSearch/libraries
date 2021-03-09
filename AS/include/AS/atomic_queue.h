@@ -4,20 +4,14 @@
 #ifndef ATOMIC_QUEUE_H_APESEARCH
 #define ATOMIC_QUEUE_H_APESEARCH
 
-#ifdef testing
-    #include<queue>
-    using std::queue;
-#else
-    #include "queue.h"
-    using APESEARCH::queue;
-#endif
-
+#include "queue.h"
+#include "circular_buffer.h"
 
 
 // A thread-safe queue
 #include "mutex.h"
 #include <utility>
-#include <queue>
+#include "queue.h"
 #if __cplusplus >= 201703L
    #include <optional>
    using std::optional;
@@ -29,10 +23,10 @@
 namespace APESEARCH
 {
 
-template<typename T>
+template<typename T, class Container = std::deque<T> >
 class atomic_queue
 {
-   queue<T> safeQueue;
+   APESEARCH::queue<T, Container> safeQueue;
    mutex queueMutex;
    static mutex classMutex; // dealing with move constructors
 public:

@@ -1,0 +1,6 @@
+
+#pragma once
+
+#ifndef CONDITION_VARIABLE_H_APESEARCH
+#define CONDITION_VARIABLE_H_APESEARCH
+

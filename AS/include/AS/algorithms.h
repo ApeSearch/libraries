@@ -37,6 +37,7 @@ template<typename T> void swap(T& lhs, T& rhs) noexcept
    rhs = std::move( temp );
    }
 
+
 template<class InputIterator, class OutputIterator>
 OutputIterator copy( InputIterator first, const InputIterator last, OutputIterator destIter )
    {
@@ -52,6 +53,8 @@ Function for_each( InputIterator first, InputIterator last, Function fn )
       fn ( *first++ );
    return std::move( fn );
    }
+
+
 
 
 } // end namespace APESEARCH

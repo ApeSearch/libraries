@@ -5,6 +5,8 @@
 
 //! Think through implementation
 
+#include <type_traits>
+
 namespace APESEARCH
 {
 
@@ -117,7 +119,10 @@ template<class E, class T, class Y>
 template<class D, class T> D* get_deleter(shared_ptr<T> const& p) noexcept;
 
 template<class T, class... Args>
-    shared_ptr<T> make_shared(Args&&... args);
+    shared_ptr<T> make_shared(Args&&... args)
+       {
+        static_assert( std::is_constructible<T, Args...>::value, "Can construct object in make_shared" );
+       }
 template<class T, class A, class... Args>
     shared_ptr<T> allocate_shared(const A& a, Args&&... args);
 

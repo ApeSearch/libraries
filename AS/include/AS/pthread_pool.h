@@ -19,6 +19,9 @@
     using APESEARCH::queue;
     #include "vector.h"
     using APESEARCH::vector;
+    #include "shared_ptr.h"
+    using APESEARCH::shared_ptr;
+    using APESEARCH::make_shared;
 #endif
 
 #include <functional> // fod std::bind
@@ -50,6 +53,9 @@ struct defer_init_t { explicit defer_init_t() = default; };
     extern const defer_init_t  defer_init;
 #endif
 
+using Func = std::function<void()>;
+
+template<class Container = deque<Func> >
 class PThreadPool
 {
    class ThreadWorker
@@ -83,7 +89,7 @@ class PThreadPool
         }
         
    }; // end ThreadWorker
-   atomic_queue< std::function<void()> > _queue;
+   atomic_queue< std::function<void()>, Container > _queue;
    vector< pthread_t > _threads;
    size_t _numThreads;
    //std::counting_semaphore consumerSema; => Requires c++20

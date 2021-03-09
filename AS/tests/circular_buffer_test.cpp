@@ -33,16 +33,16 @@ int main(void)
 
     print_buffer_status( cbuf );
 
-	printf("\n******\nAdding %lu values\n", APESEARCH::DEFAULT::capacity - 1);
-	for(size_t i = 0; i < APESEARCH::DEFAULT::capacity - 1; i++)
+	printf("\n******\nAdding %lu values\n", APESEARCH::DEFAULT::defaultBuffer<size_t>::capacity - 1);
+	for(size_t i = 0; i < APESEARCH::DEFAULT::defaultBuffer<size_t>::capacity - 1; i++)
 	{
         cbuf.putOverwrite( i );
 		printf("Added %lu, Size now: %lu\n", i, cbuf.size() );
 	}
     print_buffer_status( cbuf );
 
-	printf("\n******\nAdding %lu values\n",  APESEARCH::DEFAULT::capacity );
-	for(size_t i = 0; i < APESEARCH::DEFAULT::capacity; i++)
+	printf("\n******\nAdding %lu values\n",  APESEARCH::DEFAULT::defaultBuffer<size_t>::capacity );
+	for(size_t i = 0; i < APESEARCH::DEFAULT::defaultBuffer<size_t>::capacity; i++)
 	{
         cbuf.putOverwrite( i );
 		printf("Added %lu, Size now: %lu\n", i, cbuf.size() );
@@ -60,8 +60,8 @@ int main(void)
 
     print_buffer_status( cbuf );
 
-	printf("\n******\nAdding %lu values\n",  APESEARCH::DEFAULT::capacity + 5);
-	for(size_t i = 0; i <  APESEARCH::DEFAULT::capacity + 5; i++)
+	printf("\n******\nAdding %lu values\n",  APESEARCH::DEFAULT::defaultBuffer<size_t>::capacity + 5);
+	for(size_t i = 0; i <  APESEARCH::DEFAULT::defaultBuffer<size_t>::capacity + 5; i++)
 	{
 	    cbuf.putOverwrite( i );
 		printf("Added %lu, Size now: %zu\n", i, cbuf.size() );
@@ -77,8 +77,8 @@ int main(void)
 	}
 	printf("\n");
 
-	printf("\n******\nAdding %lu values using non-overwrite version\n", APESEARCH::DEFAULT::capacity + 5);
-	for(size_t i = 0; i < APESEARCH::DEFAULT::capacity + 5; i++)
+	printf("\n******\nAdding %lu values using non-overwrite version\n", APESEARCH::DEFAULT::defaultBuffer<size_t>::capacity + 5);
+	for(size_t i = 0; i < APESEARCH::DEFAULT::defaultBuffer<size_t>::capacity + 5; i++)
 	{
 		cbuf.put( i );
 	}

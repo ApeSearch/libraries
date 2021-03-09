@@ -3,7 +3,11 @@
 #include <functional> // for std::bind
 
 #include "../include/AS/pthread_pool.h"
+#include "../include/AS/circular_buffer.h"
+using APESEARCH::circular_buffer;
+using APESEARCH::DEFAULT::defaultBuffer;
 using APESEARCH::PThreadPool;
+using APESEARCH::Func;
 #include<unistd.h>
 #include<thread>
 #include <iostream>
@@ -44,7 +48,7 @@ int multiply_return(const int a, const int b) {
 int main()
 {
   // Create pool with X threads
-  PThreadPool pool(100u, APESEARCH::defer_init);
+  PThreadPool< circular_buffer<Func, defaultBuffer<Func,1002u> > > pool(100u, APESEARCH::defer_init);
 
   // Initialize pool
   pool.init();
