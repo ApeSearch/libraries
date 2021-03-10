@@ -13,6 +13,10 @@ std::mt19937 mt(rd());
 std::uniform_int_distribution<int> dist(-1000, 1000);
 auto rnd = std::bind(dist, mt);
 
+#include "../include/AS/mutex.h"
+using APESEARCH::mutex;
+using APESEARCH::unique_lock;
+APESEARCH::mutex coutLk;
 
 void simulate_hard_computation() {
   //std::this_thread::sleep_for(std::chrono::milliseconds(2000 + rnd()));
@@ -22,6 +26,7 @@ void simulate_hard_computation() {
 void multiply(const int a, const int b) {
   simulate_hard_computation();
   const int res = a * b;
+  unique_lock<mutex> lock( coutLk );
   std::cout << a << " * " << b << " = " << res << std::endl;
 }
 
@@ -29,6 +34,7 @@ void multiply(const int a, const int b) {
 void multiply_output(int & out, const int a, const int b) {
   simulate_hard_computation();
   out = a * b;
+  unique_lock<mutex> lock( coutLk );
   std::cout << a << " * " << b << " = " << out << std::endl;
 }
 
@@ -36,6 +42,7 @@ void multiply_output(int & out, const int a, const int b) {
 int multiply_return(const int a, const int b) {
   simulate_hard_computation();
   const int res = a * b;
+  unique_lock<mutex> lock( coutLk );
   std::cout << a << " * " << b << " = " << res << std::endl;
   return res;
 }
@@ -50,8 +57,8 @@ int main()
   pool.init();
 
   // Submit (partial) multiplication table
-  for (int i = 1; i < 10; ++i) {
-    for (int j = 1; j < 100; ++j) {
+  for (int i = 1; i < 100; ++i) {
+    for (int j = 1; j < 100000; ++j) {
       pool.submit(multiply, i, j);
     }
   }

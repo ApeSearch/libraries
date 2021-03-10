@@ -39,6 +39,8 @@ using APESEARCH::vector;
 #include <exception>
 //#include <semaphore> // for std::counting_semaphore
 
+#define DEFAULTMAXSUBMITS 100
+
 namespace APESEARCH
 {
 
@@ -70,25 +72,28 @@ class PThreadPool
         while ( true ) // runs until party ends
            {
             {
-            APESEARCH::unique_lock<APESEARCH::mutex> uniqLock( pool->cvMutex );
+            APESEARCH::unique_lock<APESEARCH::mutex> uniqLock( pool->prodMutex );
             auto pred = [this]() -> bool { return pool->halt.load() || !pool->_queue.empty(); };
-            pool->cv.wait( uniqLock, pred );
+            pool->waitingProd.wait( uniqLock, pred );
             if ( pool->halt.load() && pool->_queue.empty() )
                return;
 
             func = pool->_queue.dequeue();
+            pool->waitingCons.notify_one();
+            } // end ~uniqLock()
             if ( func )
                func.value()();
-            } // ~uniqLock
            } // end while 
-        }
+        } // end operator()()
         
    }; // end ThreadWorker
    atomic_queue< std::function<void()>, Container > _queue;
    vector< pthread_t > _threads;
-   size_t _numThreads;
-   APESEARCH::mutex cvMutex;
-   APESEARCH::condition_variable cv;
+   size_t maxSubmits;
+   APESEARCH::mutex prodMutex;
+   APESEARCH::mutex consumerMutex;
+   APESEARCH::condition_variable waitingProd;
+   APESEARCH::condition_variable waitingCons;
    std::atomic<bool> halt;
 
    static void *indirectionStrikesAgain( void *func )
@@ -101,11 +106,11 @@ class PThreadPool
        } // end indirectionStrikesAgain()
 
 public:
-   PThreadPool( size_t numThreads, defer_init_t ) noexcept : _threads( numThreads), _numThreads( numThreads )
+   PThreadPool( size_t numThreads, defer_init_t, size_t _maxSubmits = DEFAULTMAXSUBMITS ) noexcept : _threads( numThreads ), maxSubmits( _maxSubmits )
       {
       halt.store( false );
       }
-   PThreadPool( size_t numThreads ) noexcept : PThreadPool( numThreads, defer_init )
+   PThreadPool( size_t numThreads, size_t _maxSubmits = DEFAULTMAXSUBMITS ) noexcept : PThreadPool( numThreads, defer_init, _maxSubmits )
       {
        init();
       } // end PThreadPool()
@@ -140,7 +145,7 @@ public:
       bool expected = false;
       if ( !halt.compare_exchange_weak( expected, true,  std::memory_order_release ) ) { return; }
       // Make sure every thread is woken up
-      cv.notify_all();
+      waitingProd.notify_all();
 
       for( auto itr = _threads.begin(); itr != _threads.end(); ++itr )
           {
@@ -153,6 +158,12 @@ public:
    template<typename Func, typename...Args>
    auto submit( Func&& f, Args&&... args ) -> std::future<decltype( f(args...) )>
       {
+      APESEARCH::unique_lock<APESEARCH::mutex> uniqLock( consumerMutex );
+      waitingCons.wait( uniqLock, [this]() { return halt.load() || _queue.size() < maxSubmits; } );
+      // Don't allow thread to continue submitting
+      if ( halt.load() )
+         return std::future<decltype( f(args...) )>();
+
       // Create a function object
       std::function<decltype( f(args...) )( )> func = std::bind( std::forward<Func>( f ), std::forward<Args>( args )... );
       auto taskPtr = make_shared<std::packaged_task<decltype( f(args...) )( )>>( func );
@@ -165,7 +176,7 @@ public:
       _queue.enqueue( wrapperFunc );
 
       // Wake up one thread
-      cv.notify_one();
+      waitingProd.notify_one();
 
       return taskPtr->get_future();
       } // end submit()

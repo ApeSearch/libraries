@@ -32,8 +32,8 @@ public:
     template <class Predicate>
     void wait(unique_lock<mutex>& lock, Predicate pred)
         {
-            while( !pred() )
-            wait( lock );
+        while( !pred() )
+           wait( lock );
         } // end wait()
 
     template <class Clock, class Duration>
