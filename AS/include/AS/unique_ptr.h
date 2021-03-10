@@ -98,11 +98,6 @@ namespace APESEARCH
        {
        lhs.swap( rhs );
        }
-
-
-
-
-
 } // end namespace
 
 

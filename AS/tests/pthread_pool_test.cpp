@@ -66,7 +66,7 @@ int main()
   auto future2 = pool.submit(multiply_return, 5, 3);
   std::cout << "Submitted future2\n";
 
-  std::this_thread::sleep_for(std::chrono::seconds(1)); 
+  std::this_thread::sleep_for(std::chrono::milliseconds(100)); 
   if ( !future1.valid() )
      {
       std::cout << "valid for future1 is false!" << std::endl;
@@ -89,7 +89,7 @@ int main()
 
   // Submit function with return parameter 
 
-  std::this_thread::sleep_for(std::chrono::seconds(1)); 
+  std::this_thread::sleep_for(std::chrono::milliseconds(100)); 
   std::cout << "Checking future2\n";
   if ( !future2.valid() )
      {

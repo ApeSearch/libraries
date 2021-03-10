@@ -57,33 +57,33 @@ public:
         unique_lock<mutex> uniqLock( queueMutex );
         return safeQueue.size();
       }
-    void enqueue( T& val )
-       {
-        unique_lock<mutex> uniqLock( queueMutex );
-        safeQueue.push( val );
-       }
-    template <class... Args> 
+   void enqueue( T& val )
+      {
+         unique_lock<mutex> uniqLock( queueMutex );
+         safeQueue.push( val );
+      }
+   template <class... Args> 
 #ifdef __cplusplus >= 201703L
-    #define RETURNTYPE decltype(auto)
+   #define RETURNTYPE decltype(auto)
 #else
-    #define RETURNTYPE void
+   #define RETURNTYPE void
 #endif
-    RETURNTYPE emplace(Args&&... args) 
-       {
-        unique_lock<mutex> uniqLock( queueMutex );
-        safeQueue.emplace( std::forward<Args>(args)... );
-       }
+   RETURNTYPE emplace(Args&&... args) 
+      {
+      unique_lock<mutex> uniqLock( queueMutex );
+      safeQueue.emplace( std::forward<Args>(args)... );
+      }
    
-    optional<T> dequeue()
-       {
-       unique_lock<mutex> uniqLock( queueMutex );
+   optional<T> dequeue()
+      {
+      unique_lock<mutex> uniqLock( queueMutex );
 
-       if( safeQueue.empty() )
-          return {};
-       T val = std::move( safeQueue.front() );
-       safeQueue.pop();
-       return std::move( val );
-       } // end dequeue()
+      if( safeQueue.empty() )
+         return {};
+      T val = std::move( safeQueue.front() );
+      safeQueue.pop();
+      return std::move( val );
+      } // end dequeue()
 };
 
 } //end namespace

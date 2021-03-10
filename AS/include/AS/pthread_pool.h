@@ -7,14 +7,10 @@
 #include <iostream>
 
 #ifdef testing
-    #include<vector>
-    using std::vector;
     #include<memory>
     using std::shared_ptr;
     using std::make_shared;
 #else
-    #include "vector.h"
-    using APESEARCH::vector;
     #include "shared_ptr.h"
     using APESEARCH::shared_ptr;
     using APESEARCH::make_shared;
@@ -22,14 +18,15 @@
 
 #include "queue.h" 
 using APESEARCH::queue;
+#include "vector.h"
+using APESEARCH::vector;
+#include "atomic_queue.h" // for APESEARCH::atomic_queue
+#include "mutex.h"
+#include "condition_variable.h"
 
 #include <functional> // fod std::bind
 #include <future> // for std::future, get_future()
-#include "atomic_queue.h" // for APESEARCH::atomic_queue
 #include <pthread.h> // for pthread
-//#include <semaphore> // for std::counting_semaphore
-#include "mutex.h"
-#include "condition_variable.h"
 #include <utility> // for std::forward
 #if __cplusplus >= 201703L
    #include <optional>
@@ -40,6 +37,7 @@ using APESEARCH::queue;
 #endif
 #include <atomic> // for std::atomic_bool
 #include <exception>
+//#include <semaphore> // for std::counting_semaphore
 
 namespace APESEARCH
 {
