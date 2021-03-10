@@ -17,13 +17,10 @@
 #endif
 
 #include "queue.h" 
-using APESEARCH::queue;
 #include "vector.h"
-using APESEARCH::vector;
 #include "atomic_queue.h" // for APESEARCH::atomic_queue
 #include "mutex.h"
 #include "condition_variable.h"
-
 #include <functional> // fod std::bind
 #include <future> // for std::future, get_future()
 #include <pthread.h> // for pthread
@@ -87,8 +84,8 @@ class PThreadPool
         } // end operator()()
         
    }; // end ThreadWorker
-   atomic_queue< std::function<void()>, Container > _queue;
-   vector< pthread_t > _threads;
+   APESEARCH::atomic_queue< std::function<void()>, Container > _queue;
+   APESEARCH::vector< pthread_t > _threads;
    size_t maxSubmits;
    APESEARCH::mutex prodMutex;
    APESEARCH::mutex consumerMutex;
