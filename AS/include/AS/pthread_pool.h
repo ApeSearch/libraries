@@ -65,7 +65,7 @@ class PThreadPool
     // Used by threads 
     void operator()()
         {
-        optional<std::function<void()>> func;
+        std::function<void()> func;
         while ( true ) // runs until party ends
            {
             {
@@ -75,11 +75,10 @@ class PThreadPool
             if ( pool->halt.load() && pool->_queue.empty() )
                return;
 
-            func = pool->_queue.dequeue();
+            func = pool->_queue.dequeue().value();
             pool->waitingCons.notify_one();
             } // end ~uniqLock()
-            if ( func )
-               func.value()();
+            func();
            } // end while 
         } // end operator()()
         

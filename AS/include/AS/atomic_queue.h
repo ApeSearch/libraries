@@ -12,6 +12,7 @@
 #include "mutex.h"
 #include <utility>
 #include "queue.h"
+#include <assert.h>
 #if __cplusplus >= 201703L
    #include <optional>
    using std::optional;
@@ -79,7 +80,10 @@ public:
       unique_lock<mutex> uniqLock( queueMutex );
 
       if( safeQueue.empty() )
+         {
+         assert( false ); // for testing
          return {};
+         }
       T val = std::move( safeQueue.front() );
       safeQueue.pop();
       return std::move( val );
