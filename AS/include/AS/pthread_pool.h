@@ -85,7 +85,7 @@ class PThreadPool
    }; // end ThreadWorker
    APESEARCH::atomic_queue< std::function<void()>, Container > _queue;
    APESEARCH::vector< pthread_t > _threads;
-   size_t maxSubmits;
+   const size_t maxSubmits;
    APESEARCH::mutex prodMutex;
    APESEARCH::mutex consumerMutex;
    APESEARCH::condition_variable waitingProd;
