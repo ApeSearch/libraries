@@ -131,7 +131,10 @@ public:
           {
            ThreadWorker *startingFunc = new ThreadWorker( this, n );
            if ( pthread_create( &*itr, NULL, indirectionStrikesAgain, static_cast<void *>( startingFunc ) ) != 0 )
-                throw;
+               {
+               delete startingFunc;
+               throw;
+               } // end if
           } // end for
       }
    void shutdown()
