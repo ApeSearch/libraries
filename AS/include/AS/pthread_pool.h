@@ -20,15 +20,16 @@
     using APESEARCH::make_shared;
 #endif
 
-#include "queue.h" using APESEARCH::queue;
+#include "queue.h" 
+using APESEARCH::queue;
+
 #include <functional> // fod std::bind
 #include <future> // for std::future, get_future()
-//#include "mutex.h" // for APESEARCH::mutex
 #include "atomic_queue.h" // for APESEARCH::atomic_queue
 #include <pthread.h> // for pthread
 //#include <semaphore> // for std::counting_semaphore
-#include <mutex>
-#include <condition_variable> //! Need to create own
+#include "mutex.h"
+#include "condition_variable.h"
 #include <utility> // for std::forward
 #if __cplusplus >= 201703L
    #include <optional>
@@ -70,9 +71,8 @@ class PThreadPool
         optional<std::function<void()>> func;
         while ( true ) // runs until party ends
            {
-            //pool->producerSema.acquire();
             {
-            std::unique_lock<std::mutex> uniqLock( pool->cvMutex );
+            APESEARCH::unique_lock<APESEARCH::mutex> uniqLock( pool->cvMutex );
             auto pred = [this]() -> bool { return pool->halt.load() || !pool->_queue.empty(); };
             pool->cv.wait( uniqLock, pred );
             if ( pool->halt.load() && pool->_queue.empty() )
@@ -89,9 +89,8 @@ class PThreadPool
    atomic_queue< std::function<void()>, Container > _queue;
    vector< pthread_t > _threads;
    size_t _numThreads;
-   //std::counting_semaphore producerSema; => Requires c++20
-   std::mutex cvMutex;
-   std::condition_variable cv;
+   APESEARCH::mutex cvMutex;
+   APESEARCH::condition_variable cv;
    std::atomic<bool> halt;
 
    static void *indirectionStrikesAgain( void *func )
@@ -143,8 +142,6 @@ public:
       bool expected = false;
       if ( !halt.compare_exchange_weak( expected, true,  std::memory_order_release ) ) { return; }
       // Make sure every thread is woken up
-      //for( unsigned n = 0; n < _numThreads; ++n )
-      //   producerSema.release();
       cv.notify_all();
 
       for( auto itr = _threads.begin(); itr != _threads.end(); ++itr )
@@ -170,7 +167,6 @@ public:
       _queue.enqueue( wrapperFunc );
 
       // Wake up one thread
-      //producerSema.release();
       cv.notify_one();
 
       return taskPtr->get_future();
