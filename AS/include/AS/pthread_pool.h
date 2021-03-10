@@ -7,16 +7,12 @@
 #include <iostream>
 
 #ifdef testing
-    #include<queue>
-    using std::queue;
     #include<vector>
     using std::vector;
     #include<memory>
     using std::shared_ptr;
     using std::make_shared;
 #else
-    #include "queue.h"
-    using APESEARCH::queue;
     #include "vector.h"
     using APESEARCH::vector;
     #include "shared_ptr.h"
@@ -24,6 +20,7 @@
     using APESEARCH::make_shared;
 #endif
 
+#include "queue.h" using APESEARCH::queue;
 #include <functional> // fod std::bind
 #include <future> // for std::future, get_future()
 //#include "mutex.h" // for APESEARCH::mutex
@@ -73,7 +70,7 @@ class PThreadPool
         optional<std::function<void()>> func;
         while ( true ) // runs until party ends
            {
-            //pool->consumerSema.acquire();
+            //pool->producerSema.acquire();
             {
             std::unique_lock<std::mutex> uniqLock( pool->cvMutex );
             auto pred = [this]() -> bool { return pool->halt.load() || !pool->_queue.empty(); };
@@ -92,7 +89,7 @@ class PThreadPool
    atomic_queue< std::function<void()>, Container > _queue;
    vector< pthread_t > _threads;
    size_t _numThreads;
-   //std::counting_semaphore consumerSema; => Requires c++20
+   //std::counting_semaphore producerSema; => Requires c++20
    std::mutex cvMutex;
    std::condition_variable cv;
    std::atomic<bool> halt;
@@ -144,7 +141,7 @@ public:
       if ( !halt.compare_exchange_weak( expected, true,  std::memory_order_release ) ) { return; }
       // Make sure every thread is woken up
       //for( unsigned n = 0; n < _numThreads; ++n )
-      //   consumerSema.release();
+      //   producerSema.release();
       cv.notify_all();
 
       for( auto itr = _threads.begin(); itr != _threads.end(); ++itr )
@@ -170,7 +167,7 @@ public:
       _queue.enqueue( wrapperFunc );
 
       // Wake up one thread
-      //consumerSema.release();
+      //producerSema.release();
       cv.notify_one();
 
       return taskPtr->get_future();
