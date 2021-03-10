@@ -7,16 +7,12 @@
 #include <iostream>
 
 #ifdef testing
-    #include<queue>
-    using std::queue;
     #include<vector>
     using std::vector;
     #include<memory>
     using std::shared_ptr;
     using std::make_shared;
 #else
-    #include "queue.h"
-    using APESEARCH::queue;
     #include "vector.h"
     using APESEARCH::vector;
     #include "shared_ptr.h"
@@ -24,6 +20,7 @@
     using APESEARCH::make_shared;
 #endif
 
+#include "queue.h" using APESEARCH::queue;
 #include <functional> // fod std::bind
 #include <future> // for std::future, get_future()
 //#include "mutex.h" // for APESEARCH::mutex
