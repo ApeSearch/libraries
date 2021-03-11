@@ -108,9 +108,8 @@ class PThreadPool
        } // end indirectionStrikesAgain()
 
 public:
-   PThreadPool( size_t numThreads, defer_init_t, size_t _maxSubmits = DEFAULTMAXSUBMITS ) noexcept : _threads( numThreads ), maxSubmits( _maxSubmits )
+   PThreadPool( size_t numThreads, defer_init_t, size_t _maxSubmits = DEFAULTMAXSUBMITS ) noexcept : _threads( numThreads ), maxSubmits( _maxSubmits ), halt( true )
       {
-      halt.store( false );
       }
    PThreadPool( size_t numThreads, size_t _maxSubmits = DEFAULTMAXSUBMITS ) noexcept : PThreadPool( numThreads, defer_init, _maxSubmits )
       {
@@ -128,8 +127,14 @@ public:
     PThreadPool& operator=( const PThreadPool& ) = delete;
     PThreadPool& operator=( const PThreadPool&& ) = delete;
 
+   // Gives user program more freedom with when they want to allow threads to start running
    void init()
       {
+       // Ensures that can only run if thread pool has halted
+       if ( !halt.load() )
+          return;
+       halt.store( false ); // Gives okay for threads to run
+
        unsigned n = 0;
        for( auto itr = _threads.begin(); itr != _threads.end(); ++itr, ++n )
           {
@@ -137,7 +142,10 @@ public:
            if ( pthread_create( &*itr, NULL, indirectionStrikesAgain, static_cast<void *>( startingFunc ) ) != 0 )
                {
                delete startingFunc;
-               throw;
+               // Any threads that already started are signaled to free their resources
+               halt.store( true ); 
+               waitingProd.notify_all();
+               throw std::runtime_error("Pthread_create returned an error");
                } // end if
           } // end for
       }
@@ -152,7 +160,7 @@ public:
       for( auto itr = _threads.begin(); itr != _threads.end(); ++itr )
           {
            if ( pthread_join( *itr, nullptr ) != 0 )
-                throw;
+                throw std::runtime_error("Pthread_join returned an error");
           } // end for
 
       } // end shutdown()
