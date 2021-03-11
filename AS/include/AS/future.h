@@ -71,7 +71,7 @@ class base_shared_state
 {
    std::exception_ptr exceptions;
    mutable APESEARCH::mutex stateMut;
-   mutable APESEARCH::condition_variable cv; // Need to kick future into action
+   mutable APESEARCH::condition_variable cv; // Need to possibly kick future into action
    unsigned state;
    //bool promise_valid, future_valid;
 public:
@@ -151,7 +151,7 @@ public:
        {
        APESEARCH::unique_lock<APESEARCH::mutex> lk( stateMut );
        get_value_helper( lk );
-       return *value; 
+       //return *value; 
        }
     void wait()
        {

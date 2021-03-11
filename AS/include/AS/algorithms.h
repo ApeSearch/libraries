@@ -54,8 +54,11 @@ Function for_each( InputIterator first, InputIterator last, Function fn )
    return std::move( fn );
    }
 
+template<class T>
+const T& min(const T& a, const T&b ) { return ( b < a ) ? b : a; }
 
-
+template<class T, class Comparator>
+const T& min(const T& a, const T& b, Comparator comp ) { return comp(b, a) ? b : a; }
 
 } // end namespace APESEARCH
 #endif // end ALGORITHMS_H_APE_SEARCH
