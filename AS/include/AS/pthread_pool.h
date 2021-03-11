@@ -95,7 +95,8 @@ class PThreadPool
    static void *indirectionStrikesAgain( void *func )
        {
         ThreadWorker *funcPtr = reinterpret_cast<ThreadWorker *>( func );
-        try {
+        try 
+	{
            (*funcPtr)();
            delete funcPtr;
         } // end try
@@ -108,18 +109,16 @@ class PThreadPool
        } // end indirectionStrikesAgain()
 
 public:
-   PThreadPool( size_t numThreads, defer_init_t, size_t _maxSubmits = DEFAULTMAXSUBMITS ) noexcept : _threads( numThreads ), maxSubmits( _maxSubmits ), halt( true )
-      {
-      }
-   PThreadPool( size_t numThreads, size_t _maxSubmits = DEFAULTMAXSUBMITS ) noexcept : PThreadPool( numThreads, defer_init, _maxSubmits )
+   PThreadPool( size_t numThreads, defer_init_t, size_t _maxSubmits = DEFAULTMAXSUBMITS ) 
+         noexcept : _threads( numThreads ), maxSubmits( _maxSubmits ), halt( true ) {}
+
+   PThreadPool( size_t numThreads, size_t _maxSubmits = DEFAULTMAXSUBMITS ) noexcept 
+         : PThreadPool( numThreads, defer_init, _maxSubmits )
       {
        init();
       } // end PThreadPool()
 
-   ~PThreadPool()
-      {
-      shutdown();
-      }
+   ~PThreadPool() { shutdown(); }
 
     PThreadPool( const PThreadPool & ) = delete;
     PThreadPool( PThreadPool && ) = delete;
@@ -148,7 +147,9 @@ public:
                throw std::runtime_error("Pthread_create returned an error");
                } // end if
           } // end for
-      }
+      } // end init()
+
+   // Signals threads to join and free any held resources
    void shutdown()
       {
       // Ensure that value is only changed once
@@ -165,6 +166,8 @@ public:
 
       } // end shutdown()
 
+   // Tasks are submitted (as functions ) and a future object is returned to allow calling thread
+   // to obtain the results when the function finishes
    template<typename Func, typename...Args>
    auto submit( Func&& f, Args&&... args ) -> std::future<decltype( f(args...) )>
       {
