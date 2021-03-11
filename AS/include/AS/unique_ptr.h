@@ -28,7 +28,7 @@ namespace APESEARCH
 
 
             // Move constructor
-            unique_ptr( unique_ptr&& other) noexcept
+            unique_ptr( unique_ptr&& other ) noexcept
                {
                other.swap( *this ); // Swaps other allowing other to delete object 
                }

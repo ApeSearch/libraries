@@ -15,7 +15,7 @@
     using APESEARCH::shared_ptr;
     using APESEARCH::make_shared;
 #endif
-
+#include <exception> //for std::current_exception
 #include "queue.h" 
 #include "vector.h"
 #include "atomic_queue.h" // for APESEARCH::atomic_queue
@@ -95,9 +95,15 @@ class PThreadPool
    static void *indirectionStrikesAgain( void *func )
        {
         ThreadWorker *funcPtr = reinterpret_cast<ThreadWorker *>( func );
-        (*funcPtr)();
-
-        delete funcPtr;
+        try {
+           (*funcPtr)();
+           delete funcPtr;
+        } // end try
+        catch (...) // Ensures no memory leak
+           { 
+            delete funcPtr;
+            throw std::current_exception();
+           } // end catch
         return nullptr;
        } // end indirectionStrikesAgain()
 

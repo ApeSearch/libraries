@@ -27,7 +27,7 @@ void multiply(const int a, const int b) {
   simulate_hard_computation();
   const int res = a * b;
   unique_lock<mutex> lock( coutLk );
-  std::cout << a << " * " << b << " = " << res << std::endl;
+  std::cout << a << " * " << b << " = " << res << '\n';
 }
 
 // Same as before but now we have an output parameter
@@ -35,7 +35,7 @@ void multiply_output(int & out, const int a, const int b) {
   simulate_hard_computation();
   out = a * b;
   unique_lock<mutex> lock( coutLk );
-  std::cout << a << " * " << b << " = " << out << std::endl;
+  std::cout << a << " * " << b << " = " << out << '\n';
 }
 
 // Same as before but now we have an output parameter
@@ -43,7 +43,7 @@ int multiply_return(const int a, const int b) {
   simulate_hard_computation();
   const int res = a * b;
   unique_lock<mutex> lock( coutLk );
-  std::cout << a << " * " << b << " = " << res << std::endl;
+  std::cout << a << " * " << b << " = " << res << '\n';
   return res;
 }
 
@@ -87,12 +87,12 @@ int main()
   std::cout << "After future1\n";
   if ( !future1.valid() )
      {
-      std::cout << "valid is false for future1!" << std::endl;
+      std::cout << "valid is false for future1!" << '\n';
      }
   else {
     std::cout << "Everything's fine with future1\n";
   }
-  std::cout << "Last operation result is equals to " << output_ref << std::endl;
+  std::cout << "Last operation result is equals to " << output_ref << '\n';
 
   // Submit function with return parameter 
 
@@ -100,14 +100,14 @@ int main()
   std::cout << "Checking future2\n";
   if ( !future2.valid() )
      {
-      std::cout << "valid is false for future2!" << std::endl;
+      std::cout << "valid is false for future2!" << '\n';
      }
   else {
     std::cout << "Everything's fine with future2\n";
   }
   // Wait for multiplication output to finish
   int res = future2.get();
-  std::cout << "Last operation result is equals to " << res << std::endl;
+  std::cout << "Last operation result is equals to " << res << '\n';
   
   pool.shutdown();
   pool.shutdown();
