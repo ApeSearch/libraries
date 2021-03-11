@@ -11,6 +11,13 @@
 #include "unique_ptr.h"
 #include <utility> // for std::forward
 #include <assert.h>
+#include <type_traits>
+
+#ifdef testing
+    #include <memory> // For shared pointer
+#else
+   #include "shared_ptr.h"
+#endif
 
 namespace APESEARCH
 {
@@ -37,9 +44,9 @@ enum class future_status
     deferred
 };
 
-template <> struct is_error_code_enum<future_errc> : public true_type { };
-error_code make_error_code(future_errc e) noexcept;
-error_condition make_error_condition(future_errc e) noexcept;
+template <> struct is_error_code_enum<future_errc>;
+std::error_code make_error_code(future_errc e) noexcept;
+std::error_condition make_error_condition(future_errc e) noexcept;
 
 const error_category& future_category() noexcept;
 
@@ -52,6 +59,154 @@ public:
     const error_code& code() const noexcept;
     const char*       what() const noexcept;
 };
+
+/*
+ * The representation of the shared states between promise and future.
+ * There are At most three kinds of shared states (void, T&, and T)
+ * 
+ * base_shared_state handles void functions, shared_state_ref handles T& functions etc.
+*/
+template<class T>
+class base_shared_state
+{
+   std::exception_ptr exceptions;
+   mutable APESEARCH::mutex stateMut;
+   mutable APESEARCH::condition_variable cv; // Need to kick future into action
+   unsigned state;
+   //bool promise_valid, future_valid;
+public:
+   enum
+      {
+       constructed = 1,
+       future_attached = 2, 
+       ready = 4,
+       promise_valid = 8 // Indicates promise's liveliness.
+      };
+   base_shared_state() : state( promise_valid ) {} // promise needs to start valid
+
+   ~base_shared_state()
+      {
+        APESEARCH::unique_lock<APESEARCH::mutex> lk( stateMut );
+        if ( state & future_attached || state & promise_valid )
+           throw std::runtime_error::("Undefined behavior. Future needs to be attached until the end or promise needs to still fulfill.");
+      } // end base_shared_state()
+
+   bool hasFutureAttached() const { return state & future_attached; }
+
+   bool has_value() const
+      {
+        return ( state & constructed ) || ( exceptions );
+      } // end has_value
+   void attach_future()
+      {
+       APESEARCH::unique_lock<APESEARCH::mutex> lk( stateMut );
+       if ( state & future_attached )
+          throw std::runtime_error("Future already obtained");
+       set_future_attached();
+       state |= future_attached;
+      } // end attach_future()
+    void detach_future()
+       {
+        APESEARCH::unique_lock<APESEARCH::mutex> lk( stateMut );
+        if ( state & future_attached == 0 )
+           throw std::runtime_error("Future already detached");
+        state &= ~future_attached;
+       } // end detach_future()
+    void invalidate_promise()
+       {
+        APESEARCH::unique_lock<APESEARCH::mutex> lk( stateMut );
+        if ( !( state & constructed ) )
+           throw std::runtime_error( "Broken Promise." );
+       } // end invalidate_promise()
+
+    // Assume moveable object
+   void set_value( T&& arg )
+      {
+        APESEARCH::unique_lock<APESEARCH::mutex> lk( stateMut );
+        if ( ( state & constructed ) || ( exceptions ) )
+            throw std::runtime_error( "promise has already been satisfied (routine has already finished) ");
+        ::new( &value ) T( std::forward<T>( arg) );
+        state |= constructed | ready;
+        cv.notify_one(); // Notify a potentially waiting future
+      } // end set_value
+    // Especially when it's a member variable
+    void set_value( T& arg )
+       {
+        APESEARCH::unique_lock<APESEARCH::mutex> lk( stateMut );
+        if ( ( state & constructed ) || ( exceptions ) )
+            throw std::runtime_error( "promise has already been satisfied (routine has already finished) ");
+        value = &arg;
+        state |= constructed | ready;
+        cv.notify_one();
+       }
+
+// Used to transfer return value through future.get()
+    void move()
+       {
+       APESEARCH::unique_lock<APESEARCH::mutex> lk( stateMut );
+       get_value_helper( lk ); 
+       //return std::move( *reinterpret_cast<T*>( &value ) ); // Getting a value while moving where the value is placed
+       }
+    void copy() // Required for future<T&>
+       {
+       APESEARCH::unique_lock<APESEARCH::mutex> lk( stateMut );
+       get_value_helper( lk );
+       return *value; 
+       }
+    void wait()
+       {
+        APESEARCH::unique_lock<APESEARCH::mutex> lk( stateMut );
+        get_value_helper( lk );
+       }
+    template<class Clock, class Duration>
+    future_status wait_until(const std::chrono::time_point<CLock, Duration>& absolute_time) const
+       {
+        APESEARCH::unique_lock<APESEARCH::mutex> lk( stateMut );
+        while (! (_state & ready) && Clock::now() < absolute_time )
+           cv.wait_until( lk, absolute_time );
+        if ( state & ready )
+           return future_status::ready;
+        return future_status::timeout;
+       }
+
+private:
+    void get_value_helper(APESEARCH::unique_lock<APESEARCH::mutex> &lk)
+       {
+        assert( lk.owns_lock() );
+        auto pred = []() -> bool { return !( state & constructed ) || ( state & deferred ) || exceptions; };
+        cv.wait( lk, pred );
+        if ( exceptions )
+           std::rethrow_exception( exceptions );
+       } // end get_value_helper()
+};  // end base_shared_state
+
+template<class T>
+class shared_state_value : public base_shared_state
+{
+   typedef typename std::aligned_storage<sizeof(T), std::alignment_of<T>::value>::type Value
+protected:
+   Value value;
+public:
+   template<class Arg>
+   void set_value( Arg&& arg);
+
+   T move();
+   typename std::add_lvalue_reference<T>::type copy();
+}; // end shared_state_value
+
+template<class T>
+class shared_state_ref<T&> : public base_shared_state
+{
+protected:
+   T *value;
+
+public:
+   void set_value( T& arg);
+   T& copy(); // no move since that's not possible
+};
+
+
+
 
 template <class R>
 class promise
@@ -147,6 +302,9 @@ template <class R, class Alloc>
 template <class R>
 class future
 {
+   shared_state_value* statePtr;
+   template <class> friend class promise;
+   explicit future(__assoc_state<_Rp>* __state);
 public:
     future() noexcept;
     future(future&&) noexcept;
@@ -271,76 +429,6 @@ private:
 template <class R>
   void swap(packaged_task<R(ArgTypes...)&, packaged_task<R(ArgTypes...)>&) noexcept;
 
-template <class R, class Alloc> struct uses_allocator<packaged_task<R>, Alloc>;
-
-
-
-template<class T>
-class shared_state
-{
-   APESEARCH::unique_ptr<T> value; // Holds the value which will be received
-   std::exception_ptr exceptions;
-   mutable APESEARCH::mutex stateMut;
-   mutable APESEARCH::condition_variable cv; // Need to kick future into action
-   unsigned state;
-   //bool promise_valid, future_valid;
-public:
-   enum
-   {
-    constructed = 1,
-    future_attached = 2,
-    ready = 4,
-    deferred = 8
-   };
-
-   bool has_value() const
-      {
-        return ( state & constructed ) || ( exceptions );
-      } // end has_value
-   void attach_future()
-      {
-       APESEARCH::unique_lock<APESEARCH::mutex> lk( stateMut );
-       if ( state & future_attached )
-          throw std::runtime_error("Future already obtained");
-       
-      }
-    // Assume moveable object
-   void set_value( T&& arg )
-      {
-        APESEARCH::unique_lock<APESEARCH::mutex> lk( stateMut );
-        if ( ( state & constructed ) || ( exceptions ) )
-            throw std::runtime_error( "promise has already been satisfied (routine has already finished) ");
-        ::new( value.get() ) T( std::forward<T>( arg) );
-        state |= constructed | ready;
-        cv.notify_one(); // Notify a potentially wating future
-      } // end set_value
-    T move_value()
-       {
-       APESEARCH::unique_lock<APESEARCH::mutex> lk( stateMut );
-       get_value_helper( lk ); 
-       return std::move( *reinterpret_cast<T*>( value.get() ) );
-       }
-    T& copy_value() // Required for future<T&>
-       {
-       APESEARCH::unique_lock<APESEARCH::mutex> lk( stateMut );
-       get_value_helper( lk );
-       return *reinterpret_cast<T*>( value.get() ); 
-       }
-
-private:
-    void get_value_helper(APESEARCH::unique_lock<APESEARCH::mutex> &lk)
-       {
-        assert( lk.owns_lock() );
-       auto pred = []() -> bool { return !( state & constructed ) || ( state & deferred ) || exceptions; };
-       cv.wait( lk, pred );
-       if ( exceptions )
-          std::rethrow_exception( exceptions );
-       } // end get_value_helper()
-
-
-};
-
-
 /*
 
 template <class _Rp>
@@ -368,6 +456,7 @@ future<_Rp&>::get()
 
 }  // APESEARCH
 
+#endif // end FUTURE_H_APESEARCH
 /*
 
 template <class R>
@@ -463,5 +552,3 @@ template <class> class packaged_task; // undefined
 
 */
 
-
-#endif // end FUTURE_H_APESEARCH
