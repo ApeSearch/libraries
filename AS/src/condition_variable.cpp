@@ -48,7 +48,7 @@ cv_status condition_variable::wait_until(unique_lock<mutex>& lock,
         return cv_status::timeout;
     
     std::chrono::time_point<Clock, std::chrono::nanoseconds> inNano = 
-       time_point<Clock, std::chrono::nanoseconds>( abs_time.time_since_epoch() );
+       std::chrono::time_point<Clock, std::chrono::nanoseconds>( abs_time.time_since_epoch() );
     
     time_t T;  
     struct timespec t;     
