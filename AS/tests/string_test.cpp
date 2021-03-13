@@ -25,6 +25,11 @@ int main() {
     if (null != "")
         std::cout << "Failed Null character Constructor" << null << " " << std::endl;
 
+    // Test substr constructor
+    string substr_construct("garbo. String should start here", 7, 24);
+    if (substr_construct != "String should start here")
+        std::cout << "Substring constructor failed: " << substr_construct << " " << std::endl;
+
     // Test size()
     if (one.size() != 5)
         std::cout << "Failed size(): " << one << " " << std::endl;
@@ -63,4 +68,20 @@ int main() {
         std::cout << "Failed == operator: " << std::endl;
     if (!(left != right))
         std::cout << "Failed != operator: " << std::endl;
+
+    // Test find()
+    string a = "testing";
+    string b = "test";
+    if(a.find(b) != 0)
+        std::cout << a.find(b) << " Failed find(): \n";
+
+    a = "space";
+    b = "pace";
+    if(a.find(b) != 1)
+        std::cout << a.find(b) << " Failed find(): \n";
+    
+    a = "testing";
+    b = "g";
+    if(a.find(b) != 6)
+        std::cout << a.find(b) << " Failed find(): \n";
 }

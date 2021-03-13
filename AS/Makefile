@@ -1,7 +1,5 @@
 CC=g++ -g3 -std=c++17 -Wall -pedantic -Wconversion -Wextra -Wreorder -fno-builtin
 
-LDFLAGS:=-I/usr/local/opt/openssl/include/ -L/usr/local/opt/openssl/lib -lssl -lcrypto
-
 ## Define certain variables based on system
 #ifeq ($(shell uname -s | tr A-Z a-z), darwin)
 #	# -I likely means (Include) -L likely means (Library)
@@ -32,7 +30,7 @@ $(TEST_SRC): %: %.cpp ${OBJS}
 	@mkdir -p ${EXECDIR}
 	@mkdir -p ${STDEXECDIR}
 	@mkdir -p ${OUTPUT}
-	${CC} -Dtesting ${LDFLAGS} -lz -o  ${EXECDIR}/$(notdir $@) $^ -pthread
+	${CC} -Dtesting -o  ${EXECDIR}/$(notdir $@) $^ -pthread
 	${CC} -D STD -Dtesting ${LDFLAGS} -lz -o ${STDEXECDIR}/$(notdir $@) $^ -pthread
 
 test: ${TEST_SRC}
@@ -55,7 +53,7 @@ run_test: test
 
 # Generic rules for compiling a source file to an object file
 %.o: %.cpp
-	${CC} ${LDFLAGS} -lz -c $< -o $@
+	${CC} -c $< -o $@
 %.o: %.cc
 	${CC} -c $<
 

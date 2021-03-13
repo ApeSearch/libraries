@@ -40,6 +40,20 @@ class string
          strncpy( buffer, cstr, length );
          * ( buffer + length ) = '\0';
          }
+      
+      // substring constructor
+      // REQUIRES: cstr is a null terminated C style string
+      // MODIFIES: *this
+      // EFFECTS: Creates a string with equivalent contents to cstr[pos] to cstr[pos + len]
+      string (const char* cstr, size_t pos, size_t len = npos )
+         {
+         // Captures a cast to string on comparison to empty c_string; implenting other relational operators is way, way better
+         length = len;
+         buffer = new char [ length + NULLCHAR ];
+         strncpy( buffer, cstr + pos, length );
+         * ( buffer + length ) = '\0';
+         }
+
       ~string()
          {
          delete[] buffer;
@@ -52,6 +66,38 @@ class string
       size_t size ( ) const
          {
          return length;
+         }
+
+      // Find
+      // REQUIRES: Nothing
+      // MODIFIES: Nothing
+      // EFFECTS: Returns position of the first character of the first match
+      size_t find (const string& other) const
+         {
+         // const char *a = buffer.cstr();
+         const char *b = other.cstr();
+         int i = 0, j = 0, start = 0;
+         // bool found;
+         while((*(buffer + j) != '\0') && (*(b + i) != '\0')){
+            // if(j == other.size()){
+            //   found = true; 
+            // }
+            if(*(b + i) != *(buffer + j)){
+               if(*(b + i) == '\0')
+                  return start;
+
+               ++j;
+               i = 0;
+            }
+            else{
+               if(i == 0){
+                  start = j;
+               }
+               ++i;
+               ++j;
+            }
+         }
+         return -1;
          }
 
       // C string Conversion
@@ -193,6 +239,8 @@ class string
    private:
       size_t length;
       char *buffer;
+
+      static const int npos = -1;
    };
 
 std::ostream& operator<< ( std::ostream& os, const string& s )
