@@ -1,6 +1,7 @@
 #include "Socket.h"
 #include <unistd.h>
 #include <iostream>
+#include <errno.h>
 
 Socket::Socket(const Address& address, time_t seconds)
 {
@@ -13,7 +14,13 @@ Socket::Socket(const Address& address, time_t seconds)
         //Setting to 0 microseconds
         tv.tv_usec  = 0;
         //Setting socket options
-        setsockopt(socketFD, SOL_SOCKET, SO_RCVTIMEO, (const char*) &tv, sizeof tv);
+        if(setsockopt(socketFD, SOL_SOCKET, SO_RCVTIMEO, (const char*) &tv, sizeof tv) == -1)
+            //TODO
+            throw;
+
+        if(setsockopt(socketFD, SOL_SOCKET, SO_SNDTIMEO, (const char*) &tv, sizeof tv) == -1)
+            //TODO
+            throw;
     }
          
     if(connect(socketFD, address.info->ai_addr, address.info->ai_addrlen) < 0)
@@ -28,11 +35,14 @@ Socket::~Socket()
         close(socketFD);  
 }
 
+void checkErrno();
+
 ssize_t Socket::receive(char *buffer, int length)
 {
     //TODO Write custom exception
     if(socketFD == -1)
-        throw;
+       checkErrno();
+       
     return ::recv(socketFD, buffer, length, 0);
 }
 
@@ -40,6 +50,23 @@ ssize_t Socket::send(const char* buffer, int length)
 {
     //TODO Write custom exception
     if (socketFD == -1) 
+    {
         throw;
-    return ::send(socketFD, buffer, length, 0);
+    }
+    int res = ::send(socketFD, buffer, length, 0);
+    if( res == -1 )
+        checkErrno();  
+    return res;
 }
+
+
+void checkErrno()
+   {
+    switch( errono )
+    {
+    EWOULDBLOCK:
+       throw;
+    default
+        throw;
+    }
+   }

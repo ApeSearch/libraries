@@ -11,7 +11,7 @@ struct Address {
     // i.ei AF_UNIX are UNIX sockets, AF_IPS, IPX. Bluetooh has AF_BLUETOOTH.
     // AF_INET6 is for v6 addresses (Use AF_INET as it's the safest option)
     Address(char *Host, char *Port, int addrFamily = AF_INET, 
-          int sockType = SOCK_STREAM, int transportProtocol = IPPROTO_TCP) 
+          int sockType = SOCK_STREAM, int transportProtocol = IPPROTO_TCP) : valid( true ) 
     {
         memset( &hints, 0, sizeof( hints ) );
         hints.ai_family = addrFamily;
@@ -23,16 +23,18 @@ struct Address {
         {
             //TODO use exception handling
             perror("Error inside Address Constructor occured");
+            valid = false;
         } // end if
+        head = info;
     }
 
     ~Address() 
     {
         if (valid)
-            freeaddrinfo( info );
+            freeaddrinfo( head );
     }
 
-    struct addrinfo *info, hints;
+    struct addrinfo *info, *head, hints ;
     bool valid;
 
     // PrintAddressInfo as defined in class
