@@ -197,9 +197,8 @@ class string
          char const * const constend = end();
          while ( *substr_c && ptr != constend )
             *ptr++ == *substr_c ? ++substr_c : substr_c = substr.cstr();
-         return ptr != constend ? buffer + ( ptr - buffer - substr.size() ) : nullptr;
+         return ptr != constend ? buffer + ( ptr - buffer - substr.size() ) :  buffer + length;
          }
-
    private:
       size_t length;
       char *buffer;
