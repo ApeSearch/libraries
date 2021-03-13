@@ -1,6 +1,11 @@
 #pragma once
+
+#ifndef SSLSOCKET_H_APESEARCH
+#define  SSLSOCKET_H_APESEARCH
+
 #include "Socket.h"
 #include <openssl/ssl.h>
+//#include "/usr/local/opt/openssl/include/openssl/ssl.h"
 
 class SSLSocket : public Socket
 {
@@ -18,3 +23,6 @@ class SSLSocket : public Socket
       SSL_CTX * sslFramework;
       SSL * ssl;
 };
+
+
+#endif

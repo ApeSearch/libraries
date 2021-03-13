@@ -6,7 +6,7 @@
 
 
 #include <unordered_map>
-#include "utilites.h"
+#include "utility.h"
 #include "allocator.h"
 using APESEARCH::pair;
 

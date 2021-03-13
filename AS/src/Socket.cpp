@@ -1,4 +1,4 @@
-#include "Socket.h"
+#include "../include/AS/Socket.h"
 #include <unistd.h>
 #include <iostream>
 #include <errno.h>
@@ -62,11 +62,11 @@ ssize_t Socket::send(const char* buffer, int length)
 
 void checkErrno()
    {
-    switch( errono )
+    switch( errno )
     {
-    EWOULDBLOCK:
-       throw;
-    default
+    case EWOULDBLOCK:
+        throw;
+    default:
         throw;
     }
    }

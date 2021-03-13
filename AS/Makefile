@@ -1,5 +1,17 @@
 CC=g++ -g3 -std=c++17 -Wall -pedantic -Wconversion -Wextra -Wreorder -fno-builtin
 
+LDFLAGS:=-I/usr/local/opt/openssl/include/ -L/usr/local/opt/openssl/lib -lssl -lcrypto
+
+## Define certain variables based on system
+#ifeq ($(shell uname -s | tr A-Z a-z), darwin)
+#	# -I likely means (Include) -L likely means (Library)
+#endif
+#
+#ifeq ($(shello uname -s | tr A-Z a-z), linux)
+#	LDFLAGS
+#endif
+
+
 SRC=src
 SOURCES=$(wildcard ${SRC}/*.cpp)
 OBJS=${SOURCES:.cpp=.o}
@@ -11,7 +23,7 @@ UNITTESTDIR=unitTests
 EXECDIR=tests/bin
 OUTPUT=tests/output
 STDEXECDIR=tests/std_bin
- 
+
 # Rule for compiling all files found in tests/ into executables using apesearch::string first then std::string
 # (I compiled them separately for testing)
 # creates output directories if non-existent
@@ -20,8 +32,8 @@ $(TEST_SRC): %: %.cpp ${OBJS}
 	@mkdir -p ${EXECDIR}
 	@mkdir -p ${STDEXECDIR}
 	@mkdir -p ${OUTPUT}
-	${CC} -Dtesting -o  ${EXECDIR}/$(notdir $@) $^ -pthread
-	${CC} -D STD -Dtesting -o ${STDEXECDIR}/$(notdir $@) $^ -pthread
+	${CC} -Dtesting ${LDFLAGS} -lz -o  ${EXECDIR}/$(notdir $@) $^ -pthread
+	${CC} -D STD -Dtesting ${LDFLAGS} -lz -o ${STDEXECDIR}/$(notdir $@) $^ -pthread
 
 test: ${TEST_SRC}
 	make unit_test
@@ -43,7 +55,7 @@ run_test: test
 
 # Generic rules for compiling a source file to an object file
 %.o: %.cpp
-	${CC} -c $< -o $@
+	${CC} ${LDFLAGS} -lz -c $< -o $@
 %.o: %.cc
 	${CC} -c $<
 

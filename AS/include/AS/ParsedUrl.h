@@ -1,5 +1,7 @@
-#include <string>
 #pragma once
+
+#include <string>
+#include "utility.h"
 
 class ParsedUrl
    {
@@ -7,22 +9,12 @@ class ParsedUrl
       const char *CompleteUrl;
       char *Service, *Host, *Port, *Path;
       bool protocolType; // true == http, false == https
+      char *getRequest;
+      int reqSize;
 
-      std::string formRequest() 
+      APESEARCH::pair<const char *, size_t> getReqStr() 
       {
-         std::string header;
-         header.reserve(50);
-         // Get req
-         header += "GET /";
-         header.append(Path); 
-         
-         header += " HTTP/1.1\r\n";
-         
-         header += "Host: ";
-         header.append(Host);
-         header += "\r\nUser-Agent: LinuxGetUrl/ username@email.com\r\nAccept:";
-         header += "*/*\r\nAccept-Encoding: identity\r\nConnection: close\r\n\r\n";
-         return header;
+         return APESEARCH::pair<const char *, size_t>( getRequest, static_cast<size_t> ( reqSize ) );
       } // end formRequest()
 
 
@@ -83,12 +75,19 @@ class ParsedUrl
             }
          else
             Host = Path = p;
-         }
+         
+         if ( ( reqSize = asprintf( &getRequest, "GET /%s HTTP/1.1\r\nHost: %s\r\n", Path, Host ) ) == -1 )
+            {
+            throw std::runtime_error(" asprintf failed. Could be due to lack of memory. Please investiagate further" );
+            } // end if
+         
+         } // end if
          
 
       ~ParsedUrl( )
          {
          delete[ ] pathBuffer;
+         free ( getRequest );
          }
 
    private:
