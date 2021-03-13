@@ -1,5 +1,7 @@
 CC=g++ -g3 -std=c++17 -Wall -pedantic -Wconversion -Wextra -Wreorder -fno-builtin
 
+#LDFLAGS:=-I/usr/local/opt/openssl/include/ -L/usr/local/opt/openssl/lib -lssl -lcrypto
+
 ## Define certain variables based on system
 #ifeq ($(shell uname -s | tr A-Z a-z), darwin)
 #	# -I likely means (Include) -L likely means (Library)

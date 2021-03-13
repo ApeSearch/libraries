@@ -236,6 +236,15 @@ class string
          return strcmp(buffer, other.begin()) >= 0;
          }
 
+      char *find( const string&substr ) const
+         {
+         const char * substr_c = substr.cstr(); // for substr
+         char const *ptr = buffer; // to this string
+         char const * const constend = end();
+         while ( *substr_c && ptr != constend )
+            *ptr++ == *substr_c ? ++substr_c : substr_c = substr.cstr();
+         return ptr != constend ? buffer + ( ptr - buffer - substr.size() ) :  buffer + length;
+         }
    private:
       size_t length;
       char *buffer;

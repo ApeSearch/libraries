@@ -44,11 +44,19 @@ enum class future_status
     deferred
 };
 
-template <> struct is_error_code_enum<future_errc>;
-std::error_code make_error_code(future_errc e) noexcept;
-std::error_condition make_error_condition(future_errc e) noexcept;
-
 const error_category& future_category() noexcept;
+
+
+template <> struct is_error_code_enum<future_errc>;
+std::error_condition make_error_condition(future_errc e) noexcept
+   {
+    return std::error_condition( static_cast<int>( e ), future_category() );
+   }
+
+std::error_code make_error_code(future_errc e) noexcept
+   {
+    return std::error_code( static_cast<int>(e), future_category() );
+   }
 
 class future_error
     : public logic_error
@@ -66,7 +74,6 @@ public:
  * 
  * base_shared_state handles void functions, shared_state_ref handles T& functions etc.
 */
-template<class T>
 class base_shared_state
 {
    std::exception_ptr exceptions;
@@ -102,7 +109,7 @@ public:
        APESEARCH::unique_lock<APESEARCH::mutex> lk( stateMut );
        if ( state & future_attached )
           throw std::runtime_error("Future already obtained");
-       set_future_attached();
+       //set_future_attached();
        state |= future_attached;
       } // end attach_future()
     void detach_future()
@@ -112,14 +119,29 @@ public:
            throw std::runtime_error("Future already detached");
         state &= ~future_attached;
        } // end detach_future()
-    void invalidate_promise()
+    bool invalidate_promise_if_future_attached()
        {
         APESEARCH::unique_lock<APESEARCH::mutex> lk( stateMut );
-        if ( !( state & constructed ) )
-           throw std::runtime_error( "Broken Promise." );
+        if ( state & future_attached )
+            {
+            state &= ~promise_valid;
+            return true;
+            } // end if
+        return false;       
        } // end invalidate_promise()
 
+    void set_exception( std::exception_ptr ptr )
+       {
+        unique_lock<mutex> __lk( stateMut );
+        if ( has_value() )
+           throw future_error( make_error_code( future_errc::promise_already_satisfied ));
+        
+        exceptions = ptr;
+        state |= ready;
+        cv.notify_one();
+       } // end set_exception()
     // Assume moveable object
+    /*
    void set_value( T&& arg )
       {
         APESEARCH::unique_lock<APESEARCH::mutex> lk( stateMut );
@@ -139,6 +161,15 @@ public:
         state |= constructed | ready;
         cv.notify_one();
        }
+    */
+   void set_value() 
+      {
+        APESEARCH::unique_lock<APESEARCH::mutex> lk( stateMut );
+        if ( ( state & constructed ) || ( exceptions ) )
+            throw std::runtime_error( "promise has already been satisfied (routine has already finished) ");
+        state |= constructed | ready;
+        cv.notify_one(); // Notify a potentially waiting future
+      }
 
 // Used to transfer return value through future.get()
     void move()
@@ -169,7 +200,7 @@ public:
         return future_status::timeout;
        }
 
-private:
+protected:
     void get_value_helper(APESEARCH::unique_lock<APESEARCH::mutex> &lk)
        {
         assert( lk.owns_lock() );
@@ -181,7 +212,7 @@ private:
 };  // end base_shared_state
 
 template<class T>
-class shared_state_value : public base_shared_state
+class shared_state : public base_shared_state
 {
    typedef typename std::aligned_storage<sizeof(T), std::alignment_of<T>::value>::type Value
 protected:
@@ -195,7 +226,7 @@ public:
 }; // end shared_state_value
 
 template<class T>
-class shared_state_ref<T&> : public base_shared_state
+class shared_state<T&> : public base_shared_state
 {
 protected:
    T *value;
@@ -205,16 +236,17 @@ public:
    T& copy(); // no move since that's not possible
 };
 
-
+template<class R> class future;
 
 
 template <class R>
 class promise
 {
+    shared_state<R> *_state;
 public:
     promise();
-    template <class Allocator>
-        promise(allocator_arg_t, const Allocator& a);
+    //template <class Allocator>
+    //    promise(allocator_arg_t, const Allocator& a);
     promise(promise&& rhs) noexcept;
     promise(const promise& rhs) = delete;
     ~promise();
@@ -237,6 +269,8 @@ public:
     void set_value_at_thread_exit(R&& r);
     void set_exception_at_thread_exit(exception_ptr p);
 };
+
+template<class R> class future<R&>;
 
 template <class R>
 class promise<R&>
@@ -265,6 +299,8 @@ public:
     void set_value_at_thread_exit(R&);
     void set_exception_at_thread_exit(exception_ptr p);
 };
+
+template<> class future<void>;
 
 template <>
 class promise<void>
@@ -455,6 +491,8 @@ future<_Rp&>::get()
 
 
 }  // APESEARCH
+
+#include "future.inl"
 
 #endif // end FUTURE_H_APESEARCH
 /*
