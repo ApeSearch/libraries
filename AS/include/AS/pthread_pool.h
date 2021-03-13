@@ -96,12 +96,12 @@ class PThreadPool
        {
         ThreadWorker *funcPtr = reinterpret_cast<ThreadWorker *>( func );
         try 
-	{
+	     {
            (*funcPtr)();
            delete funcPtr;
         } // end try
         catch (...) // Ensures no memory leak
-           { 
+           {
             delete funcPtr;
             throw std::current_exception();
            } // end catch
