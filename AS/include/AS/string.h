@@ -53,6 +53,34 @@ class string
          strncpy( buffer, cstr + pos, length );
          * ( buffer + length ) = '\0';
          }
+      
+      // string = operator
+      // REQUIRES: cstr is a null terminated C style string
+      // MODIFIES: *this
+      // EFFECTS: creates a string with contents equal to s
+      string& operator=( const string &s )
+         {
+         length = s.size();
+         if (buffer != nullptr)
+            delete [] buffer;
+         strcpy(buffer = new char[length + NULLCHAR], s.cstr());
+
+         return *this;
+         } // end operator =(const string& s)
+      
+      // c-string = operator
+      // REQUIRES: cstr is a null terminated C style string
+      // MODIFIES: *this
+      // EFFECTS: creates a string with contents equal to s
+      string& operator=( const char *s )
+         {
+         if ( s != buffer )
+            delete[] buffer;
+         length = strlen(s);
+         strcpy(buffer = new char[length + NULLCHAR], s);
+         
+         return *this;
+         } // end operator =(const string& s)
 
       ~string()
          {
