@@ -37,6 +37,8 @@ public:
 
 private:
     //Add any private member variables that may be neccessary
+    char *
+
 
     std::pair<uint64_t, uint64_t> hash(const std::string& datum) {
         //Use MD5 to hash the string into one 128 bit hash, and split into 2 hashes

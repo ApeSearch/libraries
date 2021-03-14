@@ -236,7 +236,7 @@ class string
          return strcmp(buffer, other.begin()) >= 0;
          }
 
-      char *find( const string&substr ) const
+      char *find( const string& substr ) const
          {
          const char * substr_c = substr.cstr(); // for substr
          char const *ptr = buffer; // to this string

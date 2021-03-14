@@ -13,6 +13,10 @@
 #include <type_traits> // for std::is_nothrow_swappable
 #include "algorithms.h" // for swap
 
+#include "vector.h"
+#include <fuctional>
+#include <queue>
+
 namespace APESEARCH
 {
 
@@ -113,12 +117,27 @@ template <class T, class Container>
   noexcept(noexcept(x.swap(y)));
 
 
-//TODO Implement
+// Apesearch's comparator interface
+template<typename T, typename comparator>
+class ApesearchPQ {
+protected:
+    comparator compare;
+    ApesearchPQ() {}
+    explicit ApesearchPQ( const comparator &comp ) : compare( comp ) {}
+public:
+    virtual void push( const T& val ) noexcept = 0;
+    virtual void pop() noexcept = 0;
+    virtual const T& top() const = 0;
+    virtual std::size_t size() const = 0;
+    virtual bool empty() const = 0;
+    virtual ~ApesearchPQ();
+    virtual make_heap(); // Restores heap invariant
+};
 
-/*
+
 template <class T, class Container = vector<T>,
-          class Compare = less<typename Container::value_type>>
-class priority_queue
+          class Compare = std::less<typename Container::value_type> >
+class priority_queue 
 {
 public:
     typedef Container                                container_type;
@@ -128,8 +147,8 @@ public:
     typedef typename container_type::size_type       size_type;
 
 protected:
-    container_type c;
-    Compare comp;
+    container_type cont;
+    Compare compare;
 
 public:
     priority_queue() = default;
@@ -153,29 +172,15 @@ public:
     template <class InputIterator>
         priority_queue(InputIterator first, InputIterator last,
                        const Compare& comp, container_type&& c);
-    template <class Alloc>
-        explicit priority_queue(const Alloc& a);
-    template <class Alloc>
-        priority_queue(const Compare& comp, const Alloc& a);
-    template <class Alloc>
-        priority_queue(const Compare& comp, const container_type& c,
-                       const Alloc& a);
-    template <class Alloc>
-        priority_queue(const Compare& comp, container_type&& c,
-                       const Alloc& a);
-    template <class Alloc>
-        priority_queue(const priority_queue& q, const Alloc& a);
-    template <class Alloc>
-        priority_queue(priority_queue&& q, const Alloc& a);
 
-    bool            empty() const;
-    size_type       size() const;
-    const_reference top() const;
+    inline bool            empty() const { return cont.empty(); }
+    inline size_type       size() const { return cont.size(); }
+    inline const_reference top() const { return cont.top(); }
 
-    void push(const value_type& v);
-    void push(value_type&& v);
-    template <class... Args> void emplace(Args&&... args);
-    void pop();
+    inline void push(const value_type& v) { cont.push( v ); }
+    inline void push(value_type&& v) { cont.push( std::forward<value_type> ( v ) ); }
+    //template <class... Args> void emplace(Args&&... args) { cont.push(   ) }
+    void pop() { cont.pop(); }
 
     void swap(priority_queue& q)
         noexcept(is_nothrow_swappable_v<Container> &&
@@ -184,26 +189,26 @@ public:
 
 template <class Compare, class Container>
 priority_queue(Compare, Container)
-    -> priority_queue<typename Container::value_type, Container, Compare>; // C++17
+    -> ApesearchPQ<typename Container::value_type, Container, Compare>; // C++17
 
 template<class InputIterator,
          class Compare = less<typename iterator_traits<InputIterator>::value_type>,
          class Container = vector<typename iterator_traits<InputIterator>::value_type>>
 priority_queue(InputIterator, InputIterator, Compare = Compare(), Container = Container())
-    -> priority_queue<typename iterator_traits<InputIterator>::value_type, Container, Compare>; // C++17
+    -> ApesearchPQ<typename iterator_traits<InputIterator>::value_type, Container, Compare>; // C++17
 
 template<class Compare, class Container, class Allocator>
 priority_queue(Compare, Container, Allocator)
-    -> priority_queue<typename Container::value_type, Container, Compare>; // C++17
+    -> ApesearchPQ<typename Container::value_type, Container, Compare>; // C++17
 
 template <class T, class Container, class Compare>
-  void swap(priority_queue<T, Container, Compare>& x,
-            priority_queue<T, Container, Compare>& y)
+  void swap(ApesearchPQ<T, Container, Compare>& x,
+            ApesearchPQ<T, Container, Compare>& y)
             noexcept(noexcept(x.swap(y)));
 
-*/ // For priority_queue
+#include "queue.inl"
 
-}  // std
+}  // end APESEARCH
 
 
 #endif
