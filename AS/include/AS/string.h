@@ -401,17 +401,24 @@ class string
          return 0;
          } // end compare()
 
+         friend std::ostream& operator<< ( std::ostream& os, const string& s )
+            {
+            for ( const char *ptr = s.cbegin(), *const end = s.cend(); ptr != end; )
+               os << *ptr++;
+            return os;
+            }
+
    static constexpr size_t npos = static_cast<size_t>( -1 );
    private:
       size_t length;
       char *buffer;
    };
 
-std::ostream& operator<< ( std::ostream& os, const string& s )
-   {
-   for ( const char *ptr = s.cbegin(), *const end = s.cend(); ptr != end; )
-      os << *ptr++;
-   return os;
-   }
+// std::ostream& operator<< ( std::ostream& os, const string& s )
+//    {
+//    for ( const char *ptr = s.cbegin(), *const end = s.cend(); ptr != end; )
+//       os << *ptr++;
+//    return os;
+//    }
 
 #endif
