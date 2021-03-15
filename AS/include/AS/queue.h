@@ -80,7 +80,10 @@ public:
     }
     void pop() { c.pop_front(); }
 
-    void swap(queue& q) noexcept(std::is_nothrow_swappable<Container>() )
+    void swap(queue& q) noexcept
+#if __cplusplus >= 201703L
+    (std::is_nothrow_swappable<Container>() )
+#endif
        {
         APESEARCH::swap( c, q.c );
        } // end swap()
