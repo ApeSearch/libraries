@@ -69,5 +69,15 @@ bool all_of( InputIterator first, InputIterator last, UnaryPredicate pred )
    return true;
    }
 
+template<class InputIterator, class T>
+InputIterator find( InputIterator first, InputIterator end, const T& val )
+   {
+   for (; first != end; ++first )
+      if ( *first == val )
+         return first;
+   return last;
+   } // end find()
+
+
 } // end namespace APESEARCH
 #endif // end ALGORITHMS_H_APE_SEARCH
