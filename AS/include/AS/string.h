@@ -148,7 +148,7 @@ class string
          const char *b = other.cbegin();
          size_t i = 0, j = 0;
          // bool found;
-         while( ( buffer + j != cend() ) && ( b + i != other.cend() )){
+         while( ( b + i != other.cend() ) && ( buffer + j != cend() ) ){
             if(*(b + i) != *(buffer + j)){
                i = 0;
             }
