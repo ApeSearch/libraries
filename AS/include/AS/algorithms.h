@@ -75,7 +75,7 @@ InputIterator find( InputIterator first, InputIterator end, const T& val )
    for (; first != end; ++first )
       if ( *first == val )
          return first;
-   return last;
+   return end;
    } // end find()
 
 
