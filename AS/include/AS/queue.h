@@ -14,7 +14,8 @@
 #include "algorithms.h" // for swap
 
 #include "vector.h"
-#include <fuctional>
+#include <type_traits>
+//#include <fuctional>
 #include <queue>
 
 namespace APESEARCH
@@ -131,12 +132,19 @@ public:
     virtual std::size_t size() const = 0;
     virtual bool empty() const = 0;
     virtual ~ApesearchPQ();
-    virtual make_heap(); // Restores heap invariant
+    virtual void make_heap(); // Restores heap invariant
+};
+template<typename T>
+class less
+{
+    constexpr bool operator()(const T &lhs, const T &rhs) const 
+    {
+    return lhs < rhs;
+    }
 };
 
 
-template <class T, class Container = vector<T>,
-          class Compare = std::less<typename Container::value_type> >
+template <class T, class Container = vector<T>, class Compare = less<T> >
 class priority_queue 
 {
 public:
@@ -183,27 +191,17 @@ public:
     void pop() { cont.pop(); }
 
     void swap(priority_queue& q)
-        noexcept(is_nothrow_swappable_v<Container> &&
-                 is_nothrow_swappable_v<Comp>)
+        noexcept(std::is_nothrow_swappable_v<Container> &&
+                 std::is_nothrow_swappable_v<Compare>);
 };
 
 template <class Compare, class Container>
 priority_queue(Compare, Container)
-    -> ApesearchPQ<typename Container::value_type, Container, Compare>; // C++17
-
-template<class InputIterator,
-         class Compare = less<typename iterator_traits<InputIterator>::value_type>,
-         class Container = vector<typename iterator_traits<InputIterator>::value_type>>
-priority_queue(InputIterator, InputIterator, Compare = Compare(), Container = Container())
-    -> ApesearchPQ<typename iterator_traits<InputIterator>::value_type, Container, Compare>; // C++17
-
-template<class Compare, class Container, class Allocator>
-priority_queue(Compare, Container, Allocator)
-    -> ApesearchPQ<typename Container::value_type, Container, Compare>; // C++17
+    -> priority_queue<typename Container::value_type, Container, Compare>; // C++17
 
 template <class T, class Container, class Compare>
-  void swap(ApesearchPQ<T, Container, Compare>& x,
-            ApesearchPQ<T, Container, Compare>& y)
+  void swap(priority_queue<T, Container, Compare>& x,
+            priority_queue<T, Container, Compare>& y)
             noexcept(noexcept(x.swap(y)));
 
 #include "queue.inl"

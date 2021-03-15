@@ -8,6 +8,7 @@
 
 #define NULLCHAR 1
 #include <assert.h>
+#include "algorithms.h"
 
 char* strcpy( char *dest, const char *src );
 char* strncpy( char *dest, const char *src, size_t num );
@@ -22,63 +23,87 @@ class string
       // REQUIRES: Nothing
       // MODIFIES: *this
       // EFFECTS: Creates an empty string
-      string( ) : length( 0 )
+      string( ) noexcept : string( size_t( 0 ) ) 
          {
-         buffer = new char[NULLCHAR];
-         *buffer = '\0';
+         }
+      //! A consequence for allowing the below constructor
+      explicit string( char c ) noexcept : string( size_t( 1 ) )
+         {
+         *buffer = c;
+         }
+      
+      // Gives a string with a buffer that remains undefined
+      explicit string( size_t len ) noexcept : length ( len )
+         {
+         buffer = new char[length + NULLCHAR];
+         *( buffer + length ) = '\0';
          }
 
       // string Literal / C string Constructor
       // REQUIRES: cstr is a null terminated C style string
       // MODIFIES: *this
       // EFFECTS: Creates a string with equivalent contents to cstr
-      string (const char* cstr )
-         {
-         // Captures a cast to string on comparison to empty c_string; implenting other relational operators is way, way better
-         length = strlen( cstr );
-         buffer = new char [ length + NULLCHAR ];
-         strncpy( buffer, cstr, length );
-         * ( buffer + length ) = '\0';
-         }
+      string (const char* cstr ) noexcept : string( cstr, 0 ) {}
       
       // substring constructor
       // REQUIRES: cstr is a null terminated C style string
       // MODIFIES: *this
       // EFFECTS: Creates a string with equivalent contents to cstr[pos] to cstr[pos + len]
-      string (const char* cstr, size_t pos, size_t len = npos )
+      string (const char* cstr, size_t pos, size_t len = npos ) : length( len == npos ? strlen( cstr + pos ) : len ), 
+               buffer( new char [ length + NULLCHAR ] )
          {
+         assert( length <= strlen( cstr ) );
          // Captures a cast to string on comparison to empty c_string; implenting other relational operators is way, way better
-         length = len;
-         buffer = new char [ length + NULLCHAR ];
-         strncpy( buffer, cstr + pos, length );
+         strncpy( buffer, cstr + pos, length ); // OK to use c-string functions bc cstr is passed in
          * ( buffer + length ) = '\0';
          }
+
+      // string substring constructor
+      // REQUIRES: cstr is a null terminated C style string, len <= s.length
+      // MODIFIES: *this
+      // EFFECTS: Creates a string with equivalent contents to cstr[pos] to cstr[pos + len]
+      string ( const string& s, size_t pos, size_t len = npos ) noexcept : length( len == npos ? s.length - pos : len )
+         {
+         assert( length <= s.length && pos < s.length );
+         buffer = new char [ length + NULLCHAR ];
+         APESEARCH::copy( s.cbegin() + pos, s.cbegin() + pos + length, buffer );
+         * ( buffer + length ) = '\0';
+         }
+
       
+      // string copy constructor
+      // REQUIRES: s be valid
+      // MODIFIES: *this
+      // EFFECTS: Creates a string with equivalent contents to cstr[pos] to cstr[pos + len]
+      string ( const string& s ) noexcept : string( s, 0 ) {}
+
       // string = operator
       // REQUIRES: cstr is a null terminated C style string
       // MODIFIES: *this
       // EFFECTS: creates a string with contents equal to s
       string& operator=( const string &s )
          {
-         length = s.size();
-         if (buffer != nullptr)
-            delete [] buffer;
-         strcpy(buffer = new char[length + NULLCHAR], s.cstr());
-
+         string temp( s );
+         swap ( temp );
          return *this;
          } // end operator =(const string& s)
       
+      // string swapper
+      // Swaps contents with another string
+      void swap( string& other )
+         {
+         APESEARCH::swap( length, other.length );
+         APESEARCH::swap( buffer, other.buffer );
+         } // end swap
+
       // c-string = operator
       // REQUIRES: cstr is a null terminated C style string
       // MODIFIES: *this
       // EFFECTS: creates a string with contents equal to s
       string& operator=( const char *s )
          {
-         if ( s != buffer )
-            delete[] buffer;
-         length = strlen(s);
-         strcpy(buffer = new char[length + NULLCHAR], s);
-         
+         string temp ( s );
+         swap (temp );
          return *this;
          } // end operator =(const string& s)
 
@@ -104,17 +129,10 @@ class string
          {
          // const char *a = buffer.cstr();
          const char *b = other.cstr();
-         int i = 0, j = 0, start = 0;
+         size_t i = 0, j = 0, start = 0;
          // bool found;
          while((*(buffer + j) != '\0') && (*(b + i) != '\0')){
-            // if(j == other.size()){
-            //   found = true; 
-            // }
             if(*(b + i) != *(buffer + j)){
-               if(*(b + i) == '\0')
-                  return start;
-
-               ++j;
                i = 0;
             }
             else{
@@ -122,10 +140,10 @@ class string
                   start = j;
                }
                ++i;
-               ++j;
             }
+            ++j;
          }
-         return -1;
+         return *(b + i) ? npos : start;
          }
 
       // C string Conversion
@@ -134,6 +152,7 @@ class string
       // EFFECTS: Returns a pointer to a null terminated C string of *this
       const char* cstr ( ) const
          {
+         
          return buffer;
          }
 
@@ -141,7 +160,7 @@ class string
       // REQUIRES: Nothing
       // MODIFIES: Nothing
       // EFFECTS: Returns a random access iterator to the start of the string
-      const char* begin ( ) const
+      char* begin ( ) 
          {
          // not 100% sure about begin() and end(), I believe cstr() is correct though as
          // the cppreference page explicitly says never to modify the return val of c_str()
@@ -149,11 +168,21 @@ class string
          return buffer;
          }
 
+      const char * cbegin() const
+         {
+         return buffer;
+         }
+
       // Iterator End
       // REQUIRES: Nothing
       // MODIFIES: Nothing
       // EFFECTS: Returns a random access iterator to the end of the string
-      const char* end ( ) const
+      char* end ( ) 
+         {
+         return buffer + length;
+         }
+
+      const char* cend() const
          {
          return buffer + length;
          }
@@ -174,13 +203,10 @@ class string
       //      memory at most once
       void operator+= ( const string& other )
          {
-         char *newbuf = new char[length + other.size() + NULLCHAR];
-         strncpy(newbuf, buffer, length);
-         strncpy(newbuf + length, other.cstr(), other.size());
-         length += other.size();
-         * ( newbuf + length ) = '\0';
-         delete[] buffer;
-         buffer = newbuf;
+         string temp( length + other.size() );
+         APESEARCH::copy( cbegin(), cbegin() + length, temp.buffer); // Copy original
+         APESEARCH::copy( other.cbegin(), other.cend(), temp.buffer + length ); // Copy other string
+         swap( temp ); // Swap contents
          }
 
       // Push Back
@@ -215,7 +241,7 @@ class string
       //    and other are equal
       bool operator== ( const string& other ) const
          {
-         return strcmp(buffer, other.begin()) == 0;
+         return !compare( other );
          }
 
       // Not-Equality Operator
@@ -225,7 +251,7 @@ class string
       //    *this and other
       bool operator!= ( const string& other ) const
          {
-         return strcmp(buffer, other.begin()) != 0;
+         return compare( other );
          }
 
       // Less Than Operator
@@ -234,7 +260,7 @@ class string
       // EFFECTS: Returns whether *this is lexigraphically less than other
       bool operator< ( const string& other ) const
          {  
-         return strcmp(buffer, other.begin()) < 0;
+         return compare( other ) < 0;
          }
 
       // Greater Than Operator
@@ -243,7 +269,7 @@ class string
       // EFFECTS: Returns whether *this is lexigraphically greater than other
       bool operator> ( const string& other ) const
          {
-         return strcmp(buffer, other.begin()) > 0;
+         return compare( other ) > 0;
          }
 
       // Less Than Or Equal Operator
@@ -252,7 +278,7 @@ class string
       // EFFECTS: Returns whether *this is lexigraphically less or equal to other
       bool operator<= ( const string& other ) const
          {
-         return strcmp(buffer, other.begin()) <= 0;
+         return compare( other ) <= 0;
          }
 
       // Greater Than Or Equal Operator
@@ -261,28 +287,50 @@ class string
       // EFFECTS: Returns whether *this is lexigraphically less or equal to other
       bool operator>= ( const string& other ) const
          {
-         return strcmp(buffer, other.begin()) >= 0;
+         return compare( other ) >= 0;
          }
 
-      char *find( const string& substr ) const
+      char *findPtr( const string& substr ) const
          {
          const char * substr_c = substr.cstr(); // for substr
          char const *ptr = buffer; // to this string
-         char const * const constend = end();
+         char const * const constend = cend();
          while ( *substr_c && ptr != constend )
             *ptr++ == *substr_c ? ++substr_c : substr_c = substr.cstr();
          return ptr != constend ? buffer + ( ptr - buffer - substr.size() ) :  buffer + length;
          }
+      int compare( const string& other ) const
+         {
+         const char *c_str1, *c_str2;
+         const char * const str1End = cend();
+         const char * const str2End = other.cend();
+         c_str1 = buffer;
+         c_str2 = other.buffer;
+         for(; c_str1 != str1End && c_str2 != str2End 
+            && *c_str1 == *c_str2; ++c_str1, ++c_str2 );
+         
+         if ( c_str1 == str1End )
+            {
+            if ( c_str2 != str2End )
+               return -1;
+            }
+         else if ( c_str2 == str2End )
+            return 1;
+
+         return static_cast<int> ( *(const unsigned char*)c_str1 - *(const unsigned char*)c_str2 );
+         } // end compare()
+
+   static constexpr size_t npos = static_cast<size_t>( -1 );
    private:
       size_t length;
       char *buffer;
 
-      static const int npos = -1;
+
    };
 
 std::ostream& operator<< ( std::ostream& os, const string& s )
    {
-   for ( const char *ptr = s.begin(), *const end = s.end(); ptr != end; )
+   for ( const char *ptr = s.cbegin(), *const end = s.cend(); ptr != end; )
       os << *ptr++;
    return os;
    }
@@ -317,15 +365,9 @@ size_t strlen(const char *str)
 
 int strcmp (const char *left, const char *right)
    {
-   while (*left)
-      {
-         if (*left != *right)
-            break;
-         left++;
-         right++;
-      }
+   for (;*left && *left == *right; ++left, ++right);
    return *left - *right;
-   }
+   } // end strcmp
 
 
 #endif

@@ -60,5 +60,14 @@ const T& min(const T& a, const T&b ) { return ( b < a ) ? b : a; }
 template<class T, class Comparator>
 const T& min(const T& a, const T& b, Comparator comp ) { return comp(b, a) ? b : a; }
 
+template<class InputIterator, class UnaryPredicate>
+bool all_of( InputIterator first, InputIterator last, UnaryPredicate pred )
+   {
+   while( first != last )
+      if ( !pred( *first++ ) )
+         return false;
+   return true;
+   }
+
 } // end namespace APESEARCH
 #endif // end ALGORITHMS_H_APE_SEARCH

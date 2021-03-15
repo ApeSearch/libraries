@@ -1,24 +1,24 @@
 
 template<class T, class Container, class Compare>
-explicit priority_queue::priority_queue( const Compare& comp ) : compare( comp ) {}
+priority_queue<T, Container, Compare>::priority_queue( const Compare& comp ) : compare( comp ) {}
 
 template<class T, class Container, class Compare>
-priority_queue::priority_queue(const Compare& comp, const container_type& c) : cont( c ), compare( comp ) {}
+priority_queue<T, Container, Compare>::priority_queue(const Compare& comp, const Container& c) : cont( c ), compare( comp ) {}
 
+template<class T, class Container, class Compare>
 template <class InputIterator>
+priority_queue<T, Container, Compare>::priority_queue(InputIterator first, InputIterator last,
+        const Compare& comp) : cont ( first, last ), compare( comp ) {}
+
+
 template<class T, class Container, class Compare>
-priority_queue::priority_queue(InputIterator first, InputIterator last,
-        const Compare& comp = Compare()) : cont ( first, last ), compare( comp ) {}
-
-
 template <class InputIterator>
-template<class T, class Container, class Compare>
-priority_queue::priority_queue(InputIterator first, InputIterator last,
-        const Compare& comp, const container_type& c) : cont ( c ( first, last ) ), compare( comp ) {}
+priority_queue<T, Container, Compare>::priority_queue(InputIterator first, InputIterator last,
+        const Compare& comp, const Container& c) : cont ( c ( first, last ) ), compare( comp ) {}
 
+template<class T, class Container, class Compare>
 template <class InputIterator>
-template<class T, class Container, class Compare>
-priority_queue::priority_queue(InputIterator first, InputIterator last,
-                       const Compare& comp, container_type&& c) : ApesearchPQ::ApesearchPQ( first, last, comp, c ) {}
+priority_queue<T, Container, Compare>::priority_queue(InputIterator first, InputIterator last,
+                       const Compare& comp, Container&& c) : 
+        priority_queue<T, Container, Compare>::priority_queue<InputIterator>( first, last, comp, c ) {}
 
-template<class T, class Container, class Compare>
