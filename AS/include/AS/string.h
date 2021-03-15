@@ -1,5 +1,6 @@
 #include <cstddef> // for size_t
 #include <iostream> //for ostream
+#include <cstring>
 
 #ifndef _NSTD_STRING_H
 #define _NSTD_STRING_H
@@ -9,11 +10,7 @@
 #define NULLCHAR 1
 #include <assert.h>
 #include "algorithms.h"
-
-char* strcpy( char *dest, const char *src );
-char* strncpy( char *dest, const char *src, size_t num );
-size_t strlen(const char *str);
-int strcmp (const char *left, const char *right);
+#include <utility>
 
 class string
    {
@@ -70,12 +67,37 @@ class string
          * ( buffer + length ) = '\0';
          }
 
-      
-      // string copy constructor
-      // REQUIRES: s be valid
+      // copy Constructor
+      // REQUIRES: Nothing
       // MODIFIES: *this
-      // EFFECTS: Creates a string with equivalent contents to cstr[pos] to cstr[pos + len]
+      // EFFECTS: constructs a copy of str
       string ( const string& s ) noexcept : string( s, 0 ) {}
+      
+      // Move Constructor
+      // REQUIRES: Nothing
+      // MODIFIES: *this, str
+      // EFFECTS: Acquires the contents of str. str is left in an unspecified but valid state.
+      string (string &&str) noexcept : string( ) 
+         {
+         swap( str );
+         }
+
+      string& operator=( string&& str )
+         {
+         // Do move operator
+         swap( str );
+         return *this;
+         }
+         
+      // fill constructor
+      // REQUIRES: nothing
+      // MODIFIES: *this
+      // EFFECTS: Fills the string with n consecutive copies of character c
+      string (size_t n, char c) : length(n)
+         {
+         memset(buffer = new char [ length + NULLCHAR ], c, length);
+         * ( buffer + length ) = '\0';
+         }
 
       // string = operator
       // REQUIRES: cstr is a null terminated C style string
@@ -196,6 +218,22 @@ class string
          return * ( buffer + i );
          }
 
+      // string front
+      // REQUIRES: Nothing
+      // MODIFIES: Nothing
+      // EFFECTS: Returns a reference to the first character of the string.
+      char& front() {
+         return buffer[0];
+      }
+
+      // string front
+      // REQUIRES: Nothing
+      // MODIFIES: Nothing
+      // EFFECTS: Returns a const-qualified reference to the first character of the string.
+      const char& front() const {
+         return buffer[0];
+      }
+
       // string Append
       // REQUIRES: Nothing
       // MODIFIES: *this
@@ -295,7 +333,8 @@ class string
          const char * substr_c = substr.cstr(); // for substr
          char const *ptr = buffer; // to this string
          char const * const constend = cend();
-         while ( *substr_c && ptr != constend )
+         char const * const constSubstrEnd = substr.cend();
+         while ( substr_c != constSubstrEnd && ptr != constend )
             *ptr++ == *substr_c ? ++substr_c : substr_c = substr.cstr();
          return ptr != constend ? buffer + ( ptr - buffer - substr.size() ) :  buffer + length;
          }
@@ -323,7 +362,7 @@ class string
    static constexpr size_t npos = static_cast<size_t>( -1 );
    private:
       size_t length;
-      char *buffer;
+      char *buffer = nullptr;
 
 
    };
@@ -334,40 +373,5 @@ std::ostream& operator<< ( std::ostream& os, const string& s )
       os << *ptr++;
    return os;
    }
-
-char* strcpy( char *dest, const char *src )
-   {
-   if (dest == nullptr)
-      return nullptr;
-   
-   while ( (*dest++ = *src++) != '\0' );
-   
-   return dest;
-   } // end strcpy( char *dest, const char *src )
-
-char* strncpy( char *dest, const char *src, size_t num )
-   {
-   if (dest == nullptr)
-      return nullptr;
-   
-   while (num-- && ((*dest++ = *src++) != '\0'));
-   
-   return dest;
-   } // end strcpy( char *dest, const char *src )
-
-size_t strlen(const char *str) 
-   {
-   size_t len = 0;
-   while (*str++)
-      len++;
-   return len;
-   }
-
-int strcmp (const char *left, const char *right)
-   {
-   for (;*left && *left == *right; ++left, ++right);
-   return *left - *right;
-   } // end strcmp
-
 
 #endif
