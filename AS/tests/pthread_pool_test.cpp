@@ -51,7 +51,7 @@ int multiply_return(const int a, const int b) {
 int main()
 {
   // Create pool with X threads
-  PThreadPool pool(100u, APESEARCH::defer_init);
+  PThreadPool< std::deque<APESEARCH::Func> > pool(100u, APESEARCH::defer_init);
 
   // Initialize pool
   pool.init();
