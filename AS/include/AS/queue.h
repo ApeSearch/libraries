@@ -194,14 +194,18 @@ public:
     void pop() { cont.pop(); }
 
     void swap(priority_queue& q)
+#if __cplusplus >= 201703L
         noexcept(std::is_nothrow_swappable_v<Container> &&
-                 std::is_nothrow_swappable_v<Compare>);
+                 std::is_nothrow_swappable_v<Compare>)
+#endif
+    ;
 };
 
+#if __cplusplus >= 201703L
 template <class Compare, class Container>
 priority_queue(Compare, Container)
     -> priority_queue<typename Container::value_type, Container, Compare>; // C++17
-
+#endif
 template <class T, class Container, class Compare>
   void swap(priority_queue<T, Container, Compare>& x,
             priority_queue<T, Container, Compare>& y)
