@@ -1,5 +1,6 @@
 #include <cstddef> // for size_t
 #include <iostream> //for ostream
+#include <cstring>
 
 #ifndef _NSTD_STRING_H
 #define _NSTD_STRING_H
@@ -8,11 +9,6 @@
 
 #define NULLCHAR 1
 #include <assert.h>
-
-char* strcpy( char *dest, const char *src );
-char* strncpy( char *dest, const char *src, size_t num );
-size_t strlen(const char *str);
-int strcmp (const char *left, const char *right);
 
 class string
    {
@@ -26,6 +22,15 @@ class string
          {
          buffer = new char[NULLCHAR];
          *buffer = '\0';
+         }
+
+      // copy Constructor
+      // REQUIRES: Nothing
+      // MODIFIES: *this
+      // EFFECTS: constructs a copy of str
+      string(const string& other) 
+         {
+         memcpy(buffer = new char [ length + NULLCHAR ], other.cstr(), length = other.size()); 
          }
 
       // string Literal / C string Constructor
@@ -48,12 +53,29 @@ class string
       string (const char* cstr, size_t pos, size_t len = npos )
          {
          // Captures a cast to string on comparison to empty c_string; implenting other relational operators is way, way better
-         length = len;
-         buffer = new char [ length + NULLCHAR ];
-         strncpy( buffer, cstr + pos, length );
+         strncpy( buffer = new char [ length + NULLCHAR ], cstr + pos, length = len );
+         * ( buffer + length ) = '\0';
+         }
+
+      // fill constructor
+      // REQUIRES: nothing
+      // MODIFIES: *this
+      // EFFECTS: Fills the string with n consecutive copies of character c
+      string (size_t n, char c)
+         {
+         memset(buffer = new char [ length + NULLCHAR ], c, length = n);
          * ( buffer + length ) = '\0';
          }
       
+      // Move Constructor
+      // REQUIRES: Nothing
+      // MODIFIES: *this, str
+      // EFFECTS: Acquires the contents of str. str is left in an unspecified but valid state.
+      string (string &&str) noexcept
+         {
+            *this = std::move(str);
+         }
+
       // string = operator
       // REQUIRES: cstr is a null terminated C style string
       // MODIFIES: *this
@@ -100,33 +122,33 @@ class string
       // REQUIRES: Nothing
       // MODIFIES: Nothing
       // EFFECTS: Returns position of the first character of the first match
-      size_t find (const string& other) const
-         {
-         // const char *a = buffer.cstr();
-         const char *b = other.cstr();
-         int i = 0, j = 0, start = 0;
-         // bool found;
-         while((*(buffer + j) != '\0') && (*(b + i) != '\0')){
-            // if(j == other.size()){
-            //   found = true; 
-            // }
-            if(*(b + i) != *(buffer + j)){
-               if(*(b + i) == '\0')
-                  return start;
+      // size_t find (const string& other) const
+      //    {
+      //    // const char *a = buffer.cstr();
+      //    const char *b = other.cstr();
+      //    int i = 0, j = 0, start = 0;
+      //    // bool found;
+      //    while((*(buffer + j) != '\0') && (*(b + i) != '\0')){
+      //       // if(j == other.size()){
+      //       //   found = true; 
+      //       // }
+      //       if(*(b + i) != *(buffer + j)){
+      //          if(*(b + i) == '\0')
+      //             return start;
 
-               ++j;
-               i = 0;
-            }
-            else{
-               if(i == 0){
-                  start = j;
-               }
-               ++i;
-               ++j;
-            }
-         }
-         return -1;
-         }
+      //          ++j;
+      //          i = 0;
+      //       }
+      //       else{
+      //          if(i == 0){
+      //             start = j;
+      //          }
+      //          ++i;
+      //          ++j;
+      //       }
+      //    }
+      //    return -1;
+      //    }
 
       // C string Conversion
       // REQUIRES: Nothing
@@ -166,6 +188,22 @@ class string
          {
          return * ( buffer + i );
          }
+
+      // string front
+      // REQUIRES: Nothing
+      // MODIFIES: Nothing
+      // EFFECTS: Returns a reference to the first character of the string.
+      char& front() {
+         return buffer[0];
+      }
+
+      // string front
+      // REQUIRES: Nothing
+      // MODIFIES: Nothing
+      // EFFECTS: Returns a const-qualified reference to the first character of the string.
+      const char& front() const {
+         return buffer[0];
+      }
 
       // string Append
       // REQUIRES: Nothing
@@ -286,46 +324,5 @@ std::ostream& operator<< ( std::ostream& os, const string& s )
       os << *ptr++;
    return os;
    }
-
-char* strcpy( char *dest, const char *src )
-   {
-   if (dest == nullptr)
-      return nullptr;
-   
-   while ( (*dest++ = *src++) != '\0' );
-   
-   return dest;
-   } // end strcpy( char *dest, const char *src )
-
-char* strncpy( char *dest, const char *src, size_t num )
-   {
-   if (dest == nullptr)
-      return nullptr;
-   
-   while (num-- && ((*dest++ = *src++) != '\0'));
-   
-   return dest;
-   } // end strcpy( char *dest, const char *src )
-
-size_t strlen(const char *str) 
-   {
-   size_t len = 0;
-   while (*str++)
-      len++;
-   return len;
-   }
-
-int strcmp (const char *left, const char *right)
-   {
-   while (*left)
-      {
-         if (*left != *right)
-            break;
-         left++;
-         right++;
-      }
-   return *left - *right;
-   }
-
 
 #endif

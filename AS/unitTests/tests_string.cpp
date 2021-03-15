@@ -23,8 +23,6 @@ TEST(test_find)
 
     ptrTostr = str.find( "" );
     ASSERT_EQUAL( ptrTostr, str.cstr() );
-
-
     }
 TEST(test_find_empty)
     {
@@ -44,5 +42,11 @@ TEST(test_find_empty)
     ptrTostr = str.find( "" );
     ASSERT_EQUAL( ptrTostr, str.cstr() );
     } // end test_find_empty
+
+TEST(fill_constructor)
+    {
+    string filled(10, 'x');
+    ASSERT_EQUAL(filled, "xxxxxxxxxx");
+    } // end test fill_constructor
 
 TEST_MAIN()
