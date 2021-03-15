@@ -2,6 +2,7 @@
 
 #include "dependencies/unit_test_framework.h"
 #include "../include/AS/string.h"
+#include <iostream>
 
 
 
@@ -42,6 +43,26 @@ TEST(test_find_empty)
     ptrTostr = str.findPtr( "" );
     ASSERT_EQUAL( ptrTostr, str.cstr() );
     } // end test_find_empty
+
+
+TEST( test_findptr_edgeCase )
+   {
+   const string str("TestingNull\0secret", 0, 18);
+   std::cout << str << std::endl;
+   ASSERT_EQUAL( str.size(), 18 );
+   char const * ptrTo = str.findPtr("ret");
+   ASSERT_NOT_EQUAL( ptrTo, str.cend() );
+   ASSERT_EQUAL( 15, ptrTo - str.cbegin() );
+
+   ptrTo = str.findPtr("se");
+   ASSERT_NOT_EQUAL( ptrTo, str.cend() );
+   ASSERT_EQUAL( 12, ptrTo - str.cbegin() );
+
+   ptrTo = str.findEndOfSubStr("ret");
+   ASSERT_EQUAL( ptrTo, str.cend() );
+   ASSERT_EQUAL( 18, ptrTo - str.cbegin() );
+
+   }
 
 TEST( test_cstr )
    {
