@@ -146,22 +146,58 @@ class string
       size_t find (const string& other) const
          {
          const char *b = other.cbegin();
-         size_t i = 0, j = 0, start = 0;
+         size_t i = 0, j = 0;
          // bool found;
          while( ( buffer + j != cend() ) && ( b + i != other.cend() )){
             if(*(b + i) != *(buffer + j)){
                i = 0;
             }
             else{
-               if(i == 0){
-                  start = j;
-               }
                ++i;
             }
             ++j;
          }
-         return b + i != other.cend() ? npos : start;
+         return b + i != other.cend() ? npos : j - other.size();
          }
+
+      /*
+       * REQUIRES: substr to be a valid string.
+       *  EFFECTS: Returns a pointer to the beginning of a substring specified by substr.
+       *           O.w. returns the end of the string ( cend() ).
+       * MODIFIES: Nothing
+       */
+      char *findPtr( const string& substr ) const
+         {
+         char const *ptr = buffer; // to this string
+         const char * substr_c = substr.cbegin(); // for substr
+         char const * const constEnd = cend(); // End pointer to this string
+         char const * const constSubstrEnd = substr.cend(); // End pointer to substr
+
+         while ( substr_c != constSubstrEnd && ptr != constEnd )
+            *ptr++ == *substr_c ? ++substr_c : substr_c = substr.cbegin();
+         return substr_c == constSubstrEnd ? buffer + ( static_cast<size_t>( ptr - buffer ) - substr.size() ) :  buffer + length;
+         } // end findPtr()
+
+      /*
+       * REQUIRES: substr to be a valid string.
+       *  EFFECTS: Returns a pointer to the end of a substring specified by substr.
+       *           O.w. returns the end of the string ( cend() ).
+       * MODIFIES: Nothing
+       * 
+       * Functionally the same of findPtr but instead, returns the end of the substring (exclusive).
+       */ 
+      char *findEndOfSubStr( const string& substr ) const
+         {
+         char *ptr = buffer; // to this string
+         const char * substr_c = substr.cbegin(); // for substr
+         char const * const constEnd = cend(); // End pointer to this string
+         char const * const constSubstrEnd = substr.cend(); // End pointer to substr
+
+         while ( substr_c != constSubstrEnd && ptr != constEnd )
+            *ptr++ == *substr_c ? ++substr_c : substr_c = substr.cbegin();
+         return ptr;
+         } // end findEndOfSubStr()
+      
 
       // C string Conversion
       // REQUIRES: Nothing
@@ -323,43 +359,7 @@ class string
          {
          return compare( other ) >= 0;
          }
-      /*
-       * REQUIRES: substr to be a valid string.
-       *  EFFECTS: Returns a pointer to the beginning of a substring specified by substr.
-       *           O.w. returns the end of the string ( cend() ).
-       * MODIFIES: Nothing
-       */
-      char *findPtr( const string& substr ) const
-         {
-         char const *ptr = buffer; // to this string
-         const char * substr_c = substr.cbegin(); // for substr
-         char const * const constEnd = cend(); // End pointer to this string
-         char const * const constSubstrEnd = substr.cend(); // End pointer to substr
 
-         while ( substr_c != constSubstrEnd && ptr != constEnd )
-            *ptr++ == *substr_c ? ++substr_c : substr_c = substr.cbegin();
-         return substr_c == constSubstrEnd ? buffer + ( static_cast<size_t>( ptr - buffer ) - substr.size() ) :  buffer + length;
-         } // end findPtr()
-      /*
-       * REQUIRES: substr to be a valid string.
-       *  EFFECTS: Returns a pointer to the end of a substring specified by substr.
-       *           O.w. returns the end of the string ( cend() ).
-       * MODIFIES: Nothing
-       * 
-       * Functionally the same of findPtr but instead, returns the end of the substring (exclusive).
-       */ 
-      char *findEndOfSubStr( const string& substr ) const
-         {
-         char *ptr = buffer; // to this string
-         const char * substr_c = substr.cbegin(); // for substr
-         char const * const constEnd = cend(); // End pointer to this string
-         char const * const constSubstrEnd = substr.cend(); // End pointer to substr
-
-         while ( substr_c != constSubstrEnd && ptr != constEnd )
-            *ptr++ == *substr_c ? ++substr_c : substr_c = substr.cbegin();
-         return ptr;
-         } // end findEndOfSubStr()
-      
       /*
        * REQUIRES: other to be a valid string.
        *  EFFECTS: Returns an int that, depending on the range:
