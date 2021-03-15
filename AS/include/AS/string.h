@@ -276,7 +276,7 @@ class string
       void operator+= ( const string& other )
          {
          string temp( length + other.size() );
-         APESEARCH::copy( cbegin(), cbegin() + length, temp.buffer); // Copy original
+         APESEARCH::copy( cbegin(), cend(), temp.buffer); // Copy original
          APESEARCH::copy( other.cbegin(), other.cend(), temp.buffer + length ); // Copy other string
          swap( temp ); // Swap contents
          }
@@ -301,7 +301,7 @@ class string
          {
          assert(length); // For our safety...
          --length;
-         //! Should the size be shrunk?
+         //! Should the size be shrunk? (perhaps if reaches half of capacity?)
          }
 
       // Equality Operator
