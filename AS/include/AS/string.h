@@ -12,6 +12,9 @@
 #include "algorithms.h"
 #include <utility>
 
+namespace APESEARCH
+{
+
 class string
    {
    public:  
@@ -413,6 +416,8 @@ class string
       size_t length;
       char *buffer;
    };
+
+} // end namespace
 
 // std::ostream& operator<< ( std::ostream& os, const string& s )
 //    {
