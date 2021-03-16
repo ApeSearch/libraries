@@ -1,3 +1,5 @@
+
+#pragma once
 #include <cstddef> // for size_t
 #include <iostream> //for ostream
 #include <cstring>
@@ -96,6 +98,13 @@ class string
       string (size_t n, char c) : length(n)
          {
          memset(buffer = new char [ length + NULLCHAR ], c, length);
+         }
+      
+      // Range Constructor
+      template<class InputIterator>
+      string ( InputIterator first, InputIterator last ) : length ( last - first ), buffer( new char [ length + NULLCHAR ] )
+         {
+         APESEARCH::copy( first , last , buffer );
          }
 
       // string = operator

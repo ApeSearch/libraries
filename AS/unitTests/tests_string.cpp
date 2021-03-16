@@ -2,8 +2,16 @@
 
 #include "dependencies/unit_test_framework.h"
 #include "../include/AS/string.h"
+using APESEARCH::string;
+#include <string>
 #include <iostream>
 
+TEST(test_rance)
+   {
+   std::string test("testing");
+   string str( test.begin(), test.end() );
+   ASSERT_EQUAL( str, "testing" );
+   }
 
 
 TEST(test_find)

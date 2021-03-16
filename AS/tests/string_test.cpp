@@ -3,6 +3,7 @@
     using std::string;
 #else // Used for Autograder
     #include "../include/AS/string.h"
+    using APESEARCH::string;
 #endif
 
 #include <iostream>
