@@ -1,11 +1,12 @@
 
 #pragma once
-#include <cstddef> // for size_t
-#include <iostream> //for ostream
-#include <cstring>
 
 #ifndef _NSTD_STRING_H
 #define _NSTD_STRING_H
+
+#include <cstddef> // for size_t
+#include <iostream> //for ostream
+#include <cstring>
 
 //TODO: Implement short-string optimization
 

@@ -1,7 +1,11 @@
+#pragma once
+
+#ifndef ADDRESS_H_AS
+#define ADDRESS_H_AS
+
 #include <netdb.h> // For addrinfo
 #include <stdio.h> // perror
 #include <string.h> // memset
-#pragma once
 
 // RAII wrapper for addrinfo struct
 struct Address {
@@ -41,3 +45,5 @@ struct Address {
     //Used only in regression testing methods
     //friend std::ostream &operator<<( std::ostream &os, const Address & addr);
 }; // end Address
+
+#endif

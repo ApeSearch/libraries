@@ -1,10 +1,11 @@
+#pragma once
+#ifndef VECTOR_H_APESEARCH
+#define VECTOR_H_APESEARCH
+
 #include "assert.h"
 #include <unistd.h>
 #include <utility>
 #include <iostream>
-
-#ifndef _NSTD_STRING_H
-#define _NSTD_STRING_H
 
 #define DEFAULT_BUCKET_SIZE 8
 

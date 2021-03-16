@@ -1,4 +1,8 @@
 #pragma once
+
+#ifndef SOCKET_H_AS
+#define SOCKET_H_AS
+
 #include "Address.h"
 #include <sys/time.h> //timeval
 
@@ -17,3 +21,5 @@ class Socket
       struct timeval tv;
       int socketFD;
 };
+
+#endif
