@@ -102,7 +102,7 @@ class string
       
       // Range Constructor
       template<class InputIterator>
-      string ( InputIterator first, InputIterator last ) : length ( last - first ), buffer( new char [ length + NULLCHAR ] )
+      string ( InputIterator first, InputIterator last ) : string( size_t( last - first ) )
          {
          APESEARCH::copy( first , last , buffer );
          }
@@ -288,7 +288,7 @@ class string
       void operator+= ( const string& other )
          {
          string temp( length + other.size() );
-         APESEARCH::copy( cbegin(), cend(), temp.buffer); // Copy original
+         APESEARCH::copy( cbegin(), cend(), temp.buffer ); // Copy original
          APESEARCH::copy( other.cbegin(), other.cend(), temp.buffer + length ); // Copy other string
          swap( temp ); // Swap contents
          }

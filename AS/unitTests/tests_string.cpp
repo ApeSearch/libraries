@@ -6,11 +6,15 @@ using APESEARCH::string;
 #include <string>
 #include <iostream>
 
-TEST(test_rance)
+TEST(test_range)
    {
    std::string test("testing");
-   string str( test.begin(), test.end() );
+   APESEARCH::string str( test.begin(), test.end() );
    ASSERT_EQUAL( str, "testing" );
+   
+   APESEARCH::string newStr( str.cbegin(), str.cend() );
+
+   ASSERT_EQUAL( newStr, str );
    }
 
 
@@ -155,6 +159,9 @@ TEST( test_compare )
     ASSERT_FALSE( str == str2 );
     ASSERT_TRUE( str < str2 );
     ASSERT_TRUE( str <= str2 );
+    ASSERT_FALSE( str > str2 );
+    ASSERT_FALSE( str >= str2 );
+    ASSERT_TRUE( str != str2 );
 
     str2 = "first1";
     // "first", "first1"
