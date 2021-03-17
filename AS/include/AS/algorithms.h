@@ -31,6 +31,14 @@ ForwardIterator lower_bound(ForwardIterator first, ForwardIterator last, const T
 
 int stricmp(const char *a, const char *b);
 
+template<typename Predicate>
+inline const char * findChars( const char *str, const char *end, Predicate func) const 
+   {
+   while(str != end && !func(*str)) { ++str; }
+   return str;
+   } // end findChars()
+
+
 template<typename T> void swap( T& lhs, T& rhs ) noexcept
    {
    T temp ( std::move( lhs ) );
