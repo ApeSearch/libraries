@@ -32,7 +32,7 @@ ForwardIterator lower_bound(ForwardIterator first, ForwardIterator last, const T
 int stricmp(const char *a, const char *b);
 
 template<typename Predicate>
-inline const char * findChars( const char *str, const char *end, Predicate func) const 
+inline const char * findChars( const char *str, const char *end, Predicate func)
    {
    while(str != end && !func(*str)) { ++str; }
    return str;
