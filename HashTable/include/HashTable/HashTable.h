@@ -9,6 +9,7 @@
 #include <iomanip>
 #include <cstdint>
 #include <string>
+#include <cstring> // for strlen
 
 #define DEFAULTSIZE 8
 
