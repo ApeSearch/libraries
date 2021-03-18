@@ -196,6 +196,7 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
          // Your code here.
          Bucket< Key, Value > *bucket = *helperFind( k, hashFunc( k ) );
 
+         // If not nullptr, entry was found so returning reference to tuple...
          return bucket ? &bucket->tuple : nullptr;
          } // end Find()
 
