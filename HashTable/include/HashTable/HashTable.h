@@ -104,18 +104,18 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
       return false;
       }
 
-   Tuple< uint32_t, Bucket< Key, Value > * > helperFind( const Key& k ) const
+   Bucket< Key, Value > **helperFind( const Key& k ) const
       {
          // Applying a bit-wise mask on the least-sig bits
          uint32_t index = hashFunc( k ) & ( tableSize - 1 );
-         Bucket< Key, Value > *bucket = buckets[ index ];
+         Bucket< Key, Value > **bucket = buckets + index;
 
-         for ( ; bucket; checkNext( &bucket ) )
+         for ( ; *bucket; checkNext( bucket ) )
             {
-            if( bucket->tuple.key == k )
+            if( ( *bucket )->tuple.key == k )
                break;
             }
-         return Tuple< uint32_t,  Bucket< Key, Value >* >( index, bucket );
+         return bucket;
       } // end helperFind()
 
    public:
@@ -127,27 +127,27 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
          // in the hash, add it with the initial value.
 
          // Your code here
-         Tuple< uint32_t,  Bucket< Key, Value >* > bucket = helperFind( k );
+         Bucket< Key, Value > **bucket = helperFind( k );
          
          // Checks for nullptr
-         if( !bucket.value )
+         if( !*bucket )
             {
-            Bucket< Key, Value > **bucketPtr = buckets + bucket.key; // Pointer to buckets + index
-            *bucketPtr = new Bucket< Key, Value >( k, initialValue ); // Directly modify value within (two layers)
+            //Bucket< Key, Value > **bucketPtr = buckets + bucket.key; // Pointer to buckets + index
+            *bucket = new Bucket< Key, Value >( k, initialValue );
+            //*bucketPtr = new Bucket< Key, Value >( k, initialValue ); // Directly modify value within (two layers)
             ++numberOfBuckets;
-            return & ( *bucketPtr )->tuple; // Follow all pointers to the value
+            return & ( *bucket )->tuple; // Follow all pointers to the value
             } // end if
          // Checks if value is same or not (if not implies that reached end of linked list)
-         else if( bucket.value->tuple.key != k )
+         else if( ( *bucket )->tuple.key != k )
             {
-            bucket.value->next = new Bucket< Key, Value >( k, initialValue );
+            ( *bucket )->next = new Bucket< Key, Value >( k, initialValue );
             ++numberOfBuckets;
-            return &( bucket.value->next->tuple );
+            return &( *bucket )->next->tuple;
             } // end else if
       
          // Was able to successfully find the value in this case
-         return &bucket.value->tuple;
-
+         return & ( * bucket )->tuple;
          }
 
       Tuple< Key, Value > *Find( const Key k ) const
@@ -157,10 +157,10 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
          // in the hash, return nullptr.
 
          // Your code here.
-         Tuple< uint32_t,  Bucket< Key, Value >* > bucket = helperFind( k );
+         Bucket< Key, Value > **bucket = helperFind( k );
 
-         if( bucket.value && bucket.value->tuple.key == k )
-            return &bucket.value->tuple;
+         if( *bucket && ( *bucket )->tuple.key == k )
+            return &(**bucket).tuple;
 
          return nullptr;
 
