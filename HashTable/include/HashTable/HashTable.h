@@ -98,7 +98,7 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
          uint32_t index = hashFunc( k ) & ( tableSize - 1 );
          Bucket< Key, Value > **bucket = buckets + index;
 
-         for ( ; *bucket; *bucket = ( *bucket )->next )
+         for ( ; *bucket; bucket = &( *bucket )->next )
             {
             if( ( *bucket )->tuple.key == k )
                break;
