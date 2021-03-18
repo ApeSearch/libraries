@@ -85,7 +85,6 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
       // Your code here.
 
       Bucket< Key, Value > **buckets;
-      //Bucket< Key, Value > *buckets[DEFAULTSIZE];
       size_t tableSize; // length of bucket array
       size_t numberOfBuckets; // Contains amount of seperate chained buckets
       Hash hashFunc;
@@ -164,13 +163,13 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
          {
          // Your code here.
          memset( buckets, 0, sizeof(Bucket< Key, Value > *) * tb );
-         
          }
 
       ~HashTable( )
          {
          // Your code here.
-         for ( Bucket< Key, Value >** bucket = buckets; bucket != buckets + tableSize; ++bucket )
+         for ( Bucket< Key, Value > **bucket = buckets, 
+               ** const end = buckets + tableSize; bucket != end; ++bucket )
             delete *bucket;
 
          delete[] buckets;             
