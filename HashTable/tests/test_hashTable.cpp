@@ -137,8 +137,8 @@ TEST( test_constFlattening_sparse )
 
 TEST( test_optimize )
    {
-   static size_t val = 1000;
-   HashTable<const char*, size_t> hashTable(8);
+   static size_t val = 10000;
+   HashTable<const char*, size_t> hashTable;
    std::vector<std::string> strings; // To keep pointers around
    strings.reserve( val ); // Very important
    wrapper( strings, val, hashTable );

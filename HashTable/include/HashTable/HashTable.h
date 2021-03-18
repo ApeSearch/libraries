@@ -112,7 +112,8 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
 
          for ( ; *bucket; bucket = &( *bucket )->next )
             {
-            if( ( *bucket )->tuple.key == k )
+            //if( ( *bucket )->tuple.key == k )
+            if ( CompareEqual( ( *bucket )->tuple.key, k ) )
                break;
             }
          return bucket;
@@ -192,7 +193,8 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
          // Your code here.
          Bucket< Key, Value > *bucket = *helperFind( k, hashFunc( k ) );
 
-         if( bucket && bucket->tuple.key == k )
+         //if( bucket && bucket->tuple.key == k )
+         if ( bucket && CompareEqual( bucket->tuple.key, k ) )
             return &bucket->tuple;
 
          return nullptr;

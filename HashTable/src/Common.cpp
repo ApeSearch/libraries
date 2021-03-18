@@ -27,8 +27,7 @@ bool optVerbose = false;
 bool CompareEqual( const char *L, const char *R )
    {
    // Your code here.
-
-   return false;
+   return !strcmp( L, R );
    }
 
 
