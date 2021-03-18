@@ -143,6 +143,26 @@ TEST( test_optimize )
    strings.reserve( val ); // Very important
    wrapper( strings, val, hashTable );
 
+   ASSERT_EQUAL( strings.size(), hashTable.size() );
+   hashTable.Optimize();
+   ASSERT_EQUAL( strings.size(), hashTable.size() );
+
+   for ( unsigned n = 0; n < val; ++n )
+      {
+      Tuple<const char*, size_t> * kv = hashTable.Find( strings[n].c_str() );
+      ASSERT_TRUE( kv );
+      ASSERT_EQUAL( kv->value, n );
+      } // end for
+   }
+
+TEST( test_dont_optimize )
+   {
+   static size_t val = 4;
+   HashTable<const char*, size_t> hashTable(8);
+   std::vector<std::string> strings; // To keep pointers around
+   strings.reserve( val ); // Very important
+   wrapper( strings, val, hashTable );
+
    hashTable.Optimize();
 
    for ( unsigned n = 0; n < val; ++n )
