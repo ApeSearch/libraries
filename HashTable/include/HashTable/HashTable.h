@@ -157,11 +157,10 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
       bucketVec.reserve( numberOfBuckets );
 
       for ( Bucket< Key, Value > **const end = buckets + tableSize; 
-            mainLevel != end && bucketVec.size() < numberOfBuckets;  )
+            mainLevel != end && bucketVec.size() < numberOfBuckets; currBucket = *++mainLevel )
          {
          for ( ; currBucket ; currBucket = currBucket->next )
             bucketVec.emplace_back( currBucket );
-         currBucket = *++mainLevel;
          }  
 
       return bucketVec;
@@ -202,6 +201,7 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
 
 
       //Invalidates any Iterators / pointers
+      // Requires hash table to be non-empty
       void Optimize( double loadFactor = 0.5 ) // does this imply load factor reaching this point?
          {
          // Modify or rebuild the hash table as you see fit
@@ -211,7 +211,6 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
          // It might be the case that the bucket size is far lower than expected
          // So it might be necessary to shrink the table size
          size_t expectedTS = static_cast<double>(numberOfBuckets) / loadFactor;
-         // No need to increase hash table size if loadFactor
 
          std::vector< Bucket< Key, Value > *> flattened = flattenHashTable();
          delete []buckets;
