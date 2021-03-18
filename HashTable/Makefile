@@ -1,5 +1,12 @@
 CC=g++ -g3 -std=c++17 -Wall -pedantic -Wconversion -Wextra -Wreorder -fno-builtin
 
+ifeq ($(shell uname -s | tr A-Z a-z), darwin)
+	FLAGS:=MACOS
+endif
+ifeq ($(shell uname -s | tr A-Z a-z), linux)
+	FLAGS:=LINUX
+endif
+
 SRC=src
 SOURCES=$(wildcard ${SRC}/*.cpp)
 OBJS=${SOURCES:.cpp=.o}
@@ -22,7 +29,7 @@ $(TEST_SRC): %: %.cpp ${OBJS} ${UTFWOBJS}
 	@mkdir -p ${EXECDIR}
 	@mkdir -p ${STDEXECDIR}
 	@mkdir -p ${OUTPUT}
-	${CC} -Dtesting -o  ${EXECDIR}/$(notdir $@) $^ -pthread
+	${CC} -Dtesting${FLAGS} -o  ${EXECDIR}/$(notdir $@) $^ -pthread
 	#${CC} -D STD -Dtesting ${LDFLAGS} -lz -o ${STDEXECDIR}/$(notdir $@) $^ -pthread
 
 

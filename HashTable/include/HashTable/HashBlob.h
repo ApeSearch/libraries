@@ -12,7 +12,12 @@
 #include <cassert>
 #include <cstring>
 #include <cstdint>
-#include <malloc/malloc.h>
+#ifdef MACOS
+   #include <malloc/malloc.h>
+#endif
+#ifdef LINUX
+   #include <malloc.h>
+#endif
 #include <unistd.h>
 #include <sys/mman.h>
 
