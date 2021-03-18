@@ -144,8 +144,10 @@ TEST( test_optimize )
    testingFlattening( strings, val, hashTable );
 
    ASSERT_EQUAL( strings.size(), hashTable.size() );
-   hashTable.Optimize();
+   ASSERT_EQUAL( DEFAULTSIZE, hashTable.table_size() );
+   hashTable.Optimize(); // Current load factor becomes at most 0.5
    ASSERT_EQUAL( strings.size(), hashTable.size() );
+   ASSERT_EQUAL( 32768, hashTable.table_size() );
 
    for ( unsigned n = 0; n < val; ++n )
       {
@@ -155,15 +157,19 @@ TEST( test_optimize )
       } // end for
    }
 
-TEST( test_dont_optimize )
+TEST( test_optimize_shrink )
    {
    static size_t val = 4;
-   HashTable<const char*, size_t> hashTable(8);
+   HashTable<const char*, size_t> hashTable;
    std::vector<std::string> strings; // To keep pointers around
    strings.reserve( val ); // Very important
    testingFlattening( strings, val, hashTable );
 
+   ASSERT_EQUAL( strings.size(), hashTable.size() );
+   ASSERT_EQUAL( DEFAULTSIZE, hashTable.table_size() ); // 4096
    hashTable.Optimize();
+   ASSERT_EQUAL( strings.size(), hashTable.size() );
+   ASSERT_EQUAL( 8, hashTable.table_size() );
 
    for ( unsigned n = 0; n < val; ++n )
       {
@@ -176,12 +182,12 @@ TEST( test_dont_optimize )
 TEST( test_power_of_two )
    {
    static size_t val = 16;
-   HashTable<const char*, size_t> hashTable(8);
+   HashTable<const char*, size_t> hashTable;
    std::vector<std::string> strings; // To keep pointers around
    strings.reserve( val ); // Very important
    testingFlattening( strings, val, hashTable );
 
-   ASSERT_EQUAL( hashTable.table_size(), 8 );
+   ASSERT_EQUAL( hashTable.table_size(), DEFAULTSIZE );
    hashTable.Optimize();
    ASSERT_EQUAL( hashTable.table_size(), 32 );
 

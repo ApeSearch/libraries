@@ -15,7 +15,7 @@
 #include <vector>
 using std::sort;
 
-#define DEFAULTSIZE 8
+#define DEFAULTSIZE 4096
 
 static inline size_t computeTwosPowCeiling(size_t num) 
    {
@@ -202,17 +202,15 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
 
 
       //Invalidates any Iterators / pointers
-      void Optimize( double loadFactor = 1.5 ) // does this imply load factor reaching this point?
+      void Optimize( double loadFactor = 0.5 ) // does this imply load factor reaching this point?
          {
          // Modify or rebuild the hash table as you see fit
          // to improve its performance now that you know
          // nothing more is to be added.
 
          // Your code here.
-
+         size_t expectedTS = static_cast<double>(numberOfBuckets) / loadFactor;
          // No need to increase hash table size if loadFactor
-         if ( loadFactor > static_cast<double>(numberOfBuckets) / tableSize )
-            return;
 
          std::vector< Bucket< Key, Value > *> flattened = flattenHashTable();
          delete []buckets;
@@ -224,7 +222,7 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
 
          // Doubles number of buckets and computes the two's power ceiling
          // .e.g computeTwosPowCeiling( 100 * 2 ) = 256
-         size_t newTbSize = computeTwosPowCeiling( numberOfBuckets << 1 );
+         size_t newTbSize = computeTwosPowCeiling( expectedTS );
          buckets = new Bucket< Key, Value> *[ newTbSize ];
          memset( buckets, 0, sizeof(Bucket< Key, Value > *) * newTbSize );
 
