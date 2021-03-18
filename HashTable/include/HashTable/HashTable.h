@@ -208,7 +208,8 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
          // to improve its performance now that you know
          // nothing more is to be added.
 
-         // Your code here.
+         // It might be the case that the bucket size is far lower than expected
+         // So it might be necessary to shrink the table size
          size_t expectedTS = static_cast<double>(numberOfBuckets) / loadFactor;
          // No need to increase hash table size if loadFactor
 
