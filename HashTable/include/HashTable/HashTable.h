@@ -132,14 +132,14 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
          if( !bucket.value )
             {
             Bucket< Key, Value > **bucketPtr = buckets + bucket.key; // Pointer to buckets + index
-            *bucketPtr = new Bucket( k, initialValue ); // Directly modify value within (two layers)
+            *bucketPtr = new Bucket< Key, Value >( k, initialValue ); // Directly modify value within (two layers)
             ++numberOfBuckets;
             return & ( *bucketPtr )->tuple; // Follow all pointers to the value
             } // end if
          // Checks if value is same or not (if not implies that reached end of linked list)
          else if( bucket.value->tuple.key != k )
             {
-            bucket.value->next = new Bucket( k, initialValue );
+            bucket.value->next = new Bucket< Key, Value >( k, initialValue );
             ++numberOfBuckets;
             return &( bucket.value->next->tuple );
             } // end else if
@@ -253,11 +253,13 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
             bool operator==( const Iterator &rhs ) const
                {
                // Your code here.
+               return true;
                }
 
             bool operator!=( const Iterator &rhs ) const
                {
                // Your code here.
+               return true;
                }
          };
 
