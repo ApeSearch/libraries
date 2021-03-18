@@ -5,38 +5,23 @@
 #include <iostream>
 #include <algorithm>
 
+
+static void testingFind( HashTable<const char*, size_t>& hashTable );
+
 TEST( test_find )
    {
     HashTable<const char*, size_t> hashTable(8);
-    ASSERT_EQUAL(hashTable.Find( "testing" ), nullptr);
-    Tuple<const char *, size_t> * kv = hashTable.Find( "testing", 100 );
-    ASSERT_TRUE( kv );
-    ASSERT_EQUAL( kv->value, 100 );
-    kv = hashTable.Find( "testing" );
-    ASSERT_TRUE( kv );
-    ASSERT_EQUAL( kv->value, 100 );
-
-    kv = hashTable.Find( "lololol" );
-    ASSERT_TRUE( !kv );
-    kv = hashTable.Find( "lololol", 42 );
-    ASSERT_TRUE( kv );
-    ASSERT_EQUAL( kv->value, 42 );
-    kv = hashTable.Find( "lololol" );
-    ASSERT_TRUE( kv );
-    ASSERT_EQUAL( kv->value, 42 );
-
-    // Now check previous values...
-    kv = hashTable.Find( "testing" );
-    ASSERT_TRUE( kv );
-    ASSERT_EQUAL( kv->value, 100 );
-    kv = hashTable.Find( "lololol" );
-    ASSERT_TRUE( kv );
-    ASSERT_EQUAL( kv->value, 42 );
+    testingFind( hashTable );
    }
 
 TEST( test_find_seperate_chaining )
    {
-   HashTable<const char*, size_t> hashTable(1);
+   HashTable<const char*, size_t> hashTable(1); // Forces all entries into one bucket
+   testingFind( hashTable );
+   }
+
+void testingFind( HashTable<const char*, size_t>& hashTable )
+   {
    // Insert "testing"
    ASSERT_EQUAL(hashTable.Find( "testing" ), nullptr);
     Tuple<const char *, size_t> * kv = hashTable.Find( "testing", 100 );
@@ -73,8 +58,8 @@ TEST( test_find_seperate_chaining )
     kv = hashTable.Find( "lololol" );
     ASSERT_TRUE( kv );
     ASSERT_EQUAL( kv->value, 42 );
-
    }
+
 TEST( test_find_nothing )
    {
    HashTable<const char*, size_t> hashTable(1);
@@ -97,7 +82,26 @@ TEST( test_modify )
     ASSERT_EQUAL( kv->value, 9001 );
    }
 
-static void wrapper( std::vector<std::string>& strings, const size_t val, HashTable<const char*, size_t>& hashTable)
+static void testingFlattening( std::vector<std::string>& strings, const size_t val, HashTable<const char*, size_t>& hashTable);
+
+TEST( test_constFlattening_full )
+   {
+   static size_t val = 1000;
+   HashTable<const char*, size_t> hashTable(8);
+   std::vector<std::string> strings; // To keep pointers around
+   strings.reserve( val ); // Very important
+   testingFlattening( strings, val, hashTable );
+   }
+TEST( test_constFlattening_sparse )
+   {
+   static size_t val = 100;
+   HashTable<const char*, size_t> hashTable(1024);
+   std::vector<std::string> strings; // To keep pointers around
+   strings.reserve( val ); // Very important
+   testingFlattening( strings, val, hashTable );
+   }
+
+void testingFlattening( std::vector<std::string>& strings, const size_t val, HashTable<const char*, size_t>& hashTable)
    {
    for ( unsigned n = 0; n < val; ++n )
       {
@@ -131,30 +135,13 @@ static void wrapper( std::vector<std::string>& strings, const size_t val, HashTa
       } // end for
    }
 
-TEST( test_constFlattening_full )
-   {
-   static size_t val = 1000;
-   HashTable<const char*, size_t> hashTable(8);
-   std::vector<std::string> strings; // To keep pointers around
-   strings.reserve( val ); // Very important
-   wrapper( strings, val, hashTable );
-   }
-TEST( test_constFlattening_sparse )
-   {
-   static size_t val = 100;
-   HashTable<const char*, size_t> hashTable(1024);
-   std::vector<std::string> strings; // To keep pointers around
-   strings.reserve( val ); // Very important
-   wrapper( strings, val, hashTable );
-   }
-
 TEST( test_optimize )
    {
    static size_t val = 10000;
    HashTable<const char*, size_t> hashTable;
    std::vector<std::string> strings; // To keep pointers around
    strings.reserve( val ); // Very important
-   wrapper( strings, val, hashTable );
+   testingFlattening( strings, val, hashTable );
 
    ASSERT_EQUAL( strings.size(), hashTable.size() );
    hashTable.Optimize();
@@ -174,7 +161,7 @@ TEST( test_dont_optimize )
    HashTable<const char*, size_t> hashTable(8);
    std::vector<std::string> strings; // To keep pointers around
    strings.reserve( val ); // Very important
-   wrapper( strings, val, hashTable );
+   testingFlattening( strings, val, hashTable );
 
    hashTable.Optimize();
 
@@ -192,7 +179,7 @@ TEST( test_power_of_two )
    HashTable<const char*, size_t> hashTable(8);
    std::vector<std::string> strings; // To keep pointers around
    strings.reserve( val ); // Very important
-   wrapper( strings, val, hashTable );
+   testingFlattening( strings, val, hashTable );
 
    ASSERT_EQUAL( hashTable.table_size(), 8 );
    hashTable.Optimize();
