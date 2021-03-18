@@ -93,24 +93,13 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
       friend class Iterator;
       friend class HashBlob;
 
-   inline bool checkNext( Bucket< Key, Value > **bucket ) const
-      {
-      assert( bucket );
-      if ( ( *bucket )->next  ) // -> higher than *
-         {
-         *bucket = ( *bucket )->next;
-         return true;
-         } // end if
-      return false;
-      }
-
    Bucket< Key, Value > **helperFind( const Key& k ) const
       {
          // Applying a bit-wise mask on the least-sig bits
          uint32_t index = hashFunc( k ) & ( tableSize - 1 );
          Bucket< Key, Value > **bucket = buckets + index;
 
-         for ( ; *bucket; checkNext( bucket ) )
+         for ( ; *bucket; *bucket = ( *bucket )->next )
             {
             if( ( *bucket )->tuple.key == k )
                break;
@@ -132,21 +121,10 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
          // Checks for nullptr
          if( !*bucket )
             {
-            //Bucket< Key, Value > **bucketPtr = buckets + bucket.key; // Pointer to buckets + index
             *bucket = new Bucket< Key, Value >( k, initialValue );
-            //*bucketPtr = new Bucket< Key, Value >( k, initialValue ); // Directly modify value within (two layers)
             ++numberOfBuckets;
-            return & ( *bucket )->tuple; // Follow all pointers to the value
             } // end if
-         // Checks if value is same or not (if not implies that reached end of linked list)
-         else if( ( *bucket )->tuple.key != k )
-            {
-            ( *bucket )->next = new Bucket< Key, Value >( k, initialValue );
-            ++numberOfBuckets;
-            return &( *bucket )->next->tuple;
-            } // end else if
       
-         // Was able to successfully find the value in this case
          return & ( * bucket )->tuple;
          }
 
