@@ -10,8 +10,20 @@
 #include <cstdint>
 #include <string>
 #include <cstring> // for strlen
+#include <assert.h>
+#include <algorithm>
+#include <vector>
+using std::sort;
 
 #define DEFAULTSIZE 8
+
+static inline size_t computeTwosPowCeiling(size_t num) 
+   {
+   size_t powerNum = 1;
+   for (; num; num >>=1 )
+      powerNum <<= 1;
+   return powerNum;
+   }
 
 class FNV
 {
@@ -64,11 +76,11 @@ template< typename Key, typename Value > class Bucket
    {
    public:
       Bucket *next;
-      //uint32_t hashValue;
+      uint32_t hashValue;
       Tuple< Key, Value > tuple;
 
-      Bucket( const Key &k, const Value v ) :
-            tuple( k, v ), next( nullptr ) //, hashValue( h )
+      Bucket( const Key &k, const Value v, const uint32_t h ) :
+            tuple( k, v ), next( nullptr ) , hashValue( h )
          {
          }
       ~Bucket()
@@ -92,10 +104,10 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
       friend class Iterator;
       friend class HashBlob;
 
-   Bucket< Key, Value > **helperFind( const Key& k ) const
+   Bucket< Key, Value > **helperFind( const Key& k, uint32_t hashVal ) const
       {
          // Applying a bit-wise mask on the least-sig bits
-         uint32_t index = hashFunc( k ) & ( tableSize - 1 );
+         uint32_t index = hashVal & ( tableSize - 1 );
          Bucket< Key, Value > **bucket = buckets + index;
 
          for ( ; *bucket; bucket = &( *bucket )->next )
@@ -105,8 +117,51 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
             }
          return bucket;
       } // end helperFind()
+   
+   void advanceBucket( Bucket< Key, Value > ***currBucket, Bucket< Key, Value> ***mainLevel )
+      {
+      if ( ( **currBucket )->next )
+         *currBucket = &( **currBucket )->next;
+      else
+         *currBucket = ++( *mainLevel );
+      } // end advanceBucket()
+
+
+   std::vector< Bucket< Key, Value> *> flattenHashTable()
+      {
+      Bucket< Key, Value > *currBucket = *buckets, **mainLevel = buckets;
+      std::vector< Bucket< Key, Value> * > bucketVec;
+      bucketVec.reserve( numberOfBuckets );
+
+      for ( Bucket< Key, Value > **const end = buckets + tableSize; 
+            mainLevel != end && bucketVec.size() < numberOfBuckets;  )
+         {
+         for ( ; currBucket ; currBucket = currBucket->next )
+            bucketVec.emplace_back( currBucket );
+         currBucket = *++mainLevel;
+         }  
+
+      return bucketVec;
+      }  // end flattenHashTable()
 
    public:
+   std::vector< const Bucket< Key, Value> * > constflattenHashTable()
+      {
+      Bucket< Key, Value > const *currBucket = *buckets;
+      Bucket< Key, Value > **mainLevel = buckets;
+      std::vector< const Bucket< Key, Value> * > bucketVec;
+      bucketVec.reserve( numberOfBuckets );
+
+      for ( Bucket< Key, Value > **const end = buckets + tableSize; 
+            mainLevel != end && bucketVec.size() < numberOfBuckets;  )
+         {
+         for ( ; currBucket ; currBucket = currBucket->next )
+            bucketVec.emplace_back( currBucket );
+         currBucket = *++mainLevel;
+         }  
+
+      return bucketVec;
+      }
 
       Tuple< Key, Value > *Find( const Key k, const Value initialValue )
          {
@@ -115,12 +170,13 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
          // in the hash, add it with the initial value.
 
          // Your code here
-         Bucket< Key, Value > **bucket = helperFind( k );
+         uint32_t hashVal = hashFunc( k );
+         Bucket< Key, Value > **bucket = helperFind( k, hashVal );
          
          // Checks for nullptr
          if( !*bucket )
             {
-            *bucket = new Bucket< Key, Value >( k, initialValue );
+            *bucket = new Bucket< Key, Value >( k, initialValue, hashVal );
             ++numberOfBuckets;
             } // end if
       
@@ -134,10 +190,10 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
          // in the hash, return nullptr.
 
          // Your code here.
-         Bucket< Key, Value > **bucket = helperFind( k );
+         Bucket< Key, Value > *bucket = *helperFind( k, hashFunc( k ) );
 
-         if( *bucket && ( *bucket )->tuple.key == k )
-            return &(**bucket).tuple;
+         if( bucket && bucket->tuple.key == k )
+            return &bucket->tuple;
 
          return nullptr;
 
@@ -145,13 +201,38 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
 
 
       //Invalidates any Iterators / pointers
-      void Optimize( double loading = 1.5 )
+      void Optimize( double loading = 1.5 ) // does this imply load factor reaching this point?
          {
          // Modify or rebuild the hash table as you see fit
          // to improve its performance now that you know
          // nothing more is to be added.
 
          // Your code here.
+
+         if ( loading > static_cast<double>(numberOfBuckets) / tableSize )
+            return;
+
+         std::vector< Bucket< Key, Value > * > flattened = flattenHashTable();
+         std::sort( flattened.begin(), flattened.end(), 
+            []( Bucket< Key, Value > *lhs, Bucket< Key, Value > *rhs ) 
+               { return lhs->tuple.value > rhs->tuple.value; } );
+         delete []buckets;
+
+         size_t newTbSize = computeTwosPowCeiling( numberOfBuckets << 1 );
+         buckets = new Bucket< Key, Value> *[ newTbSize ];
+         numberOfBuckets = 0;
+         tableSize = newTbSize;
+
+         auto pred = [this]( Bucket< Key, Value > *val )
+            {
+            val->next = nullptr; // Remove any pointer relationship
+            uint32_t index = val->hashValue & ( tableSize - 1 );
+            Bucket< Key, Value > **bucket = buckets + index;
+            for ( ; *bucket; bucket = &( *bucket )->next );
+            *bucket = val;
+            };
+
+         std::for_each( flattened.begin(), flattened.end(), pred );
          }
 
 
@@ -161,6 +242,7 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
 
       HashTable( size_t tb = DEFAULTSIZE ) : numberOfBuckets(0), tableSize(tb), buckets( new Bucket< Key, Value > *[ tb ] )
          {
+         assert( tb );
          // Your code here.
          memset( buckets, 0, sizeof(Bucket< Key, Value > *) * tb );
          }
