@@ -19,6 +19,8 @@ using std::sort;
 
 static inline size_t computeTwosPowCeiling(size_t num) 
    {
+   assert( num ); // num must be > 0
+   --num; // Account for num already being a two's power
    size_t powerNum = 1;
    for (; num; num >>=1 )
       powerNum <<= 1;
@@ -103,20 +105,20 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
 
       friend class Iterator;
       friend class HashBlob;
-
+   
    Bucket< Key, Value > **helperFind( const Key& k, uint32_t hashVal ) const
       {
-         // Applying a bit-wise mask on the least-sig bits
-         uint32_t index = hashVal & ( tableSize - 1 );
-         Bucket< Key, Value > **bucket = buckets + index;
+      // Applying a bit-wise mask on the least-sig bits
+      uint32_t index = hashVal & ( tableSize - 1 ); // modulo operation using bitwise AND (only works with power of two table size)
+      Bucket< Key, Value > **bucket = buckets + index;
 
-         for ( ; *bucket; bucket = &( *bucket )->next )
-            {
-            //if( ( *bucket )->tuple.key == k )
-            if ( CompareEqual( ( *bucket )->tuple.key, k ) )
-               break;
-            }
-         return bucket;
+      for ( ; *bucket; bucket = &( *bucket )->next )
+         {
+         //if( ( *bucket )->tuple.key == k )
+         if ( CompareEqual( ( *bucket )->tuple.key, k ) )
+            break;
+         }
+      return bucket;
       } // end helperFind()
    
    void advanceBucket( Bucket< Key, Value > ***currBucket, Bucket< Key, Value> ***mainLevel )
@@ -127,19 +129,20 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
          *currBucket = ++( *mainLevel );
       } // end advanceBucket()
 
-
    std::vector< Bucket< Key, Value> *> flattenHashTable()
       {
-      Bucket< Key, Value > *currBucket = *buckets, **mainLevel = buckets;
+      
+      Bucket< Key, Value > *currBucket = *buckets;
+      Bucket< Key, Value > **mainLevel = buckets;
       std::vector< Bucket< Key, Value> * > bucketVec;
       bucketVec.reserve( numberOfBuckets );
 
+      // ++ happens first then dereference
       for ( Bucket< Key, Value > **const end = buckets + tableSize; 
-            mainLevel != end && bucketVec.size() < numberOfBuckets;  )
+            mainLevel != end && bucketVec.size() < numberOfBuckets; currBucket = *++mainLevel )
          {
          for ( ; currBucket ; currBucket = currBucket->next )
             bucketVec.emplace_back( currBucket );
-         currBucket = *++mainLevel;
          }  
 
       return bucketVec;
@@ -193,17 +196,12 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
          // Your code here.
          Bucket< Key, Value > *bucket = *helperFind( k, hashFunc( k ) );
 
-         //if( bucket && bucket->tuple.key == k )
-         if ( bucket && CompareEqual( bucket->tuple.key, k ) )
-            return &bucket->tuple;
-
-         return nullptr;
-
+         return bucket ? &bucket->tuple : nullptr;
          } // end Find()
 
 
       //Invalidates any Iterators / pointers
-      void Optimize( double loading = 1.5 ) // does this imply load factor reaching this point?
+      void Optimize( double loadFactor = 1.5 ) // does this imply load factor reaching this point?
          {
          // Modify or rebuild the hash table as you see fit
          // to improve its performance now that you know
@@ -211,38 +209,44 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
 
          // Your code here.
 
-         if ( loading > static_cast<double>(numberOfBuckets) / tableSize )
+         // No need to increase hash table size if loadFactor
+         if ( loadFactor > static_cast<double>(numberOfBuckets) / tableSize )
             return;
 
-         std::vector< Bucket< Key, Value > * > flattened = flattenHashTable();
+         std::vector< Bucket< Key, Value > *> flattened = flattenHashTable();
          delete []buckets;
+         
+         // Sort so that most frequent words are inserted first
          std::sort( flattened.begin(), flattened.end(), 
             []( Bucket< Key, Value > *lhs, Bucket< Key, Value > *rhs ) 
                { return lhs->tuple.value > rhs->tuple.value; } );
 
+         // Doubles number of buckets and computes the two's power ceiling
+         // .e.g computeTwosPowCeiling( 100 * 2 ) = 256
          size_t newTbSize = computeTwosPowCeiling( numberOfBuckets << 1 );
-         buckets = new Bucket< Key, Value> *[ newTbSize ]();
+         buckets = new Bucket< Key, Value> *[ newTbSize ];
+         memset( buckets, 0, sizeof(Bucket< Key, Value > *) * newTbSize );
 
+         // Set member variables to reflect increased hash table size
          numberOfBuckets = 0;
          tableSize = newTbSize;
 
-         auto pred = [this]( Bucket< Key, Value > *val )
+         auto addToHT = [this]( Bucket< Key, Value > *bucket )
             {
-            val->next = nullptr; // Remove any pointer relationship
-            uint32_t index = val->hashValue & ( tableSize - 1 );
-            Bucket< Key, Value > **bucket = buckets + index;
-            for ( ; *bucket; bucket = &( *bucket )->next );
-            *bucket = val;
+            bucket->next = nullptr; // Remove any pointer relationship
+            uint32_t index = bucket->hashValue & ( tableSize - 1 );
+            Bucket< Key, Value > **bucketPtr = buckets + index;
+            // Goes all the way to the end of linked list
+            for ( ; *bucketPtr; bucketPtr = &( *bucketPtr )->next ); //iterates until end of linked list chain
+            *bucketPtr = bucket;
             ++numberOfBuckets;
             };
 
-         std::for_each( flattened.begin(), flattened.end(), pred );
+         std::for_each( flattened.begin(), flattened.end(), addToHT );
          }
-
 
       // Your constructor may take as many default arguments
       // as you like.
-      
 
       HashTable( size_t tb = DEFAULTSIZE ) : numberOfBuckets(0), tableSize(tb), buckets( new Bucket< Key, Value > *[ tb ] )
          {
@@ -262,6 +266,7 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
          } // end ~HashTable()
 
       inline size_t size() const { return numberOfBuckets; }
+      inline size_t table_size() const { return tableSize; }
 
       class Iterator
          {

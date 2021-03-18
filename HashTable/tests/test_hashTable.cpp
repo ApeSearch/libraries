@@ -84,6 +84,19 @@ TEST( test_find_nothing )
    ASSERT_TRUE( !kv );
    }
 
+TEST( test_modify )
+   {
+   HashTable<const char*, size_t> hashTable(128);
+   // Insert "testing"
+    Tuple<const char *, size_t> *kv = hashTable.Find( "testing", 100 );
+    ASSERT_TRUE( kv );
+    ASSERT_EQUAL( kv->value, 100 );
+    kv->value = 9001;
+    kv = hashTable.Find( "testing" );
+    ASSERT_TRUE( kv );
+    ASSERT_EQUAL( kv->value, 9001 );
+   }
+
 static void wrapper( std::vector<std::string>& strings, const size_t val, HashTable<const char*, size_t>& hashTable)
    {
    for ( unsigned n = 0; n < val; ++n )
@@ -171,6 +184,35 @@ TEST( test_dont_optimize )
       ASSERT_TRUE( kv );
       ASSERT_EQUAL( kv->value, n );
       } // end for
+   }
+
+TEST( test_power_of_two )
+   {
+   static size_t val = 16;
+   HashTable<const char*, size_t> hashTable(8);
+   std::vector<std::string> strings; // To keep pointers around
+   strings.reserve( val ); // Very important
+   wrapper( strings, val, hashTable );
+
+   ASSERT_EQUAL( hashTable.table_size(), 8 );
+   hashTable.Optimize();
+   ASSERT_EQUAL( hashTable.table_size(), 32 );
+
+   for ( unsigned n = 0; n < val; ++n )
+      {
+      Tuple<const char*, size_t> * kv = hashTable.Find( strings[n].c_str() );
+      ASSERT_TRUE( kv );
+      ASSERT_EQUAL( kv->value, n );
+      } // end for
+   }
+
+TEST( test_power_of_two_general )
+   {
+   ASSERT_EQUAL( computeTwosPowCeiling(1), 1 );
+   ASSERT_EQUAL( computeTwosPowCeiling(2), 2 );
+   ASSERT_EQUAL( computeTwosPowCeiling(3), 4 );
+   ASSERT_EQUAL( computeTwosPowCeiling(16), 16 );
+   ASSERT_EQUAL( computeTwosPowCeiling(17), 32 );
    }
 
 TEST_MAIN()
