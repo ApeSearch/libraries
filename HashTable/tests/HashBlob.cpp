@@ -10,9 +10,9 @@
 #include <vector>
 #include <cstring>
 
-#include "HashBlob.h"
-#include "Common.h"
-#include "Timer.h"
+#include "../include/HashTable/HashBlob.h"
+#include "../include/HashTable/Common.h"
+#include "../include/HashTable/Timer.h"
 
 using namespace std;
 

@@ -6,10 +6,10 @@
 #include <vector>
 #include <string>
 #include <cstring>
-#include "HashTable.h"
-#include "Common.h"
-#include "Timer.h"
-#include "TopN.h"
+#include "../include/HashTable/HashTable.h"
+#include "../include/HashTable/Common.h"
+#include "../include/HashTable/Timer.h"
+#include "../include/HashTable/TopN.h"
 
 using namespace std;
 

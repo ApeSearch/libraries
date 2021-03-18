@@ -8,8 +8,8 @@
 // Individual pairs are to be C-strings as keys and size_t's
 // as values.
 
-#include "HashTable.h"
-#include "TopN.h"
+#include "../include/HashTable/HashTable.h"
+#include "../include/HashTable/TopN.h"
 
 using namespace std;
 

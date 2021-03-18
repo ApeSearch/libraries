@@ -25,14 +25,14 @@ bool CompareEqual( const char *L, const char *R );
 
 // Caller is responsible for deleting the Hash.
 
-HashTable< const char *, size_t > *BuildHashTable( const vector< string > &words );
+HashTable< const char *, size_t > *BuildHashTable( const std::vector< std::string > &words );
 
 
 // Collect words read from a file specified on the command line
 // as either individual word or whole lines in a vector of
 // strings.
 
-void CollectWordsIn( int argc, char **argv, vector< string > &words );
+void CollectWordsIn( int argc, char **argv, std::vector< std::string > &words );
 
 // -v (verbose) command line option.
 

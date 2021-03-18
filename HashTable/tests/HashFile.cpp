@@ -10,8 +10,8 @@
 #include <string>
 #include <vector>
 
-#include "HashBlob.h"
-#include "Timer.h"
+#include "../include/HashTable/HashBlob.h"
+#include "../include/HashTable/Timer.h"
 
 using namespace std;
 

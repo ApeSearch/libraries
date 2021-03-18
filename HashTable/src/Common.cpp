@@ -6,8 +6,8 @@
 #include <vector>
 #include <string>
 #include <cstring>
-#include "HashTable.h"
-#include "Common.h"
+#include "../include/HashTable/HashTable.h"
+#include "../include/HashTable/Common.h"
 
 using namespace std;
 
@@ -49,7 +49,7 @@ Hash *BuildHashTable( const vector< string > &words )
    {
    // Your code here.
 
-   return nullptr.
+   return nullptr;
    }
 
 
