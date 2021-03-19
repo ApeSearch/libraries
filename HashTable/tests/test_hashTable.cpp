@@ -242,6 +242,44 @@ TEST( test_iterators )
 
    HashTable<const char*, size_t>::Iterator itr = hashTable.begin();
    ASSERT_EQUAL( itr->value, 100 );
+
+   }
+
+TEST( test_iterating )
+   {
+   static size_t val = 10;
+   HashTable<const char*, size_t> hashTable(8);
+   std::vector<std::string> strings; // To keep pointers around
+   strings.reserve( val ); // Very important
+   for ( unsigned n = 0; n < val; ++n )
+      {
+      strings.emplace_back( std::to_string( n ) );
+      const char * ptr = strings[n].c_str();
+      hashTable.Find( ptr, n );
+      Tuple<const char*, size_t> * kv = hashTable.Find( strings[n].c_str() );
+      ASSERT_TRUE( kv );
+      ASSERT_EQUAL( kv->value, n );
+      } // end for
+
+   for ( unsigned n = 0; n < val; ++n )
+      {
+      Tuple<const char*, size_t> * kv = hashTable.Find( strings[n].c_str() );
+      ASSERT_TRUE( kv );
+      ASSERT_EQUAL( kv->value, n );
+      } // end for
+
+   hashTable.Optimize();
+   std::vector< const Bucket< const char*, size_t> * > vec( hashTable.constflattenHashTable() );
+   ASSERT_EQUAL( vec.size(), hashTable.size() );
+
+   HashTable<const char*, size_t>::Iterator hTItr = hashTable.begin();
+   auto itr = vec.begin();
+   for ( ; itr != vec.end() && hTItr != hashTable.end(); ++itr, ++hTItr )
+      {
+      ASSERT_TRUE( CompareEqual( (*itr)->tuple.key, hTItr->key ) );
+      ASSERT_EQUAL( (*itr)->tuple.value, hTItr->value );
+      }
+   ASSERT_TRUE( itr == vec.begin() && hTItr == hashTable.end() );
    }
 
 TEST_MAIN()

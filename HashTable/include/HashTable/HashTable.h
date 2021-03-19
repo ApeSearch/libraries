@@ -118,17 +118,15 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
          }
       return bucket;
       } // end helperFind()
-   
-/*
-   void advanceBucket( Bucket< Key, Value > ***currBucket, Bucket< Key, Value> ***mainLevel )
+   /*
+   void advanceBucket( Bucket< Key, Value > **currBucket, Bucket< Key, Value> ***mainLevel )
       {
-      if ( ( **currBucket )->next )
-         *currBucket = &( **currBucket )->next;
+      if ( ( *currBucket )->next )
+         currBucket = ( *currBucket )->next;
       else
          *currBucket = ++( *mainLevel );
       } // end advanceBucket()
-*/
-
+   */
    std::vector< Bucket< Key, Value> *> flattenHashTable()
       {
       
@@ -278,11 +276,6 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
             HashTable *table; // for the tableSize
             Bucket< Key, Value > *currentBucket;
             Bucket< Key, Value > **mainLevel;
-         
-            //size_t current_hash;
-            
-            //if(!current_bucket->next)
-            //   current_bucket = table->buckets[current_hash++];
 
             Iterator( HashTable *_table, size_t bucket ) :  table( _table ), 
                   currentBucket( * (table->buckets + bucket ) ), mainLevel( table->buckets + bucket ) {}
@@ -312,6 +305,14 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
                mainLevel = table->buckets + table->tableSize;
                currentBucket = *mainLevel;
                }
+
+            void advanceBucket( )
+               {
+               if ( currentBucket->next )
+                  currentBucket = currentBucket->next;
+               else
+                  currentBucket = *++mainLevel;
+               } // end advanceBucket()
 
          public:
 
@@ -351,19 +352,17 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
                {
                Iterator old( *this );
                currentBucket = ( currentBucket->next ? currentBucket->next : *++mainLevel );
-                  
                return old;
                }
 
             bool operator==( const Iterator &rhs ) const
                {
-                  return currentBucket == rhs.currentBucket;
+               return currentBucket == rhs.currentBucket;
                }
 
             bool operator!=( const Iterator &rhs ) const
                {
-               
-                  return currentBucket != rhs.currentBucket;
+               return currentBucket != rhs.currentBucket;
                }
          };
 
