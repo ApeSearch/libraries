@@ -29,6 +29,7 @@ $(TEST_SRC): %: %.cpp ${OBJS} ${UTFWOBJS}
 	@mkdir -p ${EXECDIR}
 	@mkdir -p ${STDEXECDIR}
 	@mkdir -p ${OUTPUT}
+	@mkdir -p tests/wrongOutput
 	${CC} -Dtesting -DLOCAL ${OS} -o  ${EXECDIR}/$(notdir $@) $^ -pthread
 	#${CC} -D STD -Dtesting ${LDFLAGS} -lz -o ${STDEXECDIR}/$(notdir $@) $^ -pthread
 

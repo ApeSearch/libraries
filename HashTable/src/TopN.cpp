@@ -23,9 +23,6 @@ using namespace std;
 #include <utility>     // You'll need swap() eventually
 #include <assert.h>
 
-#include <functional> // Needed for std::less<>
-
-
 using Hash = HashTable< const char *, size_t >;
 using Pair = Tuple< const char *, size_t >;
 
@@ -45,8 +42,8 @@ Pair ** insertSortN( Pair **pairArray, Pair **pairValidEnd, Pair ** pairTrueEnd,
    Pair ** itr = pairValidEnd;
    *itr = tuple;
    // while tuple > currentVal
-   while ( itr != pairArray && comp( *itr, *(itr - 1 ) ) )
-      std::swap( *itr, *--itr );
+   for ( ;itr != pairArray && comp( *itr, *(itr - 1 ) ); --itr )
+      std::swap( *itr, *(itr - 1) );
    
    return pairValidEnd + 1 == pairTrueEnd ? pairValidEnd : pairValidEnd + 1;
    } // end inserSortN()
