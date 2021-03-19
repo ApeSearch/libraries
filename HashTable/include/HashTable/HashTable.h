@@ -342,7 +342,7 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
             // Prefix ++
             Iterator &operator++( )
                {
-               currentBucket = currentBucket->next ? currentBucket->next : *++mainLevel;
+               currentBucket = ( currentBucket->next ? currentBucket->next : *++mainLevel );
                return *this;
                }
 
@@ -350,7 +350,7 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
             Iterator operator++( int )
                {
                Iterator old( *this );
-               currentBucket = currentBucket->next ? currentBucket->next : *++mainLevel;
+               currentBucket = ( currentBucket->next ? currentBucket->next : *++mainLevel );
                   
                return old;
                }
