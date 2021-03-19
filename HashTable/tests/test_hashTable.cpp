@@ -274,12 +274,12 @@ TEST( test_iterating )
 
    HashTable<const char*, size_t>::Iterator hTItr = hashTable.begin();
    auto itr = vec.begin();
-   for ( ; itr != vec.end() && hTItr != hashTable.end(); ++itr, ++hTItr )
+   for ( size_t n = 0; n < val ; ++itr, ++hTItr, ++n )
       {
       ASSERT_TRUE( CompareEqual( (*itr)->tuple.key, hTItr->key ) );
       ASSERT_EQUAL( (*itr)->tuple.value, hTItr->value );
       }
-   ASSERT_TRUE( itr == vec.begin() && hTItr == hashTable.end() );
+   ASSERT_TRUE( itr == vec.end() && hTItr == hashTable.end() );
    }
 
 TEST_MAIN()

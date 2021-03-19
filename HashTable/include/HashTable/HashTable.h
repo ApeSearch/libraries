@@ -118,15 +118,18 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
          }
       return bucket;
       } // end helperFind()
-   /*
    void advanceBucket( Bucket< Key, Value > **currBucket, Bucket< Key, Value> ***mainLevel )
       {
       if ( ( *currBucket )->next )
-         currBucket = ( *currBucket )->next;
+         *currBucket = ( *currBucket )->next;
       else
-         *currBucket = ++( *mainLevel );
+         {
+         ++ ( *mainLevel );
+         for ( Bucket< Key, Value > **end = buckets + tableSize 
+            ; !(**mainLevel) && *mainLevel != end; ++ ( *mainLevel ) );
+            *currBucket = **mainLevel;
+         } // end else
       } // end advanceBucket()
-   */
    std::vector< Bucket< Key, Value> *> flattenHashTable()
       {
       
@@ -277,8 +280,12 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
             Bucket< Key, Value > *currentBucket;
             Bucket< Key, Value > **mainLevel;
 
-            Iterator( HashTable *_table, size_t bucket ) :  table( _table ), 
-                  currentBucket( * (table->buckets + bucket ) ), mainLevel( table->buckets + bucket ) {}
+            Iterator( HashTable *_table, size_t bucket ) :  table( _table ), mainLevel( table->buckets + bucket ) {
+               currentBucket = *mainLevel;
+               for (  Bucket< Key, Value > **end = table->buckets + table->tableSize
+                  ; !(*mainLevel) && mainLevel != end; ++mainLevel );
+               currentBucket = *mainLevel;
+            }
 
 /*
             Iterator( HashTable *_table, Bucket<Key, Value> *b ) :  table( _table ), mainLevel( b->hashValue & ( table->tableSize - 1 ) )
@@ -311,7 +318,12 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
                if ( currentBucket->next )
                   currentBucket = currentBucket->next;
                else
-                  currentBucket = *++mainLevel;
+                  {
+                  ++mainLevel; // Go to next place
+                  for ( Bucket< Key, Value > **end = table->buckets + table->tableSize
+                     ; !(*mainLevel) && mainLevel != end; ++mainLevel );
+                  currentBucket = *mainLevel;
+                  }
                } // end advanceBucket()
 
          public:
@@ -325,7 +337,6 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
 
             ~Iterator( )
                {
-                  
                }
 
             Tuple< Key, Value > &operator*( )
@@ -343,7 +354,7 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
             // Prefix ++
             Iterator &operator++( )
                {
-               currentBucket = ( currentBucket->next ? currentBucket->next : *++mainLevel );
+               advanceBucket();
                return *this;
                }
 
@@ -351,7 +362,7 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
             Iterator operator++( int )
                {
                Iterator old( *this );
-               currentBucket = ( currentBucket->next ? currentBucket->next : *++mainLevel );
+               advanceBucket();
                return old;
                }
 
