@@ -231,4 +231,17 @@ TEST( test_power_of_two_general )
    ASSERT_EQUAL( computeTwosPowCeiling(17), 32 );
    }
 
+TEST( test_iterators )
+   {
+   HashTable<const char*, size_t> hashTable(1); // Forces all entries into one bucket
+   ASSERT_EQUAL(hashTable.Find( "testing" ), nullptr);
+   Tuple<const char *, size_t> * kv = hashTable.Find( "testing", 100 );
+   kv = hashTable.Find( "lololol", 42 );
+
+   kv = hashTable.Find( "testing" );
+
+   HashTable<const char*, size_t>::Iterator itr = hashTable.begin();
+   ASSERT_EQUAL( itr->value, 100 );
+   }
+
 TEST_MAIN()

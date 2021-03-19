@@ -47,6 +47,10 @@ using Pair = Tuple< const char *, size_t >;
 Hash *BuildHashTable( const vector< string > &words )
    {
    // Your code here.
+   Hash *hashTable = new Hash;
+
+   for ( const string& word : words )
+      ++( hashTable->Find( word.c_str(), 0 )->value );
 
    return nullptr;
    }

@@ -1,5 +1,6 @@
 #pragma once
 
+
 // TopN.h
 // Nicole Hamilton nham@umich.edu
 
@@ -11,6 +12,7 @@
 // as values.
 
 #include "HashTable.h"
+
 
 Tuple< const char *, size_t > **TopN( HashTable< const char *,
       size_t > *hashtable, int N = 10 );

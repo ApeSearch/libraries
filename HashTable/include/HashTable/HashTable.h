@@ -17,12 +17,11 @@ using std::sort;
 
 #define DEFAULTSIZE 4096
 
-static inline size_t computeTwosPowCeiling(size_t num) 
+static inline size_t computeTwosPowCeiling( ssize_t num ) 
    {
-   assert( num ); // num must be > 0
    --num; // Account for num already being a two's power
    size_t powerNum = 1;
-   for (; num; num >>=1 )
+   for (; num > 0; num >>=1 )
       powerNum <<= 1;
    return powerNum;
    }
@@ -47,8 +46,6 @@ public:
       return hash;
       } //end operator()
 };
-
-
 
 
 //using namespace std;
@@ -101,6 +98,7 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
       Bucket< Key, Value > **buckets;
       size_t tableSize; // length of bucket array
       size_t numberOfBuckets; // Contains amount of seperate chained buckets
+      size_t collisions; // Tracks current collisions in hash_table
       Hash hashFunc;
 
       friend class Iterator;
@@ -121,6 +119,7 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
       return bucket;
       } // end helperFind()
    
+/*
    void advanceBucket( Bucket< Key, Value > ***currBucket, Bucket< Key, Value> ***mainLevel )
       {
       if ( ( **currBucket )->next )
@@ -128,6 +127,7 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
       else
          *currBucket = ++( *mainLevel );
       } // end advanceBucket()
+*/
 
    std::vector< Bucket< Key, Value> *> flattenHashTable()
       {
@@ -181,6 +181,8 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
             {
             *bucket = new Bucket< Key, Value >( k, initialValue, hashVal );
             ++numberOfBuckets;
+            if( bucket < buckets || bucket >= buckets + tableSize ) 
+               ++collisions;
             } // end if
       
          return & ( * bucket )->tuple;
@@ -216,13 +218,13 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
          delete []buckets;
          
          // Sort so that most frequent words are inserted first
-         std::sort( flattened.begin(), flattened.end(), 
-            []( Bucket< Key, Value > *lhs, Bucket< Key, Value > *rhs ) 
-               { return lhs->tuple.value > rhs->tuple.value; } );
+         //std::sort( flattened.begin(), flattened.end(), 
+         //   []( Bucket< Key, Value > *lhs, Bucket< Key, Value > *rhs ) 
+         //      { return lhs->tuple.value > rhs->tuple.value; } );
 
          // Doubles number of buckets and computes the two's power ceiling
          // .e.g computeTwosPowCeiling( 100 * 2 ) = 256
-         size_t newTbSize = computeTwosPowCeiling( expectedTS );
+         size_t newTbSize = computeTwosPowCeiling( (ssize_t) expectedTS );
          buckets = new Bucket< Key, Value> *[ newTbSize ];
          memset( buckets, 0, sizeof(Bucket< Key, Value > *) * newTbSize );
 
@@ -272,73 +274,108 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
          private:
 
             friend class HashTable;
-            //HashTable *table; // table_size
             // Your code here.
-            HashTable *table;
-            Bucket< Key, Value > *current_bucket;
-            size_t current_hash;
+            HashTable *table; // for the tableSize
+            Bucket< Key, Value > *currentBucket;
+            Bucket< Key, Value > **mainLevel;
+         
+            //size_t current_hash;
             
             //if(!current_bucket->next)
             //   current_bucket = table->buckets[current_hash++];
 
-            Iterator( HashTable *_table, size_t bucket, Bucket<Key, Value> *b ) :  table( _table ), current_hash( bucket )
+            Iterator( HashTable *_table, size_t bucket ) :  table( _table ), 
+                  currentBucket( * (table->buckets + bucket ) ), mainLevel( table->buckets + bucket ) {}
+
+/*
+            Iterator( HashTable *_table, Bucket<Key, Value> *b ) :  table( _table ), mainLevel( b->hashValue & ( table->tableSize - 1 ) )
+               {
+               if ( table && b )
+                  {
+                  currentBucket = table->helperFind( k, hashFunc( k ) );
+                  mainLevel = b->hashValue & ( table->tableSize - 1 );
+                  } // end if
+               }
+*/
+            Iterator( HashTable *_table, size_t bucketInd, Bucket<Key, Value> *b ) :  table( _table ), mainLevel( table->buckets + bucketInd )
                {
                // Your code here.
+               Bucket< Key, Value > *bucket = table->buckets[bucketInd];
+               for( ; bucket && bucket != b; bucket = bucket->next );
                
+               if( bucket ) 
+                  {
+                  currentBucket = b;
+                  return;
+                  } // end if
+
+               mainLevel = table->buckets + table->tableSize;
+               currentBucket = *mainLevel;
                }
 
          public:
 
-            Iterator( ) : Iterator( nullptr, 0, nullptr )
+            Iterator( )// : Iterator( nullptr, 0, nullptr )
                {
+               table = nullptr;
+               currentBucket = nullptr;
+               mainLevel = nullptr;
                }
 
             ~Iterator( )
                {
+                  
                }
 
             Tuple< Key, Value > &operator*( )
                {
                // Your code here.
+               return currentBucket->tuple;
                }
 
             Tuple< Key, Value > *operator->( ) const
                {
                // Your code here.
+               return &currentBucket->tuple;
                }
 
             // Prefix ++
             Iterator &operator++( )
                {
-               // Your code here.
+               currentBucket = currentBucket->next ? currentBucket->next : *++mainLevel;
+               return *this;
                }
 
             // Postfix ++
             Iterator operator++( int )
                {
-               // Your code here.
+               Iterator old( *this );
+               currentBucket = currentBucket->next ? currentBucket->next : *++mainLevel;
+                  
+               return old;
                }
 
             bool operator==( const Iterator &rhs ) const
                {
-               // Your code here.
-               return true;
+                  return currentBucket == rhs.currentBucket;
                }
 
             bool operator!=( const Iterator &rhs ) const
                {
-               // Your code here.
-               return true;
+               
+                  return currentBucket != rhs.currentBucket;
                }
          };
 
       Iterator begin( )
          {
          // Your code here.
+         //Iterator(table, 0, table->buckets[])
+         return Iterator( this, 0 );
          }
 
       Iterator end( )
          {
-         // Your code here. table->buckets + table->tabSize;
+         return Iterator( this, tableSize );
          }
    };
