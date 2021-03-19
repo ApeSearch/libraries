@@ -140,11 +140,11 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
 
       // ++ happens first then dereference
       for ( Bucket< Key, Value > **const end = buckets + tableSize; 
-            mainLevel != end && bucketVec.size() < numberOfBuckets; currBucket = *++mainLevel )
+            mainLevel != end && bucketVec.size() < numberOfBuckets; ++mainLevel )
          {
-         for ( ; currBucket ; currBucket = currBucket->next )
+         for ( currBucket = *mainLevel ; currBucket ; currBucket = currBucket->next )
             bucketVec.emplace_back( currBucket );
-         }  
+         }
 
       return bucketVec;
       }  // end flattenHashTable()
@@ -158,9 +158,9 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
       bucketVec.reserve( numberOfBuckets );
 
       for ( Bucket< Key, Value > **const end = buckets + tableSize; 
-            mainLevel != end && bucketVec.size() < numberOfBuckets; currBucket = *++mainLevel )
+            mainLevel != end && bucketVec.size() < numberOfBuckets; ++mainLevel )
          {
-         for ( ; currBucket ; currBucket = currBucket->next )
+         for ( currBucket = *mainLevel ; currBucket ; currBucket = currBucket->next )
             bucketVec.emplace_back( currBucket );
          }  
 
@@ -283,7 +283,7 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
 
             Iterator( HashTable *_table, size_t bucket ) :  table( _table ), mainLevel( table->buckets + bucket ) {
                for (  Bucket< Key, Value > **end = table->buckets + table->tableSize
-                  ; !(*mainLevel) && mainLevel != end; ++mainLevel );
+                  ; mainLevel != end && !(*mainLevel); ++mainLevel );
                currentBucket = mainLevel;
             }
 
