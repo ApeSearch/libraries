@@ -1,0 +1,10 @@
+Usage:  HashBlob [ -L ] wordsin.txt [ blobfile ]
+
+Reads words from wordsin.txt, creates a hashblob,
+then searches it for words read from cin.
+
+If blobfile is specified, it writes the hashblob
+into the blobfile.
+
+-v means verbose output
+-L means read whole lines as words

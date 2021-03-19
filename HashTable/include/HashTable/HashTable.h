@@ -126,7 +126,7 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
          {
          ++ ( *mainLevel );
          for ( Bucket< Key, Value > **end = buckets + tableSize 
-            ; !(**mainLevel) && *mainLevel != end; ++ ( *mainLevel ) );
+            ; *mainLevel != end && !(**mainLevel); ++ ( *mainLevel ) );
             *currBucket = **mainLevel;
          } // end else
       } // end advanceBucket()
@@ -277,14 +277,14 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
             friend class HashTable;
             // Your code here.
             HashTable *table; // for the tableSize
-            Bucket< Key, Value > *currentBucket;
+            //Bucket< Key, Value > *currentBucket;
+            Bucket< Key, Value > **currentBucket;
             Bucket< Key, Value > **mainLevel;
 
             Iterator( HashTable *_table, size_t bucket ) :  table( _table ), mainLevel( table->buckets + bucket ) {
-               currentBucket = *mainLevel;
                for (  Bucket< Key, Value > **end = table->buckets + table->tableSize
                   ; !(*mainLevel) && mainLevel != end; ++mainLevel );
-               currentBucket = *mainLevel;
+               currentBucket = mainLevel;
             }
 
 /*
@@ -315,14 +315,15 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
 
             void advanceBucket( )
                {
-               if ( currentBucket->next )
-                  currentBucket = currentBucket->next;
+               if ( ( *currentBucket )->next )
+                  currentBucket = & ( *currentBucket )->next;
                else
                   {
                   ++mainLevel; // Go to next place
+                  // Order of comparasions matter since *(buckets + tableSize) isn't owned by us 
                   for ( Bucket< Key, Value > **end = table->buckets + table->tableSize
-                     ; !(*mainLevel) && mainLevel != end; ++mainLevel );
-                  currentBucket = *mainLevel;
+                     ; mainLevel != end && !(*mainLevel); ++mainLevel );
+                  currentBucket = mainLevel;
                   }
                } // end advanceBucket()
 
@@ -342,13 +343,13 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
             Tuple< Key, Value > &operator*( )
                {
                // Your code here.
-               return currentBucket->tuple;
+               return ( *currentBucket )->tuple;
                }
 
             Tuple< Key, Value > *operator->( ) const
                {
                // Your code here.
-               return &currentBucket->tuple;
+               return & ( *currentBucket )->tuple;
                }
 
             // Prefix ++

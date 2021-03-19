@@ -1,0 +1,5 @@
+Usage:  HashFile [ -v ] blobfile
+
+Map the blobfile into memory and then search it for words
+read from cin.
+-v means verbose output

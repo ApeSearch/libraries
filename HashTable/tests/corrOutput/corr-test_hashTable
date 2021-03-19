@@ -1,0 +1,44 @@
+Running test: test_constFlattening_full
+PASS
+Running test: test_constFlattening_sparse
+PASS
+Running test: test_find
+PASS
+Running test: test_find_nothing
+PASS
+Running test: test_find_seperate_chaining
+PASS
+Running test: test_iterating
+PASS
+Running test: test_iterators
+PASS
+Running test: test_modify
+PASS
+Running test: test_optimize
+PASS
+Running test: test_optimize_shrink
+PASS
+Running test: test_optimize_shrink2
+PASS
+Running test: test_power_of_two
+PASS
+Running test: test_power_of_two_general
+PASS
+
+*** Results ***
+** Test case 'test_constFlattening_full': PASS
+** Test case 'test_constFlattening_sparse': PASS
+** Test case 'test_find': PASS
+** Test case 'test_find_nothing': PASS
+** Test case 'test_find_seperate_chaining': PASS
+** Test case 'test_iterating': PASS
+** Test case 'test_iterators': PASS
+** Test case 'test_modify': PASS
+** Test case 'test_optimize': PASS
+** Test case 'test_optimize_shrink': PASS
+** Test case 'test_optimize_shrink2': PASS
+** Test case 'test_power_of_two': PASS
+** Test case 'test_power_of_two_general': PASS
+*** Summary ***
+Out of 13 tests run:
+0 failure(s), 0 error(s)
