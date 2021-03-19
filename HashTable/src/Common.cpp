@@ -52,7 +52,7 @@ Hash *BuildHashTable( const vector< string > &words )
    for ( const string& word : words )
       ++( hashTable->Find( word.c_str(), 0 )->value );
 
-   return nullptr;
+   return hashTable;
    }
 
 
