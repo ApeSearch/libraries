@@ -1,3 +1,5 @@
+Running test: test_Comparison
+PASS
 Running test: test_constFlattening_full
 PASS
 Running test: test_constFlattening_sparse
@@ -26,6 +28,7 @@ Running test: test_power_of_two_general
 PASS
 
 *** Results ***
+** Test case 'test_Comparison': PASS
 ** Test case 'test_constFlattening_full': PASS
 ** Test case 'test_constFlattening_sparse': PASS
 ** Test case 'test_find': PASS
@@ -40,5 +43,5 @@ PASS
 ** Test case 'test_power_of_two': PASS
 ** Test case 'test_power_of_two_general': PASS
 *** Summary ***
-Out of 13 tests run:
+Out of 14 tests run:
 0 failure(s), 0 error(s)

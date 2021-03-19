@@ -4,6 +4,7 @@ tests/std_bin
 tests/bin
 tests/bin/*
 tests/output/*
+tests/wrongOutput/*
 !.gitignore
 *.dSYM
 *.o

@@ -82,6 +82,24 @@ TEST( test_modify )
     ASSERT_EQUAL( kv->value, 9001 );
    }
 
+// Testing the issue if ( *bucket )->tuple.key == k 
+// is used over CompareEqual( ( *bucket )->tuple.key, k ) 
+TEST( test_Comparison )
+   {
+   HashTable<const char*, size_t> hashTable(128);
+   // Insert "testing"
+   std::string str1( "testing" );
+   std::string str2( "testing" );
+   Tuple<const char *, size_t> *kv = hashTable.Find( str1.c_str(), 100 );
+   ASSERT_TRUE( kv );
+   ASSERT_EQUAL( kv->value, 100 );
+   kv = hashTable.Find( str2.c_str(), 42 );
+   ASSERT_TRUE( kv );
+   ASSERT_EQUAL( kv->value, 100 );
+
+   ASSERT_EQUAL( hashTable.size(), 1 );
+   }
+
 static void testingFlattening( std::vector<std::string>& strings, const size_t val, HashTable<const char*, size_t>& hashTable);
 
 TEST( test_constFlattening_full )
