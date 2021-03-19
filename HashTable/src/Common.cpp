@@ -6,8 +6,13 @@
 #include <vector>
 #include <string>
 #include <cstring>
-#include "../include/HashTable/HashTable.h"
-#include "../include/HashTable/Common.h"
+#ifdef LOCAL
+   #include "../include/HashTable/HashTable.h"
+   #include "../include/HashTable/Common.h"
+#else
+   #include "HashTable.h"
+   #include "Common.h"
+#endif
 
 using namespace std;
 

@@ -1,10 +1,10 @@
 CC=g++ -g3 -std=c++17 -Wall -pedantic -Wconversion -Wextra -Wreorder -fno-builtin
 
 ifeq ($(shell uname -s | tr A-Z a-z), darwin)
-	FLAGS:=MACOS
+	OS:=-DMACOS
 endif
 ifeq ($(shell uname -s | tr A-Z a-z), linux)
-	FLAGS:=LINUX
+	OS:=-DLINUX
 endif
 
 SRC=src
@@ -29,7 +29,7 @@ $(TEST_SRC): %: %.cpp ${OBJS} ${UTFWOBJS}
 	@mkdir -p ${EXECDIR}
 	@mkdir -p ${STDEXECDIR}
 	@mkdir -p ${OUTPUT}
-	${CC} -Dtesting${FLAGS} -o  ${EXECDIR}/$(notdir $@) $^ -pthread
+	${CC} -Dtesting -DLOCAL ${OS} -o  ${EXECDIR}/$(notdir $@) $^ -pthread
 	#${CC} -D STD -Dtesting ${LDFLAGS} -lz -o ${STDEXECDIR}/$(notdir $@) $^ -pthread
 
 
@@ -42,9 +42,9 @@ run_test: test
 
 
 %.o: %.cpp
-	${CC} -c $< -o $@
+	${CC} -DLOCAL -c $< -o $@
 %.o: %.cc
-	${CC} -c $
+	${CC} -DLOCAL -c $
 
 
 Top10: Top10.cpp Common.h Common.cpp TopN.h TopN.cpp HashTable.h 

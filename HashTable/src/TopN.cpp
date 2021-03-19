@@ -8,8 +8,13 @@
 // Individual pairs are to be C-strings as keys and size_t's
 // as values.
 
-#include "../include/HashTable/HashTable.h"
-#include "../include/HashTable/TopN.h"
+#ifdef LOCAL
+   #include "../include/HashTable/HashTable.h"
+   #include "../include/HashTable/TopN.h"
+#else
+   #include "HashTable.h"
+   #include "Common.h"
+#endif
 
 using namespace std;
 #include <queue>
