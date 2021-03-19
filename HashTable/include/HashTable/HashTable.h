@@ -219,9 +219,9 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
          delete []buckets;
          
          // Sort so that most frequent words are inserted first
-         //std::sort( flattened.begin(), flattened.end(), 
-         //   []( Bucket< Key, Value > *lhs, Bucket< Key, Value > *rhs ) 
-         //      { return lhs->tuple.value > rhs->tuple.value; } );
+         std::sort( flattened.begin(), flattened.end(), 
+            []( Bucket< Key, Value > *lhs, Bucket< Key, Value > *rhs ) 
+               { return lhs->tuple.value > rhs->tuple.value; } );
 
          // Doubles number of buckets and computes the two's power ceiling
          // .e.g computeTwosPowCeiling( 100 * 2 ) = 256
