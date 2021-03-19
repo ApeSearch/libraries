@@ -42,7 +42,7 @@ Pair ** insertSortN( Pair **pairArray, Pair **pairValidEnd, Pair ** pairTrueEnd,
    Pair ** itr = pairValidEnd;
    *itr = tuple;
    // while tuple > currentVal
-   for ( ;itr != pairArray && comp( *itr, *(itr - 1 ) ); --itr )
+   for ( ;itr != pairArray && comp( *itr, *( itr - 1 ) ); --itr )
       std::swap( *itr, *(itr - 1) );
    
    return pairValidEnd + 1 == pairTrueEnd ? pairValidEnd : pairValidEnd + 1;
