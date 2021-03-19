@@ -283,7 +283,7 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
 
             Iterator( HashTable *_table, size_t bucket ) :  table( _table ), mainLevel( table->buckets + bucket ) {
                for (  Bucket< Key, Value > **end = table->buckets + table->tableSize
-                  ; mainLevel != end && !(*mainLevel); ++mainLevel );
+                  ; mainLevel != end && !(*mainLevel); ++mainLevel ); // Order of comparison is required: *mainLevel could be an invalid read if mainLevel == end
                currentBucket = mainLevel;
             }
 
@@ -321,8 +321,9 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
                   {
                   ++mainLevel; // Go to next place
                   // Order of comparasions matter since *(buckets + tableSize) isn't owned by us 
+                  // Need to find a top-level bucket that's valid
                   for ( Bucket< Key, Value > **end = table->buckets + table->tableSize
-                     ; mainLevel != end && !(*mainLevel); ++mainLevel );
+                     ; mainLevel != end && !(*mainLevel); ++mainLevel ); 
                   currentBucket = mainLevel;
                   }
                } // end advanceBucket()
