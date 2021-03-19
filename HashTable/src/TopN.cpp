@@ -20,6 +20,11 @@ using namespace std;
 #include <queue>
 #include <vector>
 
+#include <utility>     // You'll need swap() eventually
+#include <assert.h>
+
+#include <functional> // Needed for std::less<>
+
 
 using Hash = HashTable< const char *, size_t >;
 using Pair = Tuple< const char *, size_t >;
@@ -33,6 +38,19 @@ public:
       }
    };
 
+template<class Comparator>
+Pair ** insertSortN( Pair **pairArray, Pair **pairValidEnd, Pair ** pairTrueEnd, Pair *tuple, Comparator comp )
+   {
+   assert( pairValidEnd != pairTrueEnd );
+   Pair ** itr = pairValidEnd;
+   *itr = tuple;
+   // while tuple > currentVal
+   while ( itr != pairArray && comp( *itr, *(itr - 1 ) ) )
+      std::swap( *itr, *--itr );
+   
+   return pairValidEnd + 1 == pairTrueEnd ? pairValidEnd : pairValidEnd + 1;
+   } // end inserSortN()
+
 //TODO maybe don't use pairing heap.
 Pair **TopN( Hash *hashtable, int N )
    {
@@ -41,21 +59,15 @@ Pair **TopN( Hash *hashtable, int N )
    // are less than N pairs in the hash, remaining pointers
    // will be null.
 
-   Pair **pairArray = new Pair *[ unsigned( N ) ]();
+   Pair **pairArray = new Pair *[ unsigned( N + 1 ) ]();
+   Pair **validEnd = pairArray;
+   Pair ** end = pairArray + unsigned( N + 1 );
+   greaterComparator comp;
 
-   std::priority_queue <Pair*, std::vector<Pair *>, greaterComparator> pq;
    for ( Hash::Iterator it = hashtable->begin(); it != hashtable->end(); ++it )
-      {
-      pq.push( &*it );
-
-      if(pq.size() > N)
-         pq.pop();
-      } // end ofr
+      validEnd = insertSortN< greaterComparator >( pairArray, validEnd, end, &*it, comp );
    
-   while(!pq.empty())
-      {
-      pairArray[pq.size() - 1] = pq.top();
-      pq.pop(); 
-      }
    return pairArray;
    }
+
+

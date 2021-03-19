@@ -40,7 +40,7 @@ public:
       size_t hash = FnvOffsetBasis;
       for (  size_t i = 0; i < length; ++i)
          {
-         hash *= FnvPrime; 
+         hash *= FnvPrime;
          hash ^= (unsigned long)data[ i ];
          } // end for
       return hash;
