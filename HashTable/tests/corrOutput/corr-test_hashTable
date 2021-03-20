@@ -26,6 +26,8 @@ Running test: test_power_of_two
 PASS
 Running test: test_power_of_two_general
 PASS
+Running test: test_topN
+PASS
 
 *** Results ***
 ** Test case 'test_Comparison': PASS
@@ -42,6 +44,7 @@ PASS
 ** Test case 'test_optimize_shrink2': PASS
 ** Test case 'test_power_of_two': PASS
 ** Test case 'test_power_of_two_general': PASS
+** Test case 'test_topN': PASS
 *** Summary ***
-Out of 14 tests run:
+Out of 15 tests run:
 0 failure(s), 0 error(s)
