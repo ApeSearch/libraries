@@ -221,6 +221,73 @@ TEST( test_optimize_shrink2 )
       } // end for
    }
 
+TEST( test_optimizeElegant )
+   {
+   static size_t val = 10000;
+   HashTable<const char*, size_t> hashTable( 4096 );
+   std::vector<std::string> strings; // To keep pointers around
+   strings.reserve( val ); // Very important
+   testingFlattening( strings, val, hashTable );
+
+   ASSERT_EQUAL( strings.size(), hashTable.size() );
+   ASSERT_EQUAL( 4096, hashTable.table_size() );
+   hashTable.OptimizeElegant(); // Current load factor becomes at most 0.5
+   ASSERT_EQUAL( strings.size(), hashTable.size() );
+   ASSERT_EQUAL( 32768, hashTable.table_size() );
+
+   for ( unsigned n = 0; n < val; ++n )
+      {
+      Tuple<const char*, size_t> * kv = hashTable.Find( strings[n].c_str() );
+      ASSERT_TRUE( kv );
+      ASSERT_EQUAL( kv->value, n );
+      } // end for
+   }
+
+TEST( test_optimizeElegant_shrink )
+   {
+   static size_t val = 4;
+   HashTable<const char*, size_t> hashTable( 4096 );
+   std::vector<std::string> strings; // To keep pointers around
+   strings.reserve( val ); // Very important
+   testingFlattening( strings, val, hashTable );
+
+   ASSERT_EQUAL( strings.size(), hashTable.size() );
+   ASSERT_EQUAL( 4096, hashTable.table_size() ); // 4096
+   hashTable.OptimizeElegant();
+   ASSERT_EQUAL( strings.size(), hashTable.size() );
+   ASSERT_EQUAL( 8, hashTable.table_size() );
+
+   for ( unsigned n = 0; n < val; ++n )
+      {
+      Tuple<const char*, size_t> * kv = hashTable.Find( strings[n].c_str() );
+      ASSERT_TRUE( kv );
+      ASSERT_EQUAL( kv->value, n );
+      } // end for
+   }
+
+// Check that a bucket size of 3 still results in a table size of 8
+TEST( test_optimizeElegant_shrink2 )
+   {
+   static size_t val = 3;
+   HashTable<const char*, size_t> hashTable( 4096 );
+   std::vector<std::string> strings; // To keep pointers around
+   strings.reserve( val ); // Very important
+   testingFlattening( strings, val, hashTable );
+
+   ASSERT_EQUAL( strings.size(), hashTable.size() );
+   ASSERT_EQUAL( 4096, hashTable.table_size() ); // 4096
+   hashTable.OptimizeElegant();
+   ASSERT_EQUAL( strings.size(), hashTable.size() );
+   ASSERT_EQUAL( 8, hashTable.table_size() );
+
+   for ( unsigned n = 0; n < val; ++n )
+      {
+      Tuple<const char*, size_t> * kv = hashTable.Find( strings[n].c_str() );
+      ASSERT_TRUE( kv );
+      ASSERT_EQUAL( kv->value, n );
+      } // end for
+   }
+
 TEST( test_power_of_two )
    {
    static size_t val = 16;

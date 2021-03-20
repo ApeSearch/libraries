@@ -9,6 +9,7 @@
 #include <algorithm> // for std::sort
 #include <vector>
 using std::sort;
+#include "../../../AS/include/AS/algorithms.h"
 
 #define DEFAULTSIZE 4096
 
@@ -245,6 +246,15 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
 
          return bucketVec;
          }
+      
+      void swap( HashTable& other )
+         {
+         APESEARCH::swap( buckets, other.buckets );
+         APESEARCH::swap( tableSize, other.tableSize );
+         APESEARCH::swap( numberOfBuckets, other.numberOfBuckets );
+         APESEARCH::swap( collisions, other.collisions );
+         APESEARCH::swap( hashFunc, other.hashFunc );
+         } 
 
       inline size_t size() const { return numberOfBuckets; }
       inline size_t table_size() const { return tableSize; }
@@ -369,5 +379,20 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
          Bucket< Key, Value > **bucket = helperFind( k, hashFunc( k ) );
 
          return *bucket ? Iterator( this, bucket ) : end();
+         }
+      
+      void OptimizeElegant( double loadFactor = 0.5 )
+         {
+         size_t expectedTS = static_cast<double>(numberOfBuckets) / loadFactor;
+         size_t newTbSize = computeTwosPowCeiling( (ssize_t) expectedTS );
+
+         HashTable temp ( newTbSize );
+
+         for ( Iterator itr = begin(); itr != end(); ++itr )
+            {
+            Tuple <Key, Value> *pair = &( *itr.currentBucket )->tuple;
+            temp.Find( pair->key, pair->value );
+            }
+         swap( temp );
          }
    };
