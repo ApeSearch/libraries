@@ -104,20 +104,6 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
       friend class Iterator;
       friend class HashBlob;
    
-   Bucket< Key, Value > **helperFind( const Key& k, uint32_t hashVal ) const
-      {
-      // Applying a bit-wise mask on the least-sig bits
-      uint32_t index = hashVal & ( tableSize - 1 ); // modulo operation using bitwise AND (only works with power of two table size)
-      Bucket< Key, Value > **bucket = buckets + index;
-
-      for ( ; *bucket; bucket = &( *bucket )->next )
-         {
-         //if( ( *bucket )->tuple.key == k )
-         if ( CompareEqual( ( *bucket )->tuple.key, k ) )
-            break;
-         }
-      return bucket;
-      } // end helperFind()
    void advanceBucket( Bucket< Key, Value > **currBucket, Bucket< Key, Value> ***mainLevel )
       {
       if ( ( *currBucket )->next )
@@ -149,25 +135,25 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
       return bucketVec;
       }  // end flattenHashTable()
 
-   public:
-   std::vector< const Bucket< Key, Value> * > constflattenHashTable()
+
+   Bucket< Key, Value > **helperFind( const Key& k, uint32_t hashVal ) const
       {
-      Bucket< Key, Value > const *currBucket = *buckets;
-      Bucket< Key, Value > **mainLevel = buckets;
-      std::vector< const Bucket< Key, Value> * > bucketVec;
-      bucketVec.reserve( numberOfBuckets );
+      // Applying a bit-wise mask on the least-sig bits
+      uint32_t index = hashVal & ( tableSize - 1 ); // modulo operation using bitwise AND (only works with power of two table size)
+      Bucket< Key, Value > **bucket = buckets + index;
 
-      for ( Bucket< Key, Value > **const end = buckets + tableSize; 
-            mainLevel != end && bucketVec.size() < numberOfBuckets; ++mainLevel )
+      for ( ; *bucket; bucket = &( *bucket )->next )
          {
-         for ( currBucket = *mainLevel ; currBucket ; currBucket = currBucket->next )
-            bucketVec.emplace_back( currBucket );
-         }  
+         //if( ( *bucket )->tuple.key == k )
+         if ( CompareEqual( ( *bucket )->tuple.key, k ) )
+            break;
+         }
+      return bucket;
+      } // end helperFind()
 
-      return bucketVec;
-      }
+   public:
 
-      Tuple< Key, Value > *Find( const Key k, const Value initialValue )
+      Tuple< Key, Value > *Find( const Key& k, const Value initialValue )
          {
          // Search for the key k and return a pointer to the
          // ( key, value ) entry.  If the key is not already
@@ -189,7 +175,7 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
          return & ( * bucket )->tuple;
          }
 
-      Tuple< Key, Value > *Find( const Key k ) const
+      Tuple< Key, Value > *Find( const Key& k ) const
          {
          // Search for the key k and return a pointer to the
          // ( key, value ) enty.  If the key is not already
@@ -267,6 +253,24 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
          delete[] buckets;             
          } // end ~HashTable()
 
+
+      std::vector< const Bucket< Key, Value> * > constflattenHashTable()
+         {
+         Bucket< Key, Value > const *currBucket = *buckets;
+         Bucket< Key, Value > **mainLevel = buckets;
+         std::vector< const Bucket< Key, Value> * > bucketVec;
+         bucketVec.reserve( numberOfBuckets );
+
+         for ( Bucket< Key, Value > **const end = buckets + tableSize; 
+               mainLevel != end && bucketVec.size() < numberOfBuckets; ++mainLevel )
+            {
+            for ( currBucket = *mainLevel ; currBucket ; currBucket = currBucket->next )
+               bucketVec.emplace_back( currBucket );
+            }  
+
+         return bucketVec;
+         }
+
       inline size_t size() const { return numberOfBuckets; }
       inline size_t table_size() const { return tableSize; }
 
@@ -287,16 +291,10 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
                currentBucket = mainLevel;
             }
 
-/*
-            Iterator( HashTable *_table, Bucket<Key, Value> *b ) :  table( _table ), mainLevel( b->hashValue & ( table->tableSize - 1 ) )
-               {
-               if ( table && b )
-                  {
-                  currentBucket = table->helperFind( k, hashFunc( k ) );
-                  mainLevel = b->hashValue & ( table->tableSize - 1 );
-                  } // end if
-               }
-*/
+            // This constructor can be used for finds that want to return an iterator instead
+            Iterator( HashTable *_table, Bucket<Key, Value> **b ) :  table( _table ), currentBucket( b ), 
+                  mainLevel( table ? table->buckets + ( *b )->hashValue & ( table->tableSize - 1 ) : nullptr ) {}
+
             Iterator( HashTable *_table, size_t bucketInd, Bucket<Key, Value> *b ) :  table( _table ), mainLevel( table->buckets + bucketInd )
                {
                // Your code here.
@@ -383,11 +381,18 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
          {
          // Your code here.
          //Iterator(table, 0, table->buckets[])
-         return Iterator( this, 0 );
+         return Iterator( this, size_t ( 0 ) );
          }
 
       Iterator end( )
          {
          return Iterator( this, tableSize );
+         }
+      
+      Iterator FindItr( const Key& k ) const
+         {
+         Bucket< Key, Value > **bucket = helperFind( k, hashFunc( k ) );
+
+         return *bucket ? Iterator( this, bucket ) : end();
          }
    };
