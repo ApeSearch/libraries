@@ -304,7 +304,7 @@ TEST( test_iterating )
 TEST ( test_topN )
    {
    static size_t val = 10;
-   HashTable<const char*, size_t> hashTable(8);
+   HashTable<const char*, size_t> hashTable(1); // purposely absolute worst case for insertion sort
    std::vector<std::string> strings; // To keep pointers around
    strings.reserve( val ); // Very important
    for ( unsigned n = 0; n < val; ++n )
