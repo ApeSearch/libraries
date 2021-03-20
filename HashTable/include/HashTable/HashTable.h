@@ -9,7 +9,7 @@
 #include <algorithm> // for std::sort
 #include <vector>
 using std::sort;
-#include "../../../AS/include/AS/algorithms.h"
+#include "../../../AS/include/AS/algorithms.h" // for APESEARCH::swap
 
 #define DEFAULTSIZE 4096
 
@@ -266,9 +266,8 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
             friend class HashTable;
             // Your code here.
             HashTable *table; // for the tableSize
-            //Bucket< Key, Value > *currentBucket;
-            Bucket< Key, Value > **currentBucket;
             Bucket< Key, Value > **mainLevel;
+            Bucket< Key, Value > **currentBucket;
 
             Iterator( HashTable *_table, size_t bucket ) :  table( _table ), mainLevel( table->buckets + bucket ) {
                for (  Bucket< Key, Value > **end = table->buckets + table->tableSize
@@ -280,20 +279,18 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
             Iterator( HashTable *_table, Bucket<Key, Value> **b ) :  table( _table ), currentBucket( b ), 
                   mainLevel( table ? table->buckets + ( *b )->hashValue & ( table->tableSize - 1 ) : nullptr ) {}
 
-            Iterator( HashTable *_table, size_t bucketInd, Bucket<Key, Value> *b ) :  table( _table ), mainLevel( table->buckets + bucketInd )
+            Iterator( HashTable *_table, size_t bucketInd, Bucket<Key, Value> *b ) :  table( _table ), mainLevel( table ? table->buckets + bucketInd : nullptr ), currentBucket( mainLevel )
                {
                // Your code here.
-               Bucket< Key, Value > *bucket = table->buckets[bucketInd];
-               for( ; bucket && bucket != b; bucket = bucket->next );
-               
-               if( bucket ) 
-                  {
-                  currentBucket = b;
+               if ( !table )
                   return;
-                  } // end if
+               assert( bucketInd < table->tableSize );
 
-               mainLevel = table->buckets + table->tableSize;
-               currentBucket = *mainLevel;
+               // Follows linked list until either reaches something or a nullptr
+               for( ; *currentBucket && *currentBucket != b; currentBucket = & ( *currentBucket )->next );
+
+               if ( ! ( *currentBucket ) )
+                  currentBucket = mainLevel = table->buckets + table->tableSize;
                }
 
             void advanceBucket( )
@@ -313,11 +310,8 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
 
          public:
 
-            Iterator( )// : Iterator( nullptr, 0, nullptr )
+            Iterator( ) : table( nullptr ), mainLevel( nullptr ), currentBucket( nullptr )
                {
-               table = nullptr;
-               currentBucket = nullptr;
-               mainLevel = nullptr;
                }
 
             ~Iterator( )
@@ -364,8 +358,6 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
 
       Iterator begin( )
          {
-         // Your code here.
-         //Iterator(table, 0, table->buckets[])
          return Iterator( this, size_t ( 0 ) );
          }
 
@@ -381,6 +373,7 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
          return *bucket ? Iterator( this, bucket ) : end();
          }
       
+      //! Warning while this is simple, it also isn't very efficient
       void OptimizeElegant( double loadFactor = 0.5 )
          {
          size_t expectedTS = static_cast<double>(numberOfBuckets) / loadFactor;
@@ -396,3 +389,9 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
          swap( temp );
          }
    };
+
+   template<typename Key, typename Value >
+   void swap( HashTable< Key, Value>& lhs, HashTable< Key, Value>& rhs )
+      {
+      lhs.swap( rhs );
+      }
