@@ -156,19 +156,15 @@ void testingFlattening( std::vector<std::string>& strings, const size_t val, Has
 
 TEST( test_optimize )
    {
-   static size_t val = 1000000;
-   HashTable<const char*, size_t> hashTable( 500 );
+   static size_t val = 10000;
+   HashTable<const char*, size_t> hashTable;
    std::vector<std::string> strings; // To keep pointers around
    strings.reserve( val ); // Very important
    testingFlattening( strings, val, hashTable );
 
    ASSERT_EQUAL( strings.size(), hashTable.size() );
    ASSERT_EQUAL( 4096, hashTable.table_size() );
-   std::cout << "Load Factor: " << hashTable.load_factor() << std::endl;
-   std::cout << "Collisions before: " << hashTable.getCollisions() << std::endl;
    hashTable.Optimize(); // Current load factor becomes at most 0.5
-   std::cout << "Load Factor: " << hashTable.load_factor() << std::endl;
-   std::cout << "Collisions after: " << hashTable.getCollisions() << std::endl;
    ASSERT_EQUAL( strings.size(), hashTable.size() );
    ASSERT_EQUAL( 32768, hashTable.table_size() );
 

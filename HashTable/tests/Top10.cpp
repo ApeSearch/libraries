@@ -72,7 +72,10 @@ int main( int argc, char **argv )
    CollectWordsIn( argc, argv, words );
 
    Hash *hashtable = BuildHashTable( words );
+   
+   hashtable->printStats();
    hashtable->Optimize( );
+   hashtable->printStats();
 
    PrintTop10( hashtable );
 

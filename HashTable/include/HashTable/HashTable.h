@@ -4,12 +4,14 @@
 
 #include <cassert>
 #include <cstdint>
+#include <iostream>
 #include <cstring> // for strlen
 #include <assert.h>
 #include <algorithm> // for std::sort
 #include <vector>
 using std::sort;
 #include "../../../AS/include/AS/algorithms.h" // for APESEARCH::swap
+#include "../../../AS/include/AS/utility.h" // for APESEARCH::pair
 
 #define DEFAULTSIZE 4096
 
@@ -258,6 +260,55 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
       inline size_t size() const { return numberOfBuckets; }
       inline size_t table_size() const { return tableSize; }
       inline double load_factor() const { return static_cast<double>( numberOfBuckets ) / tableSize; }
+      inline double ratioOfColli() const { return static_cast<double>( collisions ) / numberOfBuckets; }
+
+      bool advancePtr( Bucket< Key, Value > ***mainLevel, Bucket< Key, Value > **end, std::vector< APESEARCH::pair< Bucket< Key, Value > **, size_t > >& bucketVec ) const
+         {
+         for ( ; *mainLevel != end; ++(*mainLevel) )
+            {
+            if ( **mainLevel )
+               {
+               bucketVec.emplace_back( APESEARCH::pair< Bucket< Key, Value > **, size_t>( *mainLevel, 0 ) );
+               return true;
+               }
+            } // end if
+         return false;
+         }
+      
+      //! May be helpful when implementing Minimal perfect hash function
+      // Returns a sparse vector of valid buckets and a pointer to the linked list and the amount of buckets within it.
+      std::vector< APESEARCH::pair< Bucket< Key, Value > **, size_t> > linkedListOfBuckets() const
+         {
+         //Bucket< Key, Value > *currBucket = *buckets;
+         Bucket< Key, Value > **mainLevel = buckets;
+         Bucket< Key, Value > **const end = buckets + tableSize;
+         std::vector< APESEARCH::pair< Bucket< Key, Value > **, size_t > > bucketVec;
+
+         for ( ;advancePtr( &mainLevel, end, bucketVec ); ++mainLevel )
+            {
+            APESEARCH::pair< Bucket< Key, Value > **, size_t >& bucketRef = bucketVec.back();
+            for ( Bucket< Key, Value > *currBucket = *mainLevel ; currBucket ; currBucket = currBucket->next )
+               ++bucketRef.second();
+            } // end for
+         bucketVec.shrink_to_fit();
+         return bucketVec;
+         } 
+
+      double averageCollisonsPerBucket( const size_t validBuckets ) const
+         {
+         if ( !numberOfBuckets )
+            return 0;
+         return numberOfBuckets / static_cast<double> ( validBuckets );
+         }
+
+      void printStats() const 
+         {
+         std::cout << "Total Buckets Allocated: " << size() << '\n';
+         std::cout << "Table Size: " << table_size() << '\n';
+         std::cout << "load_factor: " << load_factor() << '\n';
+         std::cout << "Percentage of Collisions: " << ratioOfColli() << '\n';
+         std::cout << "Average Collisions per Bucket: " << averageCollisonsPerBucket( linkedListOfBuckets().size() ) << '\n';
+         }
 
       class Iterator
          {
