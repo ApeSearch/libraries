@@ -310,7 +310,7 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
 
          public:
 
-            Iterator( ) : table( nullptr ), mainLevel( nullptr ), currentBucket( nullptr )
+            Iterator( ) : Iterator( nullptr, 0, nullptr )
                {
                }
 
