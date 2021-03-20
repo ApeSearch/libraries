@@ -14,7 +14,7 @@ for test in tests/bin/*; do
         fi
         echo "Running $test..."
         echo "Execute: ./$exec"
-        #if ./${exec} | diff -y - "$corr_output"; then
+        #if eval "$exec" | diff -y - "$corr_output"; then
         if eval "$exec" | diff -q - "$corr_output"; then
                 echo "Test $test passed!"
             else

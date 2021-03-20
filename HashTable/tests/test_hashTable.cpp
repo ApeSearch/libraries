@@ -1,5 +1,6 @@
 
 #include "../include/HashTable/HashTable.h"
+#include "../include/HashTable/TopN.h"
 #include "../../unit_test_framework/include/unit_test_framework/unit_test_framework.h"
 #include <string>
 #include <iostream>
@@ -298,6 +299,54 @@ TEST( test_iterating )
       ASSERT_EQUAL( (*itr)->tuple.value, hTItr->value );
       }
    ASSERT_TRUE( itr == vec.end() && hTItr == hashTable.end() );
+   }
+
+TEST ( test_topN )
+   {
+   static size_t val = 10;
+   HashTable<const char*, size_t> hashTable(8);
+   std::vector<std::string> strings; // To keep pointers around
+   strings.reserve( val ); // Very important
+   for ( unsigned n = 0; n < val; ++n )
+      {
+      strings.emplace_back( std::to_string( n ) );
+      const char * ptr = strings[n].c_str();
+      hashTable.Find( ptr, n );
+      Tuple<const char*, size_t> * kv = hashTable.Find( strings[n].c_str() );
+      ASSERT_TRUE( kv );
+      ASSERT_EQUAL( kv->value, n );
+      } // end for
+   
+   Tuple< const char *, size_t > **top10 = TopN( &hashTable, 15 );
+   Tuple< const char *, size_t > *p;
+   int i = 0;
+   for ( size_t n = val - 1;  i < 15 && ( p = top10[ i ] );  i++, --n )
+      ASSERT_EQUAL( n, p->value );
+
+   ASSERT_EQUAL( i , val );
+
+   delete [ ] top10;
+
+   hashTable.Optimize();
+   top10 = TopN( &hashTable, 15 );
+
+   i = 0;
+   for ( size_t n = val - 1;  i < 15 && ( p = top10[ i ] );  i++, --n )
+      ASSERT_EQUAL( n, p->value );
+
+   ASSERT_EQUAL( i , val );
+
+   delete [ ] top10;
+
+   top10 = TopN( &hashTable, 5 );
+
+   i = 0;
+   for ( size_t n = val - 1;  i < 5 && ( p = top10[ i ] );  i++, --n )
+      ASSERT_EQUAL( n, p->value );
+
+   ASSERT_EQUAL( i , 5 );
+
+   delete [ ] top10;
    }
 
 TEST_MAIN()

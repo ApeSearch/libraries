@@ -39,7 +39,7 @@ template<class Comparator>
 Pair ** insertSortN( Pair **pairArray, Pair **pairValidEnd, Pair ** pairTrueEnd, Pair *tuple, Comparator comp )
    {
    assert( pairValidEnd != pairTrueEnd );
-   Pair ** itr = pairValidEnd;
+   Pair **itr = pairValidEnd;
    *itr = tuple;
    // while tuple > currentVal
    for ( ;itr != pairArray && comp( *itr, *( itr - 1 ) ); --itr )
