@@ -73,9 +73,7 @@ int main( int argc, char **argv )
 
    Hash *hashtable = BuildHashTable( words );
    
-   hashtable->printStats();
    hashtable->Optimize( );
-   hashtable->printStats();
 
    PrintTop10( hashtable );
 
