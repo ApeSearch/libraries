@@ -18,6 +18,12 @@ Running test: test_modify
 PASS
 Running test: test_optimize
 PASS
+Running test: test_optimizeElegant
+PASS
+Running test: test_optimizeElegant_shrink
+PASS
+Running test: test_optimizeElegant_shrink2
+PASS
 Running test: test_optimize_shrink
 PASS
 Running test: test_optimize_shrink2
@@ -40,11 +46,14 @@ PASS
 ** Test case 'test_iterators': PASS
 ** Test case 'test_modify': PASS
 ** Test case 'test_optimize': PASS
+** Test case 'test_optimizeElegant': PASS
+** Test case 'test_optimizeElegant_shrink': PASS
+** Test case 'test_optimizeElegant_shrink2': PASS
 ** Test case 'test_optimize_shrink': PASS
 ** Test case 'test_optimize_shrink2': PASS
 ** Test case 'test_power_of_two': PASS
 ** Test case 'test_power_of_two_general': PASS
 ** Test case 'test_topN': PASS
 *** Summary ***
-Out of 15 tests run:
+Out of 18 tests run:
 0 failure(s), 0 error(s)
