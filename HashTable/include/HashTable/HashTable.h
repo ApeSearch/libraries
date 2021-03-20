@@ -1,17 +1,12 @@
 // Simple hash table template.
 
-// Nicole Hamilton  nham@umich.edu
-
 #pragma once
 
 #include <cassert>
-#include <iostream>
-#include <iomanip>
 #include <cstdint>
-#include <string>
 #include <cstring> // for strlen
 #include <assert.h>
-#include <algorithm>
+#include <algorithm> // for std::sort
 #include <vector>
 using std::sort;
 
@@ -47,15 +42,7 @@ public:
       } //end operator()
 };
 
-
-//using namespace std;
-
-
-// You may add additional members or helper functions.
-
-
 // Compare C-strings, return true if they are the same.
-
 bool CompareEqual( const char *L, const char *R );
 
 
@@ -104,18 +91,6 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
       friend class Iterator;
       friend class HashBlob;
    
-   void advanceBucket( Bucket< Key, Value > **currBucket, Bucket< Key, Value> ***mainLevel )
-      {
-      if ( ( *currBucket )->next )
-         *currBucket = ( *currBucket )->next;
-      else
-         {
-         ++ ( *mainLevel );
-         for ( Bucket< Key, Value > **end = buckets + tableSize 
-            ; *mainLevel != end && !(**mainLevel); ++ ( *mainLevel ) );
-            *currBucket = **mainLevel;
-         } // end else
-      } // end advanceBucket()
    std::vector< Bucket< Key, Value> *> flattenHashTable()
       {
       
