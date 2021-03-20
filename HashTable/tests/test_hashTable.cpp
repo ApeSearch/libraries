@@ -331,6 +331,45 @@ TEST( test_iterators )
 
    }
 
+TEST( test_iterator_operators )
+   {
+   static size_t val = 10;
+   HashTable<const char*, size_t> hashTable(1); // purposely absolute worst case for insertion sort
+   std::vector<std::string> strings; // To keep pointers around
+   strings.reserve( val ); // Very important
+   for ( unsigned n = 0; n < val; ++n )
+      {
+      strings.emplace_back( std::to_string( n ) );
+      const char * ptr = strings[n].c_str();
+      hashTable.Find( ptr, n );
+      Tuple<const char*, size_t> * kv = hashTable.Find( strings[n].c_str() );
+      ASSERT_TRUE( kv );
+      ASSERT_EQUAL( kv->value, n );
+      } // end for
+
+   HashTable<const char*, size_t>::Iterator itr = hashTable.begin();
+
+   HashTable<const char*, size_t>::Iterator postFix = itr++;
+   ASSERT_EQUAL( postFix, hashTable.begin() );
+
+   itr++;
+   ASSERT_NOT_EQUAL( itr, hashTable.begin() );
+   ASSERT_EQUAL( itr, hashTable.begin() + 2 );
+
+   HashTable<const char*, size_t>::Iterator itr2 = hashTable.begin();
+
+   ASSERT_EQUAL( ++itr2, hashTable.begin() + 1 );
+
+   HashTable<const char*, size_t> emptyhashTable(1);
+   ASSERT_EQUAL( emptyhashTable.begin(), emptyhashTable.end() );
+
+
+   HashTable<const char*, size_t>::Iterator copy( itr2 );
+
+   ASSERT_NOT_EQUAL( ++copy, itr2 );
+
+   }
+
 TEST( test_iterating )
    {
    static size_t val = 10;

@@ -165,14 +165,12 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
          } // end Find()
 
 
-      //Invalidates any Iterators / pointers
-      // Requires hash table to be non-empty
+      //!Invalidates any Iterators / pointers
+      // Modify or rebuild the hash table as you see fit
+      // to improve its performance now that you know
+      // nothing more is to be added.
       void Optimize( double loadFactor = 0.5 ) // does this imply load factor reaching this point?
          {
-         // Modify or rebuild the hash table as you see fit
-         // to improve its performance now that you know
-         // nothing more is to be added.
-
          // It might be the case that the bucket size is far lower than expected
          // So it might be necessary to shrink the table size
          size_t expectedTS = static_cast<double>(numberOfBuckets) / loadFactor;
@@ -188,14 +186,14 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
          // Doubles number of buckets and computes the two's power ceiling
          // .e.g computeTwosPowCeiling( 100 * 2 ) = 256
          size_t newTbSize = computeTwosPowCeiling( (ssize_t) expectedTS );
+
+         // Adjust member variables
          buckets = new Bucket< Key, Value> *[ newTbSize ];
          memset( buckets, 0, sizeof(Bucket< Key, Value > *) * newTbSize );
-
-         // Set member variables to reflect increased hash table size
-         numberOfBuckets = 0;
          tableSize = newTbSize;
 
-         auto addToHT = [this]( Bucket< Key, Value > *bucket )
+         // Insert each bucket back into the table
+         for ( Bucket< Key, Value > *bucket : flattened )
             {
             bucket->next = nullptr; // Remove any pointer relationship
             uint32_t index = bucket->hashValue & ( tableSize - 1 );
@@ -203,10 +201,7 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
             // Goes all the way to the end of linked list
             for ( ; *bucketPtr; bucketPtr = &( *bucketPtr )->next ); //iterates until end of linked list chain
             *bucketPtr = bucket;
-            ++numberOfBuckets;
-            };
-
-         std::for_each( flattened.begin(), flattened.end(), addToHT );
+            } // end for
          }
 
       // Your constructor may take as many default arguments
@@ -293,7 +288,7 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
                   currentBucket = mainLevel = table->buckets + table->tableSize;
                }
 
-            void advanceBucket( )
+            inline void advanceBucket( )
                {
                if ( ( *currentBucket )->next )
                   currentBucket = & ( *currentBucket )->next;
@@ -353,6 +348,14 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
             bool operator!=( const Iterator &rhs ) const
                {
                return currentBucket != rhs.currentBucket;
+               }
+
+            Iterator operator+( ssize_t var )
+               {
+               Iterator copy( *this );
+               for ( ssize_t n = 0; n < var; ++n )
+                  copy.advanceBucket();
+               return copy;
                }
          };
 

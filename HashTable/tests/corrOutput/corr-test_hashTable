@@ -12,6 +12,8 @@ Running test: test_find_seperate_chaining
 PASS
 Running test: test_iterating
 PASS
+Running test: test_iterator_operators
+PASS
 Running test: test_iterators
 PASS
 Running test: test_modify
@@ -43,6 +45,7 @@ PASS
 ** Test case 'test_find_nothing': PASS
 ** Test case 'test_find_seperate_chaining': PASS
 ** Test case 'test_iterating': PASS
+** Test case 'test_iterator_operators': PASS
 ** Test case 'test_iterators': PASS
 ** Test case 'test_modify': PASS
 ** Test case 'test_optimize': PASS
@@ -55,5 +58,5 @@ PASS
 ** Test case 'test_power_of_two_general': PASS
 ** Test case 'test_topN': PASS
 *** Summary ***
-Out of 18 tests run:
+Out of 19 tests run:
 0 failure(s), 0 error(s)
