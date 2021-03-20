@@ -83,10 +83,10 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
 
       // Your code here.
 
-      Bucket< Key, Value > **buckets;
       size_t tableSize; // length of bucket array
+      Bucket< Key, Value > **buckets;
       size_t numberOfBuckets; // Contains amount of seperate chained buckets
-      size_t collisions; // Tracks current collisions in hash_table
+      size_t collisions = 0; // Tracks current collisions in hash_table
       Hash hashFunc;
 
       friend class Iterator;
@@ -150,6 +150,7 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
       
          return & ( * bucket )->tuple;
          }
+      size_t getCollisions() const { return collisions; }
 
       Tuple< Key, Value > *Find( const Key& k ) const
          {
@@ -191,6 +192,7 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
          buckets = new Bucket< Key, Value> *[ newTbSize ];
          memset( buckets, 0, sizeof(Bucket< Key, Value > *) * newTbSize );
          tableSize = newTbSize;
+         collisions = 0;
 
          // Insert each bucket back into the table
          for ( Bucket< Key, Value > *bucket : flattened )
@@ -198,6 +200,8 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
             bucket->next = nullptr; // Remove any pointer relationship
             uint32_t index = bucket->hashValue & ( tableSize - 1 );
             Bucket< Key, Value > **bucketPtr = buckets + index;
+            if ( *bucketPtr )
+               ++collisions;
             // Goes all the way to the end of linked list
             for ( ; *bucketPtr; bucketPtr = &( *bucketPtr )->next ); //iterates until end of linked list chain
             *bucketPtr = bucket;
@@ -207,7 +211,7 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
       // Your constructor may take as many default arguments
       // as you like.
 
-      HashTable( size_t tb = DEFAULTSIZE ) : numberOfBuckets(0), tableSize(tb), buckets( new Bucket< Key, Value > *[ tb ] )
+      HashTable( size_t tb = DEFAULTSIZE ) : tableSize( computeTwosPowCeiling( tb ) ), buckets( new Bucket< Key, Value > *[ tableSize ] ), numberOfBuckets( 0 )
          {
          assert( tb );
          // Your code here.
@@ -253,6 +257,7 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
 
       inline size_t size() const { return numberOfBuckets; }
       inline size_t table_size() const { return tableSize; }
+      inline double load_factor() const { return static_cast<double>( numberOfBuckets ) / tableSize; }
 
       class Iterator
          {

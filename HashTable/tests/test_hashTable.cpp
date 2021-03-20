@@ -156,15 +156,19 @@ void testingFlattening( std::vector<std::string>& strings, const size_t val, Has
 
 TEST( test_optimize )
    {
-   static size_t val = 10000;
-   HashTable<const char*, size_t> hashTable( 4096 );
+   static size_t val = 1000000;
+   HashTable<const char*, size_t> hashTable( 500 );
    std::vector<std::string> strings; // To keep pointers around
    strings.reserve( val ); // Very important
    testingFlattening( strings, val, hashTable );
 
    ASSERT_EQUAL( strings.size(), hashTable.size() );
    ASSERT_EQUAL( 4096, hashTable.table_size() );
+   std::cout << "Load Factor: " << hashTable.load_factor() << std::endl;
+   std::cout << "Collisions before: " << hashTable.getCollisions() << std::endl;
    hashTable.Optimize(); // Current load factor becomes at most 0.5
+   std::cout << "Load Factor: " << hashTable.load_factor() << std::endl;
+   std::cout << "Collisions after: " << hashTable.getCollisions() << std::endl;
    ASSERT_EQUAL( strings.size(), hashTable.size() );
    ASSERT_EQUAL( 32768, hashTable.table_size() );
 
@@ -228,7 +232,6 @@ TEST( test_optimizeElegant )
    std::vector<std::string> strings; // To keep pointers around
    strings.reserve( val ); // Very important
    testingFlattening( strings, val, hashTable );
-
    ASSERT_EQUAL( strings.size(), hashTable.size() );
    ASSERT_EQUAL( 4096, hashTable.table_size() );
    hashTable.OptimizeElegant(); // Current load factor becomes at most 0.5
@@ -342,7 +345,7 @@ TEST( test_iterator_operators )
       strings.emplace_back( std::to_string( n ) );
       const char * ptr = strings[n].c_str();
       hashTable.Find( ptr, n );
-      Tuple<const char*, size_t> * kv = hashTable.Find( strings[n].c_str() );
+      Tuple<const char*, size_t> * kv = hashTable.Find( strings[n].c_str(), val );
       ASSERT_TRUE( kv );
       ASSERT_EQUAL( kv->value, n );
       } // end for
