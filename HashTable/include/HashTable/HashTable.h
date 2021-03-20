@@ -15,11 +15,11 @@ using std::sort;
 
 #define DEFAULTSIZE 4096
 
-static inline size_t computeTwosPowCeiling( ssize_t num ) 
+static inline size_t computeTwosPowCeiling( ssize_t num, bool computeCeiling = true ) 
    {
-   --num; // Account for num already being a two's power
+   num-= computeCeiling; // Account for num already being a two's power
    size_t powerNum = 1;
-   for (; num > 0; num >>=1 )
+   for (; num > ( ssize_t )!computeCeiling; num >>=1 )
       powerNum <<= 1;
    return powerNum;
    }
@@ -69,7 +69,7 @@ template< typename Key, typename Value > class Bucket
       Tuple< Key, Value > tuple;
 
       Bucket( const Key &k, const Value v, const uint32_t h ) :
-            tuple( k, v ), next( nullptr ) , hashValue( h )
+            next( nullptr ) , hashValue( h ), tuple( k, v ) 
          {
          }
       ~Bucket()
@@ -176,7 +176,7 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
          {
          // It might be the case that the bucket size is far lower than expected
          // So it might be necessary to shrink the table size
-         size_t expectedTS = static_cast<double>(numberOfBuckets) / loadFactor;
+         size_t expectedTS = size_t ( static_cast<double>(numberOfBuckets) / loadFactor );
 
          std::vector< Bucket< Key, Value > *> flattened = flattenHashTable();
          delete []buckets;
@@ -213,7 +213,7 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
       // Your constructor may take as many default arguments
       // as you like.
 
-      HashTable( size_t tb = DEFAULTSIZE ) : tableSize( computeTwosPowCeiling( tb ) ), buckets( new Bucket< Key, Value > *[ tableSize ] ), numberOfBuckets( 0 )
+      HashTable( size_t tb = DEFAULTSIZE ) : tableSize( computeTwosPowCeiling( (ssize_t)tb ) ), buckets( new Bucket< Key, Value > *[ tableSize ] ), numberOfBuckets( 0 )
          {
          assert( tb );
          // Your code here.
@@ -262,6 +262,15 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
       inline double load_factor() const { return static_cast<double>( numberOfBuckets ) / tableSize; }
       inline double ratioOfColli() const { return static_cast<double>( collisions ) / numberOfBuckets; }
 
+      inline size_t numOfLinkedLists() const
+         {
+         size_t numOfLL = 0;
+         for ( Bucket< Key, Value > **mainLevel = buckets, **end = buckets + tableSize; mainLevel != end; ++mainLevel )
+            if ( *mainLevel )
+               ++numOfLL;
+         return numOfLL;
+         }
+
       bool advancePtr( Bucket< Key, Value > ***mainLevel, Bucket< Key, Value > **end, std::vector< APESEARCH::pair< Bucket< Key, Value > **, size_t > >& bucketVec ) const
          {
          for ( ; *mainLevel != end; ++(*mainLevel) )
@@ -283,6 +292,7 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
          Bucket< Key, Value > **mainLevel = buckets;
          Bucket< Key, Value > **const end = buckets + tableSize;
          std::vector< APESEARCH::pair< Bucket< Key, Value > **, size_t > > bucketVec;
+         bucketVec.reserve( numOfLinkedLists() );
 
          for ( ;advancePtr( &mainLevel, end, bucketVec ); ++mainLevel )
             {
@@ -290,7 +300,6 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
             for ( Bucket< Key, Value > *currBucket = *mainLevel ; currBucket ; currBucket = currBucket->next )
                ++bucketRef.second();
             } // end for
-         bucketVec.shrink_to_fit();
          return bucketVec;
          } 
 
@@ -435,7 +444,7 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
       //! Warning while this is simple, it also isn't very efficient
       void OptimizeElegant( double loadFactor = 0.5 )
          {
-         size_t expectedTS = static_cast<double>(numberOfBuckets) / loadFactor;
+         size_t expectedTS = size_t ( static_cast<double>(numberOfBuckets) / loadFactor );
          size_t newTbSize = computeTwosPowCeiling( (ssize_t) expectedTS );
 
          HashTable temp ( newTbSize );
