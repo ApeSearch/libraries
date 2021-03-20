@@ -144,10 +144,10 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
          // Checks for nullptr
          if( !*bucket )
             {
+            if ( buckets[ hashVal & ( tableSize - 1 ) ] )
+               ++collisions;
             *bucket = new Bucket< Key, Value >( k, initialValue, hashVal );
             ++numberOfBuckets;
-            if( bucket < buckets || bucket >= buckets + tableSize ) 
-               ++collisions;
             } // end if
       
          return & ( * bucket )->tuple;
