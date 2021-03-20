@@ -6,6 +6,8 @@
 #include <vector>
 #include <string>
 #include <cstring>
+#include <iostream>
+#include <iomanip>
 #ifdef LOCAL
    #include "../include/HashTable/HashTable.h"
    #include "../include/HashTable/Common.h"
