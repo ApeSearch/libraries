@@ -287,6 +287,32 @@ TEST( test_optimizeElegant_shrink2 )
       } // end for
    }
 
+TEST( test_numOfLinkedLists )
+   {
+   static size_t val = 10;
+   HashTable<const char*, size_t> hashTable(1); // purposely absolute worst case for insertion sort
+   std::vector<std::string> strings; // To keep pointers around
+   strings.reserve( val ); // Very important
+   for ( unsigned n = 0; n < val; ++n )
+      {
+      strings.emplace_back( std::to_string( n ) );
+      const char * ptr = strings[n].c_str();
+      hashTable.Find( ptr, n );
+      Tuple<const char*, size_t> * kv = hashTable.Find( strings[n].c_str(), val );
+      ASSERT_TRUE( kv );
+      ASSERT_EQUAL( kv->value, n );
+      } // end for
+
+   ASSERT_EQUAL( hashTable.numOfLinkedLists(), 1 );
+
+   hashTable.Optimize();
+
+   // It's expected that load factor is less than 1
+   ASSERT_EQUAL( hashTable.size() - hashTable.getCollisions(), hashTable.numOfLinkedLists() );
+
+   }
+
+
 TEST( test_power_of_two )
    {
    static size_t val = 16;
@@ -431,6 +457,8 @@ TEST ( test_topN )
       ASSERT_EQUAL( kv->value, n );
       } // end for
    
+   ASSERT_EQUAL( hashTable.getCollisions(), val - 1 );
+   
    Tuple< const char *, size_t > **top10 = TopN( &hashTable, 15 );
    Tuple< const char *, size_t > *p;
    int i = 0;
@@ -442,6 +470,7 @@ TEST ( test_topN )
    delete [ ] top10;
 
    hashTable.Optimize();
+   ASSERT_EQUAL( hashTable.getCollisions(), hashTable.size() - hashTable.numOfLinkedLists() );
    top10 = TopN( &hashTable, 15 );
 
    i = 0;

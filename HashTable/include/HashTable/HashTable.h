@@ -267,6 +267,7 @@ template< typename Key, typename Value, class Hash = FNV, class Comparator = CSt
          APESEARCH::swap( numberOfBuckets, other.numberOfBuckets );
          APESEARCH::swap( collisions, other.collisions );
          APESEARCH::swap( hashFunc, other.hashFunc );
+         APESEARCH::swap( compare, other.compare );
          } 
 
       inline size_t size() const { return numberOfBuckets; }
@@ -315,11 +316,11 @@ template< typename Key, typename Value, class Hash = FNV, class Comparator = CSt
          return bucketVec;
          } 
 
-      double averageCollisonsPerBucket( const size_t validBuckets ) const
+      double averageCollisonsPerBucket() const
          {
          if ( !numberOfBuckets )
             return 0;
-         return numberOfBuckets / static_cast<double> ( validBuckets );
+         return numberOfBuckets / static_cast<double> ( numOfLinkedLists() );
          }
 
       void printStats() const 
@@ -328,7 +329,7 @@ template< typename Key, typename Value, class Hash = FNV, class Comparator = CSt
          std::cout << "Table Size: " << table_size() << '\n';
          std::cout << "load_factor: " << load_factor() << '\n';
          std::cout << "Percentage of Collisions: " << ratioOfColli() << '\n';
-         std::cout << "Average Collisions per Bucket: " << averageCollisonsPerBucket( linkedListOfBuckets().size() ) << '\n';
+         std::cout << "Average Collisions per Bucket: " << averageCollisonsPerBucket() << '\n';
          }
 
       class Iterator
