@@ -335,19 +335,19 @@ TEST( test_power_of_two )
 
 TEST( test_power_of_two_general )
    {
-   ASSERT_EQUAL( computeTwosPowCeiling(1), 1 );
-   ASSERT_EQUAL( computeTwosPowCeiling(2), 2 );
-   ASSERT_EQUAL( computeTwosPowCeiling(3), 4 );
-   ASSERT_EQUAL( computeTwosPowCeiling(16), 16 );
-   ASSERT_EQUAL( computeTwosPowCeiling(17), 32 );
-   ASSERT_EQUAL( computeTwosPowCeiling(1, false), 1 );
-   ASSERT_EQUAL( computeTwosPowCeiling(2, false), 2 );
-   ASSERT_EQUAL( computeTwosPowCeiling(3, false), 2 );
-   ASSERT_EQUAL( computeTwosPowCeiling(16, false), 16 );
-   ASSERT_EQUAL( computeTwosPowCeiling(17, false), 16 );
-   ASSERT_EQUAL( computeTwosPowCeiling(65536, false), 65536 );
-   ASSERT_EQUAL( computeTwosPowCeiling( 65536 ), 65536 );
-   ASSERT_EQUAL( computeTwosPowCeiling( 65535, false ), 32768 );
+   ASSERT_EQUAL( computeTwosPow(1), 1 );
+   ASSERT_EQUAL( computeTwosPow(2), 2 );
+   ASSERT_EQUAL( computeTwosPow(3), 4 );
+   ASSERT_EQUAL( computeTwosPow(16), 16 );
+   ASSERT_EQUAL( computeTwosPow(17), 32 );
+   ASSERT_EQUAL( computeTwosPow(1, false), 1 );
+   ASSERT_EQUAL( computeTwosPow(2, false), 2 );
+   ASSERT_EQUAL( computeTwosPow(3, false), 2 );
+   ASSERT_EQUAL( computeTwosPow(16, false), 16 );
+   ASSERT_EQUAL( computeTwosPow(17, false), 16 );
+   ASSERT_EQUAL( computeTwosPow(65536, false), 65536 );
+   ASSERT_EQUAL( computeTwosPow( 65536 ), 65536 );
+   ASSERT_EQUAL( computeTwosPow( 65535, false ), 32768 );
 
    }
 
