@@ -48,6 +48,17 @@ public:
 // Compare C-strings, return true if they are the same.
 bool CompareEqual( const char *L, const char *R );
 
+class CStringComparator
+{
+public:
+
+   bool operator()( const char *L, const char *R ) const
+      {
+      return !strcmp( L, R );
+      }
+
+};
+
 
 template< typename Key, typename Value > class Tuple
    {
@@ -79,7 +90,7 @@ template< typename Key, typename Value > class Bucket
          } // end ~Bucket()
   };
 
-template< typename Key, typename Value, class Hash = FNV > class HashTable
+template< typename Key, typename Value, class Hash = FNV, class Comparator = CStringComparator > class HashTable
    {
    private:
 
@@ -89,6 +100,7 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
       Bucket< Key, Value > **buckets;
       size_t numberOfBuckets; // Contains amount of seperate chained buckets
       size_t collisions = 0; // Tracks current collisions in hash_table
+      Comparator compare;
       Hash hashFunc;
 
       friend class Iterator;
@@ -122,8 +134,7 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
 
       for ( ; *bucket; bucket = &( *bucket )->next )
          {
-         //if( ( *bucket )->tuple.key == k )
-         if ( CompareEqual( ( *bucket )->tuple.key, k ) )
+         if ( compare( ( *bucket )->tuple.key, k ) )
             break;
          }
       return bucket;
@@ -213,7 +224,8 @@ template< typename Key, typename Value, class Hash = FNV > class HashTable
       // Your constructor may take as many default arguments
       // as you like.
 
-      HashTable( size_t tb = DEFAULTSIZE ) : tableSize( computeTwosPowCeiling( (ssize_t)tb ) ), buckets( new Bucket< Key, Value > *[ tableSize ] ), numberOfBuckets( 0 )
+      HashTable( size_t tb = DEFAULTSIZE, Hash hasher = FNV(), Comparator comp = CStringComparator() ) : tableSize( computeTwosPowCeiling( (ssize_t)tb ) ), 
+         buckets( new Bucket< Key, Value > *[ tableSize ] ), numberOfBuckets( 0 ), compare( comp ), hashFunc( hasher )
          {
          assert( tb );
          // Your code here.
