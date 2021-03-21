@@ -297,6 +297,7 @@ template< typename Key, typename Value, class Hash = FNV, class Comparator = CSt
          return false;
          }
       
+private:
       //! May be helpful when implementing Minimal perfect hash function
       // Returns a sparse vector of valid buckets and a pointer to the linked list and the amount of buckets within it.
       std::vector< APESEARCH::pair< Bucket< Key, Value > **, size_t> > linkedListOfBuckets() const
@@ -315,7 +316,7 @@ template< typename Key, typename Value, class Hash = FNV, class Comparator = CSt
             } // end for
          return bucketVec;
          } 
-
+public:
       double averageCollisonsPerBucket() const
          {
          if ( !numberOfBuckets )
