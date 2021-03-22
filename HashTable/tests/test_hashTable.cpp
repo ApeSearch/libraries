@@ -167,6 +167,7 @@ TEST( test_optimize )
    hashTable.Optimize(); // Current load factor becomes at most 0.5
    ASSERT_EQUAL( strings.size(), hashTable.size() );
    ASSERT_EQUAL( 32768, hashTable.table_size() );
+   //ASSERT_EQUAL( 16384, hashTable.table_size() );
 
    for ( unsigned n = 0; n < val; ++n )
       {
@@ -212,6 +213,7 @@ TEST( test_optimize_shrink2 )
    hashTable.Optimize();
    ASSERT_EQUAL( strings.size(), hashTable.size() );
    ASSERT_EQUAL( 8, hashTable.table_size() );
+   //ASSERT_EQUAL( 4, hashTable.table_size() );
 
    for ( unsigned n = 0; n < val; ++n )
       {
@@ -324,6 +326,7 @@ TEST( test_power_of_two )
    ASSERT_EQUAL( hashTable.table_size(), DEFAULTSIZE );
    hashTable.Optimize();
    ASSERT_EQUAL( hashTable.table_size(), 32 );
+   //ASSERT_EQUAL( hashTable.table_size(), 16 );
 
    for ( unsigned n = 0; n < val; ++n )
       {

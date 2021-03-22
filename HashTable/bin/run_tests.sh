@@ -19,7 +19,7 @@ for test in tests/bin/*; do
                 echo "Test $test passed!"
             else
                 echo "Test $test failed..."
-                ./${exec} > "tests/wrongOutput/wrong-$test_name"
+                eval "$exec" > "tests/wrongOutput/wrong-$test_name"
         fi
         echo
     fi # end  if [ -f ${test} ]

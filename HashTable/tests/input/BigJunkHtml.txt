@@ -1,4 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+./tests/input/BigJunkHtml.txt<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
  	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 
@@ -52291,11 +52291,15 @@ mt<br/>
 <table>
 <tr>
 <td>
-<pre><tt>Microsoft (R) Manifest Tool version 5.2.3790.2075
-Copyright (c) Microsoft Corporation 2005. 
-All rights reserved.
+<pre><tt>Microsoft (R) Manifest Tool version 5.2.3790.2075
 
-mt.exe : command line error c1010007: Unexpected/Unknown option "-h".  Use the /? option for help on usage and samples.
+Copyright (c) Microsoft Corporation 2005. 
+
+All rights reserved.
+
+
+mt.exe : command line error c1010007: Unexpected/Unknown option "-h".  Use the /? option for help on usage and samples.
+
 </tt></pre>
 </td>
 </tr>
