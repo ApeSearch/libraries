@@ -10,8 +10,12 @@
 #include <algorithm> // for std::sort
 #include <vector>
 using std::sort;
-#include "../../../AS/include/AS/algorithms.h" // for APESEARCH::swap
-#include "../../../AS/include/AS/utility.h" // for APESEARCH::pair
+#ifdef LOCAL
+   #include "../../../AS/include/AS/algorithms.h" // for APESEARCH::swap
+#else
+   #include <utility>
+#endif
+
 #include <stdlib.h>
 #include <time.h>
 
@@ -411,12 +415,17 @@ template< typename Key, typename Value, class Hash = FNV, class Comparator = CSt
       
       void swap( HashTable& other )
          {
-         APESEARCH::swap( buckets, other.buckets );
-         APESEARCH::swap( tableSize, other.tableSize );
-         APESEARCH::swap( numberOfBuckets, other.numberOfBuckets );
-         APESEARCH::swap( collisions, other.collisions );
-         APESEARCH::swap( hashFunc, other.hashFunc );
-         APESEARCH::swap( compare, other.compare );
+         #ifdef LOCAL
+            using APESEARCH::swap;
+         #else
+            using std::swap;
+         #endif
+         swap( buckets, other.buckets );
+         swap( tableSize, other.tableSize );
+         swap( numberOfBuckets, other.numberOfBuckets );
+         swap( collisions, other.collisions );
+         swap( hashFunc, other.hashFunc );
+         swap( compare, other.compare );
          } 
 
       inline size_t size() const { return numberOfBuckets; }
@@ -431,19 +440,6 @@ template< typename Key, typename Value, class Hash = FNV, class Comparator = CSt
             if ( *mainLevel )
                ++numOfLL;
          return numOfLL;
-         }
-
-      bool advancePtr( Bucket< Key, Value > ***mainLevel, Bucket< Key, Value > **end, std::vector< APESEARCH::pair< Bucket< Key, Value > **, size_t > >& bucketVec ) const
-         {
-         for ( ; *mainLevel != end; ++(*mainLevel) )
-            {
-            if ( **mainLevel )
-               {
-               bucketVec.emplace_back( APESEARCH::pair< Bucket< Key, Value > **, size_t>( *mainLevel, 0 ) );
-               return true;
-               }
-            } // end if
-         return false;
          }
       
       bool advancePtr( Bucket< Key, Value > ***mainLevel, Bucket< Key, Value > **end, std::vector< std::vector< Bucket< Key, Value> *> >& bucketVec ) const
@@ -460,24 +456,7 @@ template< typename Key, typename Value, class Hash = FNV, class Comparator = CSt
          }
       
 private:
-      //! May be helpful when implementing Minimal perfect hash function
-      // Returns a sparse vector of valid buckets and a pointer to the linked list and the amount of buckets within it.
-      std::vector< APESEARCH::pair< Bucket< Key, Value > **, size_t> > linkedListOfBuckets() const
-         {
-         //Bucket< Key, Value > *currBucket = *buckets;
-         Bucket< Key, Value > **mainLevel = buckets;
-         Bucket< Key, Value > **const end = buckets + tableSize;
-         std::vector< APESEARCH::pair< Bucket< Key, Value > **, size_t > > bucketVec;
-         bucketVec.reserve( numOfLinkedLists() );
 
-         for ( ;advancePtr( &mainLevel, end, bucketVec ); ++mainLevel )
-            {
-            APESEARCH::pair< Bucket< Key, Value > **, size_t >& bucketRef = bucketVec.back();
-            for ( Bucket< Key, Value > *currBucket = *mainLevel ; currBucket ; currBucket = currBucket->next )
-               ++bucketRef.second();
-            } // end for
-         return bucketVec;
-         } 
       void assertLinkedList( std::vector< Bucket< Key, Value> *>& vec ) const
          {
          for ( typename std::vector< Bucket< Key, Value> *>::iterator currBucket = vec.begin(); currBucket != vec.end(); ++currBucket )
