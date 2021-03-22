@@ -369,7 +369,7 @@ template< typename Key, typename Value, class Hash = FNV, class Comparator = CSt
       // Modify or rebuild the hash table as you see fit
       // to improve its performance now that you know
       // nothing more is to be added.
-      void Optimize( double loadFactor = 1, bool computeCeiling = true ) // does this imply load factor reaching this point?
+      void Optimize( double loadFactor/* = 0.5*/, bool computeCeiling = true ) // does this imply load factor reaching this point?
          {
          // It might be the case that the bucket size is far lower than expected
          // So it might be necessary to shrink the table size
@@ -411,7 +411,7 @@ template< typename Key, typename Value, class Hash = FNV, class Comparator = CSt
             } // end for
          }
       // Used for optimizing to minimal perfect hash function
-      void Optimize( double load_factor /*= 0.415 */ )
+      void Optimize( double load_factor = 0.415 )
          {
          Optimize( load_factor, false );
          
