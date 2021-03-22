@@ -23,6 +23,15 @@ using std::sort;
 #define DEFAULTSIZE 4096
 #define MAX 16430 // Golden Random number credited by MC
 
+static inline size_t computeTwosPowCeiling( ssize_t num ) 
+   {
+   num--; // Account for num already being a two's power
+   size_t powerNum = 1;
+   for (; num > 0; num >>=1 )
+      powerNum <<= 1;
+   return powerNum;
+   }
+
 static inline size_t computeTwosPow( ssize_t num, bool computeCeiling = true ) 
    {
    num-= computeCeiling; // Account for num already being a two's power
@@ -133,7 +142,6 @@ public:
 
    size_t operator()( const char *data ) const override
       {
-      //TODO optimize 
       ssize_t val = arr[ operator()(data, 0) & ( tableSize - 1 ) ];
 
       if ( val < 0 )
@@ -251,7 +259,7 @@ template< typename Key, typename Value, class Hash = FNV, class Comparator = CSt
       size_t numberOfBuckets; // Contains amount of seperate chained buckets
       size_t collisions = 0; // Tracks current collisions in hash_table
       Comparator compare;
-      Hash *hashFunc = nullptr;
+      Hash hashFunc;
 
       friend class Iterator;
       friend class HashBlob;
@@ -299,7 +307,7 @@ template< typename Key, typename Value, class Hash = FNV, class Comparator = CSt
          // in the hash, add it with the initial value.
 
          // Your code here
-         uint32_t hashVal = (*hashFunc)( k );
+         uint32_t hashVal = hashFunc( k );
          Bucket< Key, Value > **bucket = helperFind( k, hashVal );
          
          // Checks for nullptr
@@ -322,7 +330,7 @@ template< typename Key, typename Value, class Hash = FNV, class Comparator = CSt
          // in the hash, return nullptr.
 
          // Your code here.
-         Bucket< Key, Value > *bucket = *helperFind( k, (*hashFunc)( k ) );
+         Bucket< Key, Value > *bucket = *helperFind( k, hashFunc( k ) );
 
          // If not nullptr, entry was found so returning reference to tuple...
          return bucket ? &bucket->tuple : nullptr;
@@ -333,7 +341,7 @@ template< typename Key, typename Value, class Hash = FNV, class Comparator = CSt
       // Modify or rebuild the hash table as you see fit
       // to improve its performance now that you know
       // nothing more is to be added.
-      void Optimize( double loadFactor, bool computeCeiling = true ) // does this imply load factor reaching this point?
+      void Optimize( double loadFactor = 0.5, bool computeCeiling = true ) // does this imply load factor reaching this point?
          {
          // It might be the case that the bucket size is far lower than expected
          // So it might be necessary to shrink the table size
@@ -349,7 +357,8 @@ template< typename Key, typename Value, class Hash = FNV, class Comparator = CSt
 
          // Doubles number of buckets and computes the two's power ceiling
          // .e.g computeTwosPow( 100 * 2 ) = 256
-         size_t newTbSize = computeTwosPow( (ssize_t) (expectedTS - 1), computeCeiling );
+         size_t newTbSize = computeTwosPowCeiling( (ssize_t) (expectedTS - 1) );
+         //size_t newTbSize = computeTwosPow( (ssize_t) (expectedTS - 1), computeCeiling );
 
          // Adjust member variables
          buckets = new Bucket< Key, Value> *[ newTbSize ];
@@ -370,13 +379,32 @@ template< typename Key, typename Value, class Hash = FNV, class Comparator = CSt
             *bucketPtr = bucket;
             } // end for
          }
+      // Used for optimizing to minimal perfect hash function
+      void Optimize( double load_factor /*= 0.415*/ )
+         {
+         Optimize( load_factor, false );
+         
+         if ( !collisions )
+            return;
+         // Now do perfect hashing
+         std::vector< std::vector< Bucket< Key, Value> *> > bucketsVec = vectorOfBuckets();
+         assert( bucketsVec.size() == numOfLinkedLists() );
+         std::sort( bucketsVec.begin(), bucketsVec.end(), []( std::vector< Bucket< Key, Value> *>& lhs, std::vector< Bucket< Key, Value> *>& rhs ) { return lhs.size() > rhs.size(); } );
+         delete hashFunc;
+         delete []buckets;
+         hashFunc = new PerfectHashing<Key, Value>( tableSize );
+         buckets = dynamic_cast<PerfectHashing<Key, Value>*>(hashFunc)->buildInterTable( bucketsVec, tableSize, numberOfBuckets );
+         size_t numOfLL = numOfLinkedLists();
+         collisions = numberOfBuckets - numOfLL;
+         assert( collisions == 0 );
+         }
       
 
 
       // Your constructor may take as many default arguments
       // as you like.
 
-      HashTable( size_t tb = DEFAULTSIZE, Hash *hasher = new FNV(), Comparator comp = CStringComparator() ) : tableSize( computeTwosPow( (ssize_t)tb ) ), 
+      HashTable( size_t tb = DEFAULTSIZE, Hash hasher = /*new*/ FNV(), Comparator comp = CStringComparator() ) : tableSize( computeTwosPow( (ssize_t)tb ) ), 
          buckets( new Bucket< Key, Value > *[ tableSize ] ), numberOfBuckets( 0 ), compare( comp ), hashFunc( hasher )
          {
          assert( tb );
@@ -391,7 +419,7 @@ template< typename Key, typename Value, class Hash = FNV, class Comparator = CSt
                ** const end = buckets + tableSize; bucket != end; ++bucket )
             delete *bucket;
 
-         delete hashFunc;
+         //delete hashFunc;
          delete[] buckets;             
          } // end ~HashTable()
 
@@ -495,7 +523,8 @@ public:
          {
          if ( !numberOfBuckets )
             return 0;
-         return numberOfBuckets / static_cast<double> ( numOfLinkedLists() );
+         size_t numOfLL = numOfLinkedLists();
+         return ( numberOfBuckets - numOfLL ) / static_cast<double> ( numOfLL );
          }
 
       void printStats() const 
@@ -644,24 +673,7 @@ public:
             }
          swap( temp );
          }
-      void Optimize()
-         {
-         Optimize( 0.5, true );
-         
-         if ( !collisions )
-            return;
-         // Now do perfect hashing
-         std::vector< std::vector< Bucket< Key, Value> *> > bucketsVec = vectorOfBuckets();
-         assert( bucketsVec.size() == numOfLinkedLists() );
-         std::sort( bucketsVec.begin(), bucketsVec.end(), []( std::vector< Bucket< Key, Value> *>& lhs, std::vector< Bucket< Key, Value> *>& rhs ) { return lhs.size() > rhs.size(); } );
-         delete hashFunc;
-         delete []buckets;
-         hashFunc = new PerfectHashing<Key, Value>( tableSize );
-         buckets = dynamic_cast<PerfectHashing<Key, Value>*>(hashFunc)->buildInterTable( bucketsVec, tableSize, numberOfBuckets );
-         size_t numOfLL = numOfLinkedLists();
-         collisions = numberOfBuckets - numOfLL;
-         assert( collisions == 0 );
-         }
+   
    };
 
    template<typename Key, typename Value >
