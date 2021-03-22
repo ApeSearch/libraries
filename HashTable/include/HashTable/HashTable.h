@@ -173,11 +173,9 @@ public:
       typename std::vector< std::vector< Bucket< Key, Value> *> >::iterator bucketVec = mapCollisionsToUniqEntry( buckets, tableArray, bucketsCnt );
 
       // At this point bucketVec should only point to vectors of size one...
-      if ( bucketVec == buckets.end() )
-         return tableArray;
-
       // Now just map the single buckets into unique places
-      mapSingleBuckets( buckets, bucketVec, tableArray, bucketsCnt );
+      if ( bucketVec != buckets.end() )
+         mapSingleBuckets( buckets, bucketVec, tableArray, bucketsCnt );
 
       assert( numOfBuckets == bucketsCnt );
       return tableArray;
@@ -187,11 +185,10 @@ public:
       Bucket< Key, Value > ** const tableArray, size_t& bucketsCnt )
       {
       typename std::vector< std::vector< Bucket< Key, Value> *> >::iterator bucketVec = buckets.begin();
-      for ( ;bucketVec != buckets.end() && bucketVec->size() > 1; ++bucketVec )
+      std::vector< Bucket< Key, Value> **> bucketsPlaced; // To keep track of where buckets are part since might need to retry...
+      for ( ;bucketVec != buckets.end() && bucketVec->size() > 1; ++bucketVec, bucketsPlaced.clear() )
          {
          ssize_t arg = 1;
-         
-         std::vector< Bucket< Key, Value> **> bucketsPlaced; // To keep track of where buckets are part since might need to retry...
          size_t tempOf = 0;
 
          // Try hashing with arg until every bucket inside bucketVec maps to a unique top-level bucket
@@ -411,7 +408,7 @@ template< typename Key, typename Value, class Hash = FNV, class Comparator = CSt
             } // end for
          }
       // Used for optimizing to minimal perfect hash function
-      void Optimize( double load_factor = 0.415 )
+      void Optimize( double load_factor = 0.407 )
          {
          Optimize( load_factor, false );
          
