@@ -212,8 +212,8 @@ TEST( test_optimize_shrink2 )
    ASSERT_EQUAL( 4096, hashTable.table_size() ); // 4096
    hashTable.Optimize();
    ASSERT_EQUAL( strings.size(), hashTable.size() );
-   ASSERT_EQUAL( 8, hashTable.table_size() );
-   //ASSERT_EQUAL( 4, hashTable.table_size() );
+   //ASSERT_EQUAL( 8, hashTable.table_size() );
+   ASSERT_EQUAL( 4, hashTable.table_size() );
 
    for ( unsigned n = 0; n < val; ++n )
       {

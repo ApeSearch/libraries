@@ -286,7 +286,7 @@ template< typename Key, typename Value, class Hash = FNV, class Comparator = CSt
       size_t numberOfBuckets; // Contains amount of seperate chained buckets
       size_t collisions = 0; // Tracks current collisions in hash_table
       Comparator compare;
-      Hash hashFunc;
+      Hash *hashFunc;
 
       friend class Iterator;
       friend class HashBlob;
@@ -334,7 +334,7 @@ template< typename Key, typename Value, class Hash = FNV, class Comparator = CSt
          // in the hash, add it with the initial value.
 
          // Your code here
-         uint32_t hashVal = hashFunc( k );
+         uint32_t hashVal = (*hashFunc)( k );
          Bucket< Key, Value > **bucket = helperFind( k, hashVal );
          
          // Checks for nullptr
@@ -357,7 +357,7 @@ template< typename Key, typename Value, class Hash = FNV, class Comparator = CSt
          // in the hash, return nullptr.
 
          // Your code here.
-         Bucket< Key, Value > *bucket = *helperFind( k, hashFunc( k ) );
+         Bucket< Key, Value > *bucket = *helperFind( k, (*hashFunc)( k ) );
 
          // If not nullptr, entry was found so returning reference to tuple...
          return bucket ? &bucket->tuple : nullptr;
@@ -368,7 +368,7 @@ template< typename Key, typename Value, class Hash = FNV, class Comparator = CSt
       // Modify or rebuild the hash table as you see fit
       // to improve its performance now that you know
       // nothing more is to be added.
-      void Optimize( double loadFactor = 0.5, bool computeCeiling = true ) // does this imply load factor reaching this point?
+      void Optimize( double loadFactor/* = 0.5*/, bool computeCeiling = true ) // does this imply load factor reaching this point?
          {
          // It might be the case that the bucket size is far lower than expected
          // So it might be necessary to shrink the table size
@@ -384,9 +384,10 @@ template< typename Key, typename Value, class Hash = FNV, class Comparator = CSt
 
          // Doubles number of buckets and computes the two's power ceiling
          // .e.g computeTwosPow( 100 * 2 ) = 256
-         size_t newTbSize = computeTwosPow( (ssize_t) expectedTS, true );
+         size_t newTbSize = computeTwosPow( (ssize_t) (expectedTS - 1 ), computeCeiling );
+         // Check if load factor is too small
          if ( (static_cast<double>(numberOfBuckets) /  newTbSize ) - loadFactor < LOWEREPSILON )
-            newTbSize >>= 1;
+            newTbSize >>= 1; // Instead strink table size by a power of two
          //size_t newTbSize = computeTwosPow( (ssize_t) (expectedTS - 1), computeCeiling );
 
          // Adjust member variables
@@ -409,7 +410,7 @@ template< typename Key, typename Value, class Hash = FNV, class Comparator = CSt
             } // end for
          }
       // Used for optimizing to minimal perfect hash function
-      void Optimize( double load_factor /*= 0.415*/ )
+      void Optimize( double load_factor = 0.415 )
          {
          Optimize( load_factor, false );
          
@@ -432,7 +433,7 @@ template< typename Key, typename Value, class Hash = FNV, class Comparator = CSt
       // Your constructor may take as many default arguments
       // as you like.
 
-      HashTable( size_t tb = DEFAULTSIZE, Hash hasher = /*new*/ FNV(), Comparator comp = CStringComparator() ) : tableSize( computeTwosPow( (ssize_t)tb ) ), 
+      HashTable( size_t tb = DEFAULTSIZE, Hash *hasher = new FNV(), Comparator comp = CStringComparator() ) : tableSize( computeTwosPow( (ssize_t)tb ) ), 
          buckets( new Bucket< Key, Value > *[ tableSize ] ), numberOfBuckets( 0 ), compare( comp ), hashFunc( hasher )
          {
          assert( tb );
@@ -447,7 +448,7 @@ template< typename Key, typename Value, class Hash = FNV, class Comparator = CSt
                ** const end = buckets + tableSize; bucket != end; ++bucket )
             delete *bucket;
 
-         //delete hashFunc;
+         delete hashFunc;
          delete[] buckets;             
          } // end ~HashTable()
 
