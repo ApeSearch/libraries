@@ -22,6 +22,7 @@ using std::sort;
 
 #define DEFAULTSIZE 4096
 #define MAX 16430 // Golden Random number credited by MC
+#define LOWEREPSILON -0.175
 
 static inline size_t computeTwosPowCeiling( ssize_t num ) 
    {
@@ -36,7 +37,8 @@ static inline size_t computeTwosPow( ssize_t num, bool computeCeiling = true )
    {
    num-= computeCeiling; // Account for num already being a two's power
    size_t powerNum = 1;
-   for (; num > ( ssize_t )!computeCeiling; num >>=1 )
+   ssize_t bound = ( ssize_t )!computeCeiling;
+   for (; num > bound; num >>=1 )
       powerNum <<= 1;
    return powerNum;
    }
@@ -156,17 +158,33 @@ public:
          *bucket = nullptr;
       }
 
-   void assertSingleVectInvariants( typename std::vector< std::vector< Bucket< Key, Value> *> >::iterator currBucket, typename std::vector< std::vector< Bucket< Key, Value> *> >::iterator end )
-      {
-      for ( ; currBucket != end; ++currBucket )
-         assert( currBucket->size() == 1 );
-      }
-   
-   // Assume buckets is sorted
    Bucket< Key, Value > ** buildInterTable( std::vector< std::vector< Bucket< Key, Value> *> >& buckets, size_t tbSize, size_t numOfBuckets )
       {
       size_t bucketsCnt = 0; assert( tableSize == tbSize );
+      tableSize = tbSize;
+      arr.resize( tbSize );
       Bucket< Key, Value > **tableArray = new Bucket< Key, Value > *[ tbSize ]();
+
+      std::sort( buckets.begin(), buckets.end(), []( std::vector< Bucket< Key, Value> *>& lhs, 
+         std::vector< Bucket< Key, Value> *>& rhs ) { return lhs.size() > rhs.size(); } );
+      
+      // First place all buckets with collisions into seperate buckets
+      typename std::vector< std::vector< Bucket< Key, Value> *> >::iterator bucketVec = mapCollisionsToUniqEntry( buckets, tableArray, bucketsCnt );
+
+      // At this point bucketVec should only point to vectors of size one...
+      if ( bucketVec == buckets.end() )
+         return tableArray;
+
+      // Now just map the single buckets into unique places
+      mapSingleBuckets( buckets, bucketVec, tableArray, bucketsCnt );
+
+      assert( numOfBuckets == bucketsCnt );
+      return tableArray;
+      }
+      
+   typename std::vector< std::vector< Bucket< Key, Value> *> >::iterator mapCollisionsToUniqEntry( std::vector< std::vector< Bucket< Key, Value> *> >& buckets, 
+      Bucket< Key, Value > ** const tableArray, size_t& bucketsCnt )
+      {
       typename std::vector< std::vector< Bucket< Key, Value> *> >::iterator bucketVec = buckets.begin();
       for ( ;bucketVec != buckets.end() && bucketVec->size() > 1; ++bucketVec )
          {
@@ -175,13 +193,14 @@ public:
          std::vector< Bucket< Key, Value> **> bucketsPlaced; // To keep track of where buckets are part since might need to retry...
          size_t tempOf = 0;
 
+         // Try hashing with arg until every bucket inside bucketVec maps to a unique top-level bucket
          typename std::vector< Bucket< Key, Value> *>::iterator bucket = bucketVec->begin();
          while ( bucket != bucketVec->end() )
             {
             std::vector< Bucket< Key, Value> *>& vec = *bucketVec;
             size_t ind = operator()( ( *bucket )->tuple.key, arg ) & ( tableSize - 1 );
-            Bucket< Key, Value > ** mainLevel = tableArray +  ind;
-            assert( mainLevel < tableArray + tbSize );
+            Bucket< Key, Value > ** mainLevel = tableArray + ind;
+            assert( mainLevel < tableArray + tableSize );
             if ( *mainLevel )
                {
                removePtrs( bucketsPlaced );
@@ -198,7 +217,7 @@ public:
                ++tempOf;
                ++bucket;
                }
-            } // end for
+            } // end while 
          assert( tempOf == bucketsPlaced.size() );
          size_t bucketVecSize = bucketVec->size();
          assert( tempOf == bucketVecSize );
@@ -210,17 +229,19 @@ public:
          arr[ hashInd ] = arg;
          } // end for
 
-      // At this point bucketVec should only point to vectors of size one...
-      if ( bucketVec == buckets.end() )
-         return tableArray;
-
+         return bucketVec;
+      } // end mapCollisionsToUniqEntry()
+   
+   void mapSingleBuckets( std::vector< std::vector< Bucket< Key, Value> *> >& buckets, 
+      typename std::vector< std::vector< Bucket< Key, Value> *> >::iterator bucketVec, 
+         Bucket< Key, Value > ** const tableArray, size_t& bucketsCnt )
+      {
       assertSingleVectInvariants( bucketVec, buckets.end() );
-
       // Find all empty buckets now
       size_t bucketsRemaining = buckets.end() - bucketVec;
       std::vector< Bucket< Key, Value> **> freeBuckets;
       freeBuckets.reserve( bucketsRemaining );
-      for ( Bucket< Key, Value > **mainLevel = tableArray; tableArray != tableArray + tbSize && bucketsRemaining ; ++mainLevel )
+      for ( Bucket< Key, Value > **mainLevel = tableArray, **end = tableArray + tableSize; tableArray != end && bucketsRemaining ; ++mainLevel )
          {
          if ( !( *mainLevel ) )
             {
@@ -242,9 +263,15 @@ public:
          arr[ hashInd ] = arrayInd;
          ++bucketsCnt;
          } // end for
-      assert( numOfBuckets == bucketsCnt );
-      return tableArray;
+      } // end placeSingleBucketsInEmptyBuckets()
+
+   void assertSingleVectInvariants( typename std::vector< std::vector< Bucket< Key, Value> *> >::iterator currBucket, 
+      const typename std::vector< std::vector< Bucket< Key, Value> *> >::iterator end )
+      {
+      for ( ; currBucket != end; ++currBucket )
+         assert( currBucket->size() == 1 );
       }
+
 };
 
 
@@ -357,7 +384,9 @@ template< typename Key, typename Value, class Hash = FNV, class Comparator = CSt
 
          // Doubles number of buckets and computes the two's power ceiling
          // .e.g computeTwosPow( 100 * 2 ) = 256
-         size_t newTbSize = computeTwosPowCeiling( (ssize_t) (expectedTS - 1) );
+         size_t newTbSize = computeTwosPow( (ssize_t) expectedTS, true );
+         if ( (static_cast<double>(numberOfBuckets) /  newTbSize ) - loadFactor < LOWEREPSILON )
+            newTbSize >>= 1;
          //size_t newTbSize = computeTwosPow( (ssize_t) (expectedTS - 1), computeCeiling );
 
          // Adjust member variables
@@ -389,7 +418,6 @@ template< typename Key, typename Value, class Hash = FNV, class Comparator = CSt
          // Now do perfect hashing
          std::vector< std::vector< Bucket< Key, Value> *> > bucketsVec = vectorOfBuckets();
          assert( bucketsVec.size() == numOfLinkedLists() );
-         std::sort( bucketsVec.begin(), bucketsVec.end(), []( std::vector< Bucket< Key, Value> *>& lhs, std::vector< Bucket< Key, Value> *>& rhs ) { return lhs.size() > rhs.size(); } );
          delete hashFunc;
          delete []buckets;
          hashFunc = new PerfectHashing<Key, Value>( tableSize );
@@ -508,12 +536,12 @@ private:
             assert( !bucketRef.size() );
             for ( Bucket< Key, Value > *currBucket = *mainLevel ; currBucket ; currBucket = currBucket->next )
                {
-               bucketVec.back().emplace_back( currBucket );
+               bucketRef.emplace_back( currBucket );
                ++bucketCnt;
                }
             assert( bucketRef.size() );
             bucketRef.shrink_to_fit();
-            assertLinkedList( bucketVec.back() );
+            assertLinkedList( bucketRef );
             } // end for
          assert( bucketCnt == numberOfBuckets );
          return bucketVec;
