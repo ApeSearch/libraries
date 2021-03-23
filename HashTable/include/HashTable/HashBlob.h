@@ -32,7 +32,7 @@ using HashBucket = Bucket< const char *, size_t >;
 static const size_t Unknown = 0;
 
 
-size_t RoundUp( size_t length, size_t boundary )
+size_t RoundUp( size_t length, size_t boundary = 8 )
    {
    // Round up to the next multiple of the boundary, which
    // must be a power of 2.
@@ -67,11 +67,19 @@ struct SerialTuple
       // Calculate the bytes required to encode a HashBucket as a
       // SerialTuple.
 
+      static size_t helperBytesRequired( const Pair& pair )
+         {
+         size_t sizeOfMetaData = sizeof( size_t ) * 2 + sizeof( uint32_t );
+
+         size_t keyLen = strlen( pair.key );
+
+         return RoundUp( sizeOfMetaData + keyLen, 0x8 );
+         }
+
       static size_t BytesRequired( const HashBucket *b )
          {
          // Your code here.
-
-         return 0;
+         return helperBytesRequired( b->tuple );
          }
 
       // Write the HashBucket out as a SerialTuple in the buffer,
@@ -112,19 +120,31 @@ class HashBlob
 
       // The SerialTuples will follow immediately after.
 
-
+      template<class HashFunc = FNV> 
       const SerialTuple *Find( const char *key ) const
          {
+         static HashFunc func;
+         static constexpr size_t offsetToBuckets = sizeof( size_t ) * 4;
          // Search for the key k and return a pointer to the
          // ( key, value ) entry.  If the key is not found,
          // return nullptr.
 
-         // Your code here.
+         uint32_t hashVal = func( key );
+         size_t tupleInd = hashVal & ( NumberOfBuckets - 1 );
 
+         if ( tupleInd )
+            {
+            SerialTuple const *tupleArr = reinterpret_cast<SerialTuple const *>( buckets + tupleInd - offsetToBuckets );
+            /*
+            for ( ; tupleArr->Length; ++tupleArr )
+               if ( CompareEqual( tupleArr->Key, key ) )
+                  return tupleArr;
+            */
+            } // end if
          return nullptr;
          }
 
-      static size_t BytesForHeaderBuckets( const Hash *hashTable )
+      inline static size_t BytesForHeaderBuckets( const Hash *hashTable )
          {
          size_t sizeOfBuckets = sizeof( size_t ) * hashTable->tableSize;
          size_t header = sizeof( HashBlob );
@@ -140,13 +160,19 @@ class HashBlob
          // all the serialized tuples.
 
          // Your code here.
-         size_t sizeOfValues = sizeof( size_t ) * hashTable->numberOfBuckets;
-         size_t totSizeOfKeys = 0;
+         size_t totSizeOfSerialTuples = 0; // Count bytes that go to serial tuples...
 
+         // Add up the 
          for ( Hash::const_iterator itr = hashTable->cbegin(); itr != hashTable->cend(); ++itr )
-            totSizeOfKeys += strlen( itr->key );
+            totSizeOfSerialTuples += SerialTuple::helperBytesRequired( *itr );
 
-         return totSizeOfKeys + sizeOfValues;
+         // Add null sentinal bytes
+         totSizeOfSerialTuples += hashTable->numOfLinkedLists() * sizeof( SerialTuple );
+
+         size_t totBytes = totSizeOfSerialTuples + BytesForHeaderBuckets( hashTable );
+         // It should be the case that the resultant value is a multiple of 8
+         assert( RoundUp( totBytes, 8 ) == totBytes );
+         return totBytes;
          }
 
       // Write a HashBlob into a buffer, returning a

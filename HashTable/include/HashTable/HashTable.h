@@ -520,7 +520,7 @@ private:
             if ( currBucket + 1 == vec.end() )
                assert( !( ( *currBucket )->next ) );
             else 
-               assert( ( *currBucket )->next == *( currBucket + 1 )  );
+               assert( ( *currBucket )->next == *( currBucket + 1 ) );
             }
          } // end assertLinkedList()
       std::vector< std::vector< Bucket< Key, Value> *> > vectorOfBuckets() const
