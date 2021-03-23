@@ -139,7 +139,7 @@ public:
       {
       }
 
-   ~PerfectHashing()
+   ~PerfectHashing() override
       {
       }
 
@@ -199,7 +199,7 @@ public:
             size_t ind = operator()( ( *bucket )->tuple.key, arg ) & ( tableSize - 1 );
             Bucket< Key, Value > ** mainLevel = tableArray + ind;
             assert( mainLevel < tableArray + tableSize );
-            if ( *mainLevel )
+            if ( *mainLevel ) // Collision so need to retry
                {
                removePtrs( bucketsPlaced );
                bucketsPlaced.clear();
@@ -207,7 +207,7 @@ public:
                tempOf = 0;
                bucket = bucketVec->begin();
                } // end if
-            else
+            else // empty bucket
                {
                ( *bucket )->next = nullptr;
                *mainLevel = *bucket;

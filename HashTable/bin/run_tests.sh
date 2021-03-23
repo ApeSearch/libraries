@@ -1,4 +1,9 @@
 #!/bin/bash
+
+if [ "(ls -A tests/wrongOutput)" ]; then
+    rm tests/wrongOutput/*
+fi
+
 exec=""
 # Run Hash-table...
 for test in tests/bin/*; do
