@@ -134,12 +134,10 @@ class HashBlob
 
          if ( tupleInd )
             {
-            SerialTuple const *tupleArr = reinterpret_cast<SerialTuple const *>( buckets + tupleInd - offsetToBuckets );
-            /*
+            SerialTuple const *tupleArr = reinterpret_cast<SerialTuple const *>( &Buckets + tupleInd - offsetToBuckets );
             for ( ; tupleArr->Length; ++tupleArr )
                if ( CompareEqual( tupleArr->Key, key ) )
                   return tupleArr;
-            */
             } // end if
          return nullptr;
          }
