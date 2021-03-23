@@ -720,7 +720,7 @@ public:
 
          HashTable temp ( newTbSize );
 
-         for ( Iterator itr = begin(); itr != end(); ++itr )
+         for ( Iterator<Key, Value> itr = begin(); itr != end(); ++itr )
             {
             Tuple <Key, Value> *pair = &( *itr.currentBucket )->tuple;
             temp.Find( pair->key, pair->value );

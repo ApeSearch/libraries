@@ -61,7 +61,7 @@ Pair **TopN( Hash *hashtable, int N )
    Pair ** end = pairArray + unsigned( N + 1 );
    greaterComparator comp;
 
-   for ( Hash::Iterator it = hashtable->begin(); it != hashtable->end(); ++it )
+   for ( Hash::iterator it = hashtable->begin(); it != hashtable->end(); ++it )
       validEnd = insertSortN< greaterComparator >( pairArray, validEnd, end, &*it, comp );
    
    return pairArray;

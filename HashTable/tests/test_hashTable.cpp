@@ -363,7 +363,7 @@ TEST( test_iterators )
 
    kv = hashTable.Find( "testing" );
 
-   HashTable<const char*, size_t>::Iterator itr = hashTable.begin();
+   HashTable<const char*, size_t>::iterator itr = hashTable.begin();
    ASSERT_EQUAL( itr->value, 100 );
 
    }
@@ -384,16 +384,16 @@ TEST( test_iterator_operators )
       ASSERT_EQUAL( kv->value, n );
       } // end for
 
-   HashTable<const char*, size_t>::Iterator itr = hashTable.begin();
+   HashTable<const char*, size_t>::iterator itr = hashTable.begin();
 
-   HashTable<const char*, size_t>::Iterator postFix = itr++;
+   HashTable<const char*, size_t>::iterator postFix = itr++;
    ASSERT_EQUAL( postFix, hashTable.begin() );
 
    itr++;
    ASSERT_NOT_EQUAL( itr, hashTable.begin() );
    ASSERT_EQUAL( itr, hashTable.begin() + 2 );
 
-   HashTable<const char*, size_t>::Iterator itr2 = hashTable.begin();
+   HashTable<const char*, size_t>::iterator itr2 = hashTable.begin();
 
    ASSERT_EQUAL( ++itr2, hashTable.begin() + 1 );
 
@@ -401,14 +401,14 @@ TEST( test_iterator_operators )
    ASSERT_EQUAL( emptyhashTable.begin(), emptyhashTable.end() );
 
 
-   HashTable<const char*, size_t>::Iterator copy( itr2 );
+   HashTable<const char*, size_t>::iterator copy( itr2 );
 
    ASSERT_NOT_EQUAL( ++copy, itr2 );
 
 
    const char *charKey = itr2->key;
 
-   HashTable<const char*, size_t>::Iterator foundItr = hashTable.FindItr( charKey );
+   HashTable<const char*, size_t>::iterator foundItr = hashTable.FindItr( charKey );
    ASSERT_EQUAL( foundItr, itr2 );
 
    size_t oldVal = itr2->value;
