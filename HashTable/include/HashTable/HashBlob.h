@@ -124,6 +124,12 @@ class HashBlob
          return nullptr;
          }
 
+      static size_t BytesForHeaderBuckets( const Hash *hashTable )
+         {
+         size_t sizeOfBuckets = sizeof( size_t ) * hashTable->tableSize;
+         size_t header = sizeof( HashBlob );
+         return sizeOfBuckets + header;
+         }
 
       static size_t BytesRequired( const Hash *hashTable )
          {
@@ -134,8 +140,13 @@ class HashBlob
          // all the serialized tuples.
 
          // Your code here.
+         size_t sizeOfValues = sizeof( size_t ) * hashTable->numberOfBuckets;
+         size_t totSizeOfKeys = 0;
 
-         return 0;
+         for ( Hash::const_iterator itr = hashTable->cbegin(); itr != hashTable->cend(); ++itr )
+            totSizeOfKeys += strlen( itr->key );
+
+         return totSizeOfKeys + sizeOfValues;
          }
 
       // Write a HashBlob into a buffer, returning a

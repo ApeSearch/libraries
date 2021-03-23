@@ -14,7 +14,7 @@ using std::sort;
 #ifdef LOCAL
    #include "../../../AS/include/AS/algorithms.h" // for APESEARCH::swap
 #else
-   #include <utility>
+   #include <utility> // testing std::swap
 #endif
 
 #include <stdlib.h>
@@ -286,6 +286,7 @@ template< typename Key, typename Value, class Hash = FNV, class Comparator = CSt
       Comparator compare;
       Hash *hashFunc;
 
+      template< Key, Value>
       friend class Iterator;
       friend class HashBlob;
    
@@ -575,25 +576,26 @@ public:
          std::cout << "------- Hash Table Stats End -------\n";
          }
 
+      template<typename KeyItr = Key, typename ValueItr = Value>
       class Iterator
          {
          private:
 
             friend class HashTable;
             // Your code here.
-            HashTable *table; // for the tableSize
+            HashTable const *table; // for the tableSize
             Bucket< Key, Value > **mainLevel;
             Bucket< Key, Value > **currentBucket;
 
-            Iterator( HashTable *_table, size_t bucket ) :  table( _table ), mainLevel( table->buckets + bucket ) {
+            Iterator( HashTable const *_table, size_t bucket ) :  table( _table ), mainLevel( table->buckets + bucket ) {
                for (  Bucket< Key, Value > **end = table->buckets + table->tableSize
                   ; mainLevel != end && !(*mainLevel); ++mainLevel ); // Order of comparison is required: *mainLevel could be an invalid read if mainLevel == end
                currentBucket = mainLevel;
             }
 
             // This constructor can be used for finds that want to return an iterator instead
-            Iterator( HashTable *_table, Bucket<Key, Value> **b ) :  table( _table ), currentBucket( b ), 
-                  mainLevel( table ? table->buckets + ( *b )->hashValue & ( table->tableSize - 1 ) : nullptr ) {}
+            Iterator( HashTable const *_table, Bucket<Key, Value> **b ) :  table( _table ), currentBucket( b ), 
+                  mainLevel( table ? table->buckets + ( ( *b )->hashValue  & ( table->tableSize - 1 ) ) : nullptr ) {}
 
             Iterator( HashTable *_table, size_t bucketInd, Bucket<Key, Value> *b ) :  table( _table ), mainLevel( table ? table->buckets + bucketInd : nullptr ), currentBucket( mainLevel )
                {
@@ -679,22 +681,35 @@ public:
                return copy;
                }
          };
+      
+      typedef Iterator<Key, Value> iterator;
+      typedef Iterator<const Key, const Value> const_iterator;
 
-      Iterator begin( )
+      iterator begin( ) const
          {
-         return Iterator( this, size_t ( 0 ) );
+         return iterator( this, size_t ( 0 ) );
          }
 
-      Iterator end( )
+      iterator end( ) const
          {
-         return Iterator( this, tableSize );
+         return iterator( this, tableSize );
+         }
+
+      const_iterator cbegin( ) const
+         {
+          return const_iterator( this, size_t ( 0 ) );
          }
       
-      Iterator FindItr( const Key& k ) const
+      const_iterator cend( ) const
+         {
+         return const_iterator( this, tableSize );
+         }
+      
+      iterator FindItr( const Key& k ) const
          {
          Bucket< Key, Value > **bucket = helperFind( k, ( *hashFunc )( k ) );
 
-         return *bucket ? Iterator( this, bucket ) : end();
+         return *bucket ? iterator( this, bucket ) : end();
          }
       
       //! Warning while this is simple, it also isn't very efficient
@@ -714,6 +729,7 @@ public:
          }
    
    };
+
 
    template<typename Key, typename Value >
    void swap( HashTable< Key, Value>& lhs, HashTable< Key, Value>& rhs )

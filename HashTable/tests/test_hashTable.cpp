@@ -405,6 +405,19 @@ TEST( test_iterator_operators )
 
    ASSERT_NOT_EQUAL( ++copy, itr2 );
 
+
+   const char *charKey = itr2->key;
+
+   HashTable<const char*, size_t>::Iterator foundItr = hashTable.FindItr( charKey );
+   ASSERT_EQUAL( foundItr, itr2 );
+
+   size_t oldVal = itr2->value;
+   itr2->value *= 2;
+
+   ASSERT_EQUAL( foundItr, itr2 );
+
+   ASSERT_NOT_EQUAL( hashTable.FindItr( charKey )->value, oldVal );
+
    }
 
 TEST( test_iterating )
@@ -434,7 +447,7 @@ TEST( test_iterating )
    std::vector< const Bucket< const char*, size_t> * > vec( hashTable.constflattenHashTable() );
    ASSERT_EQUAL( vec.size(), hashTable.size() );
 
-   HashTable<const char*, size_t>::Iterator hTItr = hashTable.begin();
+   HashTable<const char*, size_t>::iterator hTItr = hashTable.begin();
    auto itr = vec.begin();
    for ( size_t n = 0; n < val ; ++itr, ++hTItr, ++n )
       {
