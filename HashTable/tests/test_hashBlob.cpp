@@ -1,6 +1,7 @@
 #include "../include/HashTable/HashTable.h"
 #include "../include/HashTable/HashBlob.h"
 #include "../../unit_test_framework/include/unit_test_framework/unit_test_framework.h"
+#include <sys/mman.h>
 
 static void testingFind( HashTable<const char*, size_t>& hashTable );
 
@@ -39,6 +40,35 @@ TEST( test_helperBytesRequire )
       else if ( CompareEqual( itr->key, "1 2 3 3 4 5 " ) )
          {
          ASSERT_EQUAL( strlen( "1 2 3 3 4 5 " ), 12 );
+         ASSERT_EQUAL( SerialTuple::helperBytesRequired( *itr ), 40 );
+         }
+      } // end for
+   }
+
+TEST( test_helperBytesRequireStrict )
+   {
+   HashTable<const char*, size_t> hashTable(8);
+
+    hashTable.Find( "testing", 100 );
+    hashTable.Find( "lololol" );
+    hashTable.Find( "1 2 3 3 4 5" );
+
+   size_t bytesReq = HashBlob::BytesForHeaderBuckets( &hashTable ); 
+   size_t expectedBytes = ( 4 + hashTable.table_size() ) * sizeof( size_t ); // 4 * 8ish
+   ASSERT_EQUAL( bytesReq, expectedBytes );
+
+   Hash::const_iterator itr = hashTable.cbegin();
+   size_t serialTupleSize = sizeof( size_t ) * 2 + sizeof( uint32_t );
+
+   for ( Hash::const_iterator itr = hashTable.cbegin(); itr != hashTable.cend(); ++itr )
+      {
+      if ( CompareEqual( itr->key, "testing" ) || CompareEqual( itr->key, "lololol" ) )
+         {
+         ASSERT_EQUAL( SerialTuple::helperBytesRequired( *itr ), 32 );
+         }
+      else if ( CompareEqual( itr->key, "1 2 3 3 4 5 " ) )
+         {
+         ASSERT_EQUAL( strlen( "1 2 3 3 4 5" ) + 1, 12 );
          ASSERT_EQUAL( SerialTuple::helperBytesRequired( *itr ), 32 );
          }
       } // end for
@@ -55,13 +85,13 @@ TEST( test_TotBytesRequired )
 
     // "testing" == 32
     // "lololol" == 32
-    // "1 2 3 3 4 5 " == 32
+    // "1 2 3 3 4 5 " == 40
 
    ASSERT_EQUAL( hashTable.size(), 3 );
    ASSERT_EQUAL( hashTable.numOfLinkedLists(), 3 );
 
    // 56 are from the valid serial tuples while 72 ( 24 * 3 ) the null serial tuples
-   ASSERT_EQUAL( HashBlob::BytesRequired(( &hashTable )), 96 + 
+   ASSERT_EQUAL( HashBlob::BytesRequired(( &hashTable )), 104 + 
       ( hashTable.numOfLinkedLists() * sizeof( SerialTuple ) ) + headerAndBucketsBytes );
    }
 
@@ -107,5 +137,165 @@ void testingFind( HashTable<const char*, size_t>& hashTable )
     ASSERT_EQUAL( kv->value, 42 );
    }
 
+TEST( test_SerialTupleWrite )
+   {
+   const char *key = "testing";
+   const size_t value = 69;
+   const uint32_t hashValue = 1000009;
+   Bucket< const char *, size_t > bucket( key, value, hashValue );
+
+   constexpr static size_t bytesReq = RoundUpConstExpr( SerialTuple::sizeOfMetaData + 7 );
+
+   char buffer[ bytesReq ];
+
+   char *end = SerialTuple::Write( buffer, buffer + bytesReq, &bucket );
+
+   SerialTuple *serialTuple = reinterpret_cast< SerialTuple *>( &buffer );
+
+   ASSERT_EQUAL( buffer + bytesReq, end );
+   ASSERT_EQUAL( serialTuple->Length, bytesReq );
+   ASSERT_EQUAL( serialTuple->Value, value );
+   ASSERT_EQUAL( serialTuple->HashValue, hashValue );
+   ASSERT_TRUE( CompareEqual( serialTuple->Key, key ) );
+   }
+
+TEST( test_SerialTupleWriteStrict )
+   {
+   const char *key = "test";
+   const size_t value = 69;
+   const uint32_t hashValue = 1000009;
+   Bucket< const char *, size_t > bucket( key, value, hashValue );
+
+   constexpr static size_t bytesReq = RoundUpConstExpr( SerialTuple::sizeOfMetaData + 5 );
+
+   char buffer[ bytesReq ];
+
+   char *end = SerialTuple::Write( buffer, buffer + bytesReq, &bucket );
+
+   SerialTuple *serialTuple = reinterpret_cast< SerialTuple *>( &buffer );
+
+   ASSERT_EQUAL( buffer + bytesReq, end );
+   ASSERT_EQUAL( RoundUp( end - buffer, 8 ), bytesReq );
+   ASSERT_EQUAL( serialTuple->Length, bytesReq );
+   ASSERT_EQUAL( serialTuple->Value, value );
+   ASSERT_EQUAL( serialTuple->HashValue, hashValue );
+   ASSERT_TRUE( CompareEqual( serialTuple->Key, key ) );
+   }
+
+#define FILEPATH "./tests/hashFiles/test_hashBlob.txt"
+
+
+TEST( test_SerialTupleWrite_WITHFILEWRITE )
+   {
+   const char *key = "testing";
+   const size_t value = 69;
+   const uint32_t hashValue = 1000009;
+   Bucket< const char *, size_t > bucket( key, value, hashValue );
+
+   constexpr static size_t bytesReq = RoundUpConstExpr( SerialTuple::sizeOfMetaData + 7 );
+
+   int fd;
+   //char *filename =  "./tests/hashFiles/test_hashBlob.txt";
+   
+   // O_RDWR == open for reading and writing
+   // O_CREAT == create file if not alrady exits
+   fd = open( FILEPATH, O_RDWR | O_CREAT | O_TRUNC, (mode_t)0600 ); // 0600 == 0400 | 0200
+   if ( fd == -1 )
+      {
+      perror("Error opening file");
+      ASSERT_TRUE( false );
+      }
+
+   int result = lseek( fd, bytesReq - 1, SEEK_SET );
+   if ( result == -1 )
+      {
+      close( fd );
+      perror( "Error calling lseek() to stretch file" );
+      ASSERT_TRUE( false );
+      } // end if
+
+   result = write( fd, "", 1 );
+   if ( result != 1 )
+      {
+      close( fd );
+      perror( "Error writing byte to file " );
+      ASSERT_TRUE( false );
+      } // end if
+
+
+   void *map;
+   map = mmap( 0, bytesReq, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0 );
+   if ( map == MAP_FAILED )
+      {
+      close( fd );
+      perror( "Error mmapping file" );
+      ASSERT_TRUE( false );
+      }
+   
+   char *buffer = reinterpret_cast< char * >( map );
+
+   char *end = SerialTuple::Write( buffer, buffer + bytesReq, &bucket );
+
+   SerialTuple *serialTuple = reinterpret_cast< SerialTuple *>( buffer );
+
+   ASSERT_EQUAL( buffer + bytesReq, end );
+   ASSERT_EQUAL( serialTuple->Length, bytesReq );
+   ASSERT_EQUAL( serialTuple->Value, value );
+   ASSERT_EQUAL( serialTuple->HashValue, hashValue );
+   ASSERT_TRUE( CompareEqual( serialTuple->Key, key ) );
+
+   // Free mmapped memory 
+   if ( munmap( map, bytesReq ) == -1 )
+      {
+      perror( "err un-mapping the file " );
+      close( fd );
+      ASSERT_TRUE( false );
+      }
+
+
+   close( fd );
+   }
+
+TEST( test_SerialTupleWrite_WITHFILEWRITE_READAFTER )
+   {
+   const char *key = "testing";
+   const size_t value = 69;
+   const uint32_t hashValue = 1000009;
+   constexpr static size_t bytesReq = RoundUpConstExpr( SerialTuple::sizeOfMetaData + 7 );
+
+   int fd;
+   void *map;
+
+   fd = open( FILEPATH, O_RDONLY );
+   if ( fd == -1 )
+      {
+      perror( "Error opening file for reading" );
+      ASSERT_TRUE( false );
+      }
+   
+   map = mmap( 0, bytesReq, PROT_READ, MAP_SHARED, fd, 0 );
+   if ( map == MAP_FAILED )
+      {
+      close( fd );
+      perror( "Error mmapping the file" );
+      ASSERT_TRUE( false );
+      } // end if
+
+   SerialTuple *serialTuple = reinterpret_cast< SerialTuple *>( map );
+
+   ASSERT_EQUAL( serialTuple->Length, bytesReq );
+   ASSERT_EQUAL( serialTuple->Value, value );
+   ASSERT_EQUAL( serialTuple->HashValue, hashValue );
+   ASSERT_TRUE( CompareEqual( serialTuple->Key, key ) );
+
+    // Free mmapped memory 
+   if ( munmap( map, bytesReq ) == -1 )
+      {
+      perror( "err un-mapping the file " );
+      close( fd );
+      ASSERT_TRUE( false );
+      }
+   close( fd );
+   }
 
 TEST_MAIN()

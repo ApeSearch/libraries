@@ -31,6 +31,15 @@ using HashBucket = Bucket< const char *, size_t >;
 
 static const size_t Unknown = 0;
 
+constexpr size_t RoundUpConstExpr( size_t length, size_t boundary = 8 )
+   {
+   // Round up to the next multiple of the boundary, which
+   // must be a power of 2.
+
+   const size_t oneless = boundary - 1,
+      mask = ~( oneless );
+   return ( length + oneless ) & mask;
+   }
 
 size_t RoundUp( size_t length, size_t boundary = 8 )
    {
@@ -61,6 +70,9 @@ struct SerialTuple
       size_t Length, Value;
       uint32_t HashValue;
 
+      // Should be 20
+      static constexpr size_t sizeOfMetaData = sizeof( size_t ) * 2 + sizeof( uint32_t );
+
       // The Key will be a C-string of whatever length.
       char Key[ Unknown ];
 
@@ -69,28 +81,60 @@ struct SerialTuple
 
       static size_t helperBytesRequired( const Pair& pair )
          {
-         size_t sizeOfMetaData = sizeof( size_t ) * 2 + sizeof( uint32_t );
+         // Extra character for null-character
+         size_t keyLen = strlen( pair.key ) + 1;
 
-         size_t keyLen = strlen( pair.key );
-
-         return RoundUp( sizeOfMetaData + keyLen, 0x8 );
+         return RoundUp( SerialTuple::sizeOfMetaData + keyLen, 0x8 );
          }
 
       static size_t BytesRequired( const HashBucket *b )
          {
-         // Your code here.
          return helperBytesRequired( b->tuple );
          }
 
       // Write the HashBucket out as a SerialTuple in the buffer,
       // returning a pointer to one past the last character written.
 
+      static SerialTuple *initSerialTuple( char *buffer, const HashBucket *b, size_t lengthSerialized )
+         {
+         SerialTuple *serialTuple = reinterpret_cast< SerialTuple * > ( buffer );
+
+         serialTuple->Length = lengthSerialized;
+         serialTuple->Value = b->tuple.value;
+         serialTuple->HashValue = b->hashValue;
+
+         return serialTuple;
+         }
+
       static char *Write( char *buffer, char *bufferEnd,
             const HashBucket *b )
          {
          // Your code here.
+         size_t bytesReq = BytesRequired( b );
 
-         return nullptr;
+         assert( bufferEnd - buffer >= bytesReq );
+
+         SerialTuple *serialTuple = initSerialTuple( buffer, b, bytesReq );
+
+         buffer = serialTuple->Key;
+
+         size_t charToWrite = bytesReq - SerialTuple::sizeOfMetaData;
+         assert( buffer + charToWrite <= bufferEnd );
+
+         assert( strncpy( buffer, b->tuple.key, charToWrite ) == buffer );
+
+         return buffer + ( bytesReq - SerialTuple::sizeOfMetaData );
+         } // end Write()
+      
+      static char *WriteNull( char *buffer, char *bufferEnd )
+         {
+         // Ensures that the buffer can fit the null sentinel to begin with...
+         assert( size_t( bufferEnd - buffer ) >= SerialTuple::sizeOfMetaData );
+
+         SerialTuple *nullSerial = reinterpret_cast< SerialTuple * >( buffer ); 
+         nullSerial->Length = 0;
+
+         return buffer + SerialTuple::sizeOfMetaData;
          }
   };
 
@@ -106,6 +150,7 @@ class HashBlob
    // information including the number of buckets and other
    // details followed by a concatenated list of all the
    // individual lists of tuples within each bucket.
+   friend class Const_Iterator;
 
    public:
 
@@ -129,16 +174,22 @@ class HashBlob
          // ( key, value ) entry.  If the key is not found,
          // return nullptr.
 
-         uint32_t hashVal = func( key );
+         uint32_t hashVal = ( uint32_t )func( key );
          size_t tupleInd = hashVal & ( NumberOfBuckets - 1 );
 
          if ( tupleInd )
             {
-            SerialTuple const *tupleArr = reinterpret_cast<SerialTuple const *>( &Buckets + tupleInd - offsetToBuckets );
-            for ( ; tupleArr->Length; ++tupleArr )
+            uint8_t const *rawAddr = reinterpret_cast<uint8_t const *>( &Buckets );
+            SerialTuple const *tupleArr = reinterpret_cast<SerialTuple const *>( (*rawAddr + tupleInd - offsetToBuckets) );
+
+            while ( tupleArr->Length )
+               {
                if ( CompareEqual( tupleArr->Key, key ) )
                   return tupleArr;
-            } // end if
+               rawAddr = reinterpret_cast<uint8_t const *>( &*tupleArr );
+               tupleArr = reinterpret_cast<SerialTuple const *>( rawAddr + tupleArr->Length );
+               } // end if
+            }
          return nullptr;
          }
 
@@ -181,7 +232,32 @@ class HashBlob
          {
          // Your code here.
 
-         return nullptr;
+         hb->MagicNumber = 69;
+         hb->Version = 1;
+         hb->BlobSize = bytes;
+         hb->NumberOfBuckets = hashTable->table_size();
+
+         // Points to the beginning of the Serial Tuples...
+         char *serialPtr =reinterpret_cast< char *>( hb->Buckets + hashTable->table_size() );
+         char *end = reinterpret_cast< char *>( hb ) + bytes;
+
+         std::vector< std::vector< HashBucket *> > buckets( hashTable->vectorOfBuckets() );
+
+         typename std::vector< std::vector< HashBucket *> >::iterator bucketsVec = buckets.begin();
+
+         for ( ; bucketsVec != buckets.end(); ++bucketsVec )
+            {
+            
+            for ( typename std::vector<HashBucket*>::iterator bucket = bucketsVec->begin(); 
+               bucket != bucketsVec->end(); ++bucket )
+               {
+               serialPtr = SerialTuple::Write( serialPtr, end, *bucket );
+               } // end for
+            
+            // Now add null serial Tuple
+            serialPtr = SerialTuple::WriteNull( serialPtr, end );
+            } // end for
+         return hb;
          }
 
       // Create allocates memory for a HashBlob of required size
@@ -190,20 +266,92 @@ class HashBlob
 
       // (No easy way to override the new operator to create a
       // variable sized object.)
-
       static HashBlob *Create( const Hash *hashTable )
          {
          // Your code here.
+         const size_t bytesReq = HashBlob::BytesRequired( hashTable );
 
-         return nullptr;
+         // Need to use malloc to get the exact right number of bytes
+         char *buffer = ( char * ) malloc( bytesReq );
+         memset( buffer, 0, bytesReq );
+
+         return Write( reinterpret_cast<HashBlob *>( buffer ), bytesReq, hashTable );
          }
 
       // Discard
-
       static void Discard( HashBlob *blob )
          {
-         // Your code here.
+         free( blob );
          }
+
+      class Const_Iterator
+         {
+         
+         friend class Blob;
+
+         HashBlob const *hashBlob;
+
+         char *buffer;
+         char *bufferEnd;
+
+         inline void advanceSerialTuple( )
+            {
+            assert( buffer != bufferEnd );
+
+            SerialTuple const *tuple = reinterpret_cast< SerialTuple const * >( buffer );
+
+            // Needs to point to a valid serial tuple ( not null )
+            assert( tuple->Length );
+
+            buffer += tuple->Length;
+
+            tuple = reinterpret_cast< SerialTuple const * >( buffer );
+
+            // check if reached null serial; if so, advance again.
+            if ( buffer != bufferEnd && !tuple->Length )
+               buffer += SerialTuple::sizeOfMetaData;
+
+            } // end advanceSerialTuple()
+
+//      size_t Length, Value;
+//      uint32_t HashValue;
+
+         public:
+            Const_Iterator( ) : hashBlob( nullptr ), buffer( nullptr ), bufferEnd( nullptr ) {}
+
+
+            ~Const_Iterator( ) {}
+
+            const SerialTuple &operator*( ) const
+               {
+               return *( reinterpret_cast< SerialTuple const *> ( buffer ) );
+               } // end Dereference operator()
+
+            SerialTuple const *operator->( ) const
+               {
+               return reinterpret_cast< SerialTuple const *>( buffer );
+               }
+
+            Const_Iterator &operator++( )
+               {
+               advanceSerialTuple();
+               return *this;
+               } // end prefix
+
+            Const_Iterator operator++(int)
+               {
+               Const_Iterator old( *this );
+               advanceSerialTuple();
+               return old;
+               } // end postfix
+
+            
+
+
+
+         };
+
+
    };
 
 class HashFile

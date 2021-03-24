@@ -150,7 +150,7 @@ public:
       if ( val < 0 )
          return size_t ( ( -val ) - 1 ); // Uses the negative to map to bucket
       
-      return operator()( data, val );
+      return operator()( data, ( size_t )val );
       } //end operator()
    
    void removePtrs( std::vector< Bucket< Key, Value> **> &bucketsPlaced )
@@ -195,8 +195,8 @@ public:
          typename std::vector< Bucket< Key, Value> *>::iterator bucket = bucketVec->begin();
          while ( bucket != bucketVec->end() )
             {
-            std::vector< Bucket< Key, Value> *>& vec = *bucketVec;
-            size_t ind = operator()( ( *bucket )->tuple.key, arg ) & ( tableSize - 1 );
+            //std::vector< Bucket< Key, Value> *>& vec = *bucketVec;
+            size_t ind = operator()( ( *bucket )->tuple.key, static_cast<size_t>( arg ) ) & ( tableSize - 1 );
             Bucket< Key, Value > ** mainLevel = tableArray + ind;
             assert( mainLevel < tableArray + tableSize );
             if ( *mainLevel ) // Collision so need to retry
@@ -236,7 +236,7 @@ public:
       {
       assertSingleVectInvariants( bucketVec, buckets.end() );
       // Find all empty buckets now
-      size_t bucketsRemaining = buckets.end() - bucketVec;
+      size_t bucketsRemaining = static_cast<size_t>( buckets.end() - bucketVec );
       std::vector< Bucket< Key, Value> **> freeBuckets;
       freeBuckets.reserve( bucketsRemaining );
       for ( Bucket< Key, Value > **mainLevel = tableArray, **end = tableArray + tableSize; tableArray != end && bucketsRemaining ; ++mainLevel )
@@ -248,7 +248,7 @@ public:
             }
          } // end for
       assert( !bucketsRemaining );
-      assert( freeBuckets.size() == buckets.end() - bucketVec );
+      assert( freeBuckets.size() == size_t( buckets.end() - bucketVec ) );
       // Place all single buckets now into these empty slots
       for ( ;bucketVec != buckets.end(); ++bucketVec, freeBuckets.pop_back() )
          {
@@ -333,7 +333,7 @@ template< typename Key, typename Value, class Hash = FNV, class Comparator = CSt
          // in the hash, add it with the initial value.
 
          // Your code here
-         uint32_t hashVal = (*hashFunc)( k );
+         uint32_t hashVal = static_cast<uint32_t>( (*hashFunc)( k ) );
          Bucket< Key, Value > **bucket = helperFind( k, hashVal );
          
          // Checks for nullptr
@@ -356,7 +356,7 @@ template< typename Key, typename Value, class Hash = FNV, class Comparator = CSt
          // in the hash, return nullptr.
 
          // Your code here.
-         Bucket< Key, Value > *bucket = *helperFind( k, (*hashFunc)( k ) );
+         Bucket< Key, Value > *bucket = *helperFind( k, ( uint32_t )(*hashFunc)( k ) );
 
          // If not nullptr, entry was found so returning reference to tuple...
          return bucket ? &bucket->tuple : nullptr;
@@ -594,8 +594,8 @@ public:
             }
 
             // This constructor can be used for finds that want to return an iterator instead
-            Iterator( HashTable const *_table, Bucket<Key, Value> **b ) :  table( _table ), currentBucket( b ), 
-                  mainLevel( table ? table->buckets + ( ( *b )->hashValue  & ( table->tableSize - 1 ) ) : nullptr ) {}
+            Iterator( HashTable const *_table, Bucket<Key, Value> **b ) :  table( _table ), 
+                  mainLevel( table ? table->buckets + ( ( *b )->hashValue  & ( table->tableSize - 1 ) ) : nullptr ), currentBucket( b ) {}
 
             Iterator( HashTable *_table, size_t bucketInd, Bucket<Key, Value> *b ) :  table( _table ), mainLevel( table ? table->buckets + bucketInd : nullptr ), currentBucket( mainLevel )
                {
@@ -707,7 +707,7 @@ public:
       
       iterator FindItr( const Key& k ) const
          {
-         Bucket< Key, Value > **bucket = helperFind( k, ( *hashFunc )( k ) );
+         Bucket< Key, Value > **bucket = helperFind( k, ( uint32_t )( *hashFunc )( k ) );
 
          return *bucket ? iterator( this, bucket ) : end();
          }
