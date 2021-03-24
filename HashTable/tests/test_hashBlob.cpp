@@ -90,9 +90,9 @@ TEST( test_TotBytesRequired )
    ASSERT_EQUAL( hashTable.size(), 3 );
    ASSERT_EQUAL( hashTable.numOfLinkedLists(), 3 );
 
-   // 56 are from the valid serial tuples while 72 ( 24 * 3 ) the null serial tuples
+   // 104 are from the valid serial tuples while 24 ( 8 * 3 ) the null serial tuples
    ASSERT_EQUAL( HashBlob::BytesRequired(( &hashTable )), 104 + 
-      ( hashTable.numOfLinkedLists() * sizeof( SerialTuple ) ) + headerAndBucketsBytes );
+      ( hashTable.numOfLinkedLists() * SerialTuple::sizeOfNullSentinel ) + headerAndBucketsBytes );
    }
 
 
@@ -436,28 +436,34 @@ TEST( test_hashBlob_basicWItr_Opt )
    ASSERT_EQUAL( tuple->Value, 100 );
    ASSERT_TRUE(  CompareEqual( tuple->Key, "testing" ) );
 
-   ASSERT_EQUAL( constItr->Value, 100 );
-   ASSERT_TRUE( CompareEqual( constItr->Key, "testing" ) );
-   ++constItr;
-
    tuple = hb->Find( "lololol" );
    ASSERT_EQUAL( tuple->Value, 101 );
    ASSERT_TRUE( CompareEqual( tuple->Key, "lololol" ) );
-
-   ASSERT_EQUAL( constItr->Value, 101 );
-   ASSERT_TRUE( CompareEqual( constItr->Key, "lololol" ) );
-   ++constItr;
 
    tuple = hb->Find( "1 2 3 3 4 5" );
    ASSERT_EQUAL( tuple->Value, 102 );
    ASSERT_TRUE( CompareEqual( tuple->Key, "1 2 3 3 4 5" ) );
 
-   ASSERT_EQUAL( constItr->Value, 102 );
-   ASSERT_TRUE( CompareEqual( constItr->Key, "1 2 3 3 4 5" ) );
-   ++constItr;
-
+   for ( ; constItr != hb->cend( end ); ++constItr )
+      {
+      if ( CompareEqual( constItr->Key, "testing" ) )
+         {
+         ASSERT_EQUAL( constItr->Value, 100 );
+         }
+      else if ( CompareEqual( tuple->Key, "lololol" ) )
+         {
+         ASSERT_EQUAL( constItr->Value, 101 );
+         }
+      else if ( CompareEqual( tuple->Key, "1 2 3 3 4 5" ) )
+         {
+         ASSERT_EQUAL( tuple->Value, 102 );
+         }
+      else // Must be one of these values
+         {
+         ASSERT_TRUE( false );
+         }
+      } // end for
    ASSERT_EQUAL( constItr, hb->cend( end ) );
-
    }
 
 TEST_MAIN()

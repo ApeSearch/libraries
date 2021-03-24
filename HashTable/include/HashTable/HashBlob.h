@@ -72,6 +72,7 @@ struct SerialTuple
 
       // Should be 20
       static constexpr size_t sizeOfMetaData = sizeof( size_t ) * 2 + sizeof( uint32_t );
+      static constexpr size_t sizeOfNullSentinel = sizeof( size_t ); // Just needs to be a Length
 
       // The Key will be a C-string of whatever length.
       char Key[ Unknown ];
@@ -129,12 +130,12 @@ struct SerialTuple
       static char *WriteNull( char *buffer, char *bufferEnd )
          {
          // Ensures that the buffer can fit the null sentinel to begin with...
-         assert( size_t( bufferEnd - buffer ) >= SerialTuple::sizeOfMetaData );
+         assert( size_t( bufferEnd - buffer ) >= SerialTuple::sizeOfNullSentinel );
 
          SerialTuple *nullSerial = reinterpret_cast< SerialTuple * >( buffer ); 
          nullSerial->Length = 0;
 
-         return buffer + sizeof( SerialTuple );
+         return buffer + SerialTuple::sizeOfNullSentinel;
          // not buffer + SerialTuple::sizeOfMetaData since memory is not aligned 8-byte
          }
   };
@@ -221,7 +222,7 @@ class HashBlob
             totSizeOfSerialTuples += SerialTuple::helperBytesRequired( *itr );
 
          // Add null sentinal bytes
-         totSizeOfSerialTuples += hashTable->numOfLinkedLists() * sizeof( SerialTuple );
+         totSizeOfSerialTuples += hashTable->numOfLinkedLists() * SerialTuple::sizeOfNullSentinel;
 
          size_t totBytes = totSizeOfSerialTuples + BytesForHeaderBuckets( hashTable );
          // It should be the case that the resultant value is a multiple of 8
@@ -322,7 +323,7 @@ class HashBlob
 
             // check if reached null serial; if so, advance again.
             if ( buffer != bufferEnd && !tuple->Length )
-               buffer += sizeof( SerialTuple );
+               buffer += SerialTuple::sizeOfNullSentinel;
 
             } // end advanceSerialTuple()
 
