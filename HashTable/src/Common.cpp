@@ -23,6 +23,7 @@ using namespace std;
 // initial value.
 
 bool optVerbose = false;
+bool useHashFile = false;
 
 
 // You may define additional helper routines here and in
@@ -85,6 +86,10 @@ void CollectWordsIn( int argc, char **argv, vector< string > &words )
             case 'v':
             case 'V':
                optVerbose  = true;
+               break;
+            case 'F':
+            case 'f':
+               useHashFile = true;
             }
       argc--, argv++;
       }

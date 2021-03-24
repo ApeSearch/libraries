@@ -377,4 +377,87 @@ TEST( test_hashBlob_basicWItr )
 
    }
 
+TEST( test_hashBlob_basic_Opt )
+   {
+   HashTable<const char*, size_t> hashTable(1);
+   hashTable.Find( "testing", 100 );
+   hashTable.Find( "lololol", 101 );
+   hashTable.Find( "1 2 3 3 4 5", 102 );
+
+   hashTable.Optimize();
+
+   // Allocate resources
+   HashBlob *hb = HashBlob::Create( &hashTable );
+
+   const SerialTuple *tuple = hb->Find( "testing" );
+   ASSERT_EQUAL( tuple->Value, 100 );
+   ASSERT_TRUE(  CompareEqual( tuple->Key, "testing" ) );
+
+   tuple = hb->Find( "lololol" );
+   ASSERT_EQUAL( tuple->Value, 101 );
+   ASSERT_TRUE( CompareEqual( tuple->Key, "lololol" ) );
+
+   tuple = hb->Find( "1 2 3 3 4 5" );
+   ASSERT_EQUAL( tuple->Value, 102 );
+   ASSERT_TRUE( CompareEqual( tuple->Key, "1 2 3 3 4 5" ) );
+
+   tuple = hb->Find( "Nope Aint finding this sht ");
+   ASSERT_TRUE( !tuple );
+
+   // Free resources
+   HashBlob::Discard( hb );
+   }
+
+
+TEST( test_hashBlob_basicWItr_Opt )
+   {
+   HashTable<const char*, size_t> hashTable(1);
+   hashTable.Find( "testing", 100 );
+   hashTable.Find( "lololol", 101 );
+   hashTable.Find( "1 2 3 3 4 5", 102 );
+
+   hashTable.Optimize();
+
+   // Allocate resources
+
+   size_t bytesReq = HashBlob::BytesRequired( &hashTable );
+
+   uint8_t hbStack[ bytesReq ];
+
+   HashBlob *hb = HashBlob::Write( reinterpret_cast< HashBlob *>( hbStack ), bytesReq,
+      &hashTable );
+
+   char const *end = reinterpret_cast< char *>( hb ) + HashBlob::BytesRequired( &hashTable );
+   ASSERT_EQUAL( reinterpret_cast< char const *>( hbStack + bytesReq ), end );
+
+   HashBlob::Const_Iterator constItr = hb->cbegin( end );
+
+   const SerialTuple *tuple = hb->Find( "testing" );
+   ASSERT_EQUAL( tuple->Value, 100 );
+   ASSERT_TRUE(  CompareEqual( tuple->Key, "testing" ) );
+
+   ASSERT_EQUAL( constItr->Value, 100 );
+   ASSERT_TRUE( CompareEqual( constItr->Key, "testing" ) );
+   ++constItr;
+
+   tuple = hb->Find( "lololol" );
+   ASSERT_EQUAL( tuple->Value, 101 );
+   ASSERT_TRUE( CompareEqual( tuple->Key, "lololol" ) );
+
+   ASSERT_EQUAL( constItr->Value, 101 );
+   ASSERT_TRUE( CompareEqual( constItr->Key, "lololol" ) );
+   ++constItr;
+
+   tuple = hb->Find( "1 2 3 3 4 5" );
+   ASSERT_EQUAL( tuple->Value, 102 );
+   ASSERT_TRUE( CompareEqual( tuple->Key, "1 2 3 3 4 5" ) );
+
+   ASSERT_EQUAL( constItr->Value, 102 );
+   ASSERT_TRUE( CompareEqual( constItr->Key, "1 2 3 3 4 5" ) );
+   ++constItr;
+
+   ASSERT_EQUAL( constItr, hb->cend( end ) );
+
+   }
+
 TEST_MAIN()

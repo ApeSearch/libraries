@@ -37,3 +37,4 @@ void CollectWordsIn( int argc, char **argv, std::vector< std::string > &words );
 // -v (verbose) command line option.
 
 extern bool optVerbose;
+extern bool useHashFile;
