@@ -116,14 +116,14 @@ struct SerialTuple
 
          SerialTuple *serialTuple = initSerialTuple( buffer, b, bytesReq );
 
-         buffer = serialTuple->Key;
+         char *key = serialTuple->Key;
 
          size_t charToWrite = bytesReq - SerialTuple::sizeOfMetaData;
-         assert( buffer + charToWrite <= bufferEnd );
+         assert( key + charToWrite <= bufferEnd );
 
-         assert( strncpy( buffer, b->tuple.key, charToWrite ) == buffer );
+         assert( strncpy( key, b->tuple.key, charToWrite ) == key );
 
-         return buffer + ( bytesReq - SerialTuple::sizeOfMetaData );
+         return buffer + bytesReq;
          } // end Write()
       
       static char *WriteNull( char *buffer, char *bufferEnd )
@@ -134,7 +134,8 @@ struct SerialTuple
          SerialTuple *nullSerial = reinterpret_cast< SerialTuple * >( buffer ); 
          nullSerial->Length = 0;
 
-         return buffer + SerialTuple::sizeOfMetaData;
+         return buffer + sizeof( SerialTuple );
+         // not buffer + SerialTuple::sizeOfMetaData since memory is not aligned 8-byte
          }
   };
 
@@ -174,20 +175,24 @@ class HashBlob
          // ( key, value ) entry.  If the key is not found,
          // return nullptr.
 
-         uint32_t hashVal = ( uint32_t )func( key );
-         size_t tupleInd = hashVal & ( NumberOfBuckets - 1 );
+         uint8_t const *byteAddr = reinterpret_cast< uint8_t const * > ( &MagicNumber );
 
-         if ( tupleInd )
+         uint32_t hashVal = ( uint32_t )func( key );
+         size_t bucketInd = hashVal & ( NumberOfBuckets - 1 );
+         size_t offset = Buckets[ bucketInd ];
+
+         if ( offset )
             {
-            uint8_t const *rawAddr = reinterpret_cast<uint8_t const *>( &Buckets );
-            SerialTuple const *tupleArr = reinterpret_cast<SerialTuple const *>( (*rawAddr + tupleInd - offsetToBuckets) );
+            // Okay since everything is continous in memory...
+            byteAddr += offset;
+            SerialTuple const *tupleArr = reinterpret_cast<SerialTuple const *>( byteAddr );
 
             while ( tupleArr->Length )
                {
                if ( CompareEqual( tupleArr->Key, key ) )
                   return tupleArr;
-               rawAddr = reinterpret_cast<uint8_t const *>( &*tupleArr );
-               tupleArr = reinterpret_cast<SerialTuple const *>( rawAddr + tupleArr->Length );
+               byteAddr += tupleArr->Length;
+               tupleArr = reinterpret_cast<SerialTuple const *>( byteAddr );
                } // end if
             }
          return nullptr;
@@ -232,8 +237,11 @@ class HashBlob
          {
          // Your code here.
 
+         // placeholders for now
          hb->MagicNumber = 69;
          hb->Version = 1;
+
+         
          hb->BlobSize = bytes;
          hb->NumberOfBuckets = hashTable->table_size();
 
@@ -247,16 +255,21 @@ class HashBlob
 
          for ( ; bucketsVec != buckets.end(); ++bucketsVec )
             {
-            
+            // Write the absolute address into the bucket represented...
+            size_t bucketInd = bucketsVec->front()->hashValue & ( hashTable->table_size() - 1 );
+            hb->Buckets[ bucketInd ] =  serialPtr - reinterpret_cast< char *>( hb );  
+
             for ( typename std::vector<HashBucket*>::iterator bucket = bucketsVec->begin(); 
                bucket != bucketsVec->end(); ++bucket )
                {
                serialPtr = SerialTuple::Write( serialPtr, end, *bucket );
                } // end for
             
+            
             // Now add null serial Tuple
             serialPtr = SerialTuple::WriteNull( serialPtr, end );
             } // end for
+         assert( end == serialPtr );
          return hb;
          }
 
@@ -287,12 +300,12 @@ class HashBlob
       class Const_Iterator
          {
          
-         friend class Blob;
+         friend class HashBlob;
 
          HashBlob const *hashBlob;
 
-         char *buffer;
-         char *bufferEnd;
+         char const *buffer;
+         char const * const bufferEnd;
 
          inline void advanceSerialTuple( )
             {
@@ -309,48 +322,70 @@ class HashBlob
 
             // check if reached null serial; if so, advance again.
             if ( buffer != bufferEnd && !tuple->Length )
-               buffer += SerialTuple::sizeOfMetaData;
+               buffer += sizeof( SerialTuple );
 
             } // end advanceSerialTuple()
 
-//      size_t Length, Value;
-//      uint32_t HashValue;
+         Const_Iterator( HashBlob const *hb, char const *end, bool start ) : hashBlob( hb ), 
+            buffer( start && hb ? reinterpret_cast< char const * >( hb->Buckets + hb->NumberOfBuckets ) : end ), 
+            bufferEnd( end ) {}
 
-         public:
-            Const_Iterator( ) : hashBlob( nullptr ), buffer( nullptr ), bufferEnd( nullptr ) {}
-
-
-            ~Const_Iterator( ) {}
-
-            const SerialTuple &operator*( ) const
-               {
-               return *( reinterpret_cast< SerialTuple const *> ( buffer ) );
-               } // end Dereference operator()
-
-            SerialTuple const *operator->( ) const
-               {
-               return reinterpret_cast< SerialTuple const *>( buffer );
-               }
-
-            Const_Iterator &operator++( )
-               {
-               advanceSerialTuple();
-               return *this;
-               } // end prefix
-
-            Const_Iterator operator++(int)
-               {
-               Const_Iterator old( *this );
-               advanceSerialTuple();
-               return old;
-               } // end postfix
-
-            
+      public:
+         Const_Iterator( ) : hashBlob( nullptr ), buffer( nullptr ), bufferEnd( nullptr ) {}
 
 
+         ~Const_Iterator( ) {}
 
+         const SerialTuple &operator*( ) const
+            {
+            return *( reinterpret_cast< SerialTuple const *> ( buffer ) );
+            } // end Dereference operator()
+
+         SerialTuple const *operator->( ) const
+            {
+            return reinterpret_cast< SerialTuple const *>( buffer );
+            }
+
+         Const_Iterator &operator++( )
+            {
+            advanceSerialTuple();
+            return *this;
+            } // end prefix
+
+         Const_Iterator operator++(int)
+            {
+            Const_Iterator old( *this );
+            advanceSerialTuple();
+            return old;
+            } // end postfix
+
+         bool operator==( const Const_Iterator & rhs ) const
+            {
+            return buffer == rhs.buffer;
+            }
+         bool operator!=( const Const_Iterator & rhs ) const
+            {
+            return buffer != rhs.buffer;
+            }
+
+         Const_Iterator operator+( ssize_t var )
+            {
+            Const_Iterator copy( *this );
+            for ( ssize_t n = 0; n < var; ++n )
+               copy.advanceSerialTuple();
+            return copy;
+            } // end operator+()
          };
+      
+      Const_Iterator cbegin( char const *end ) const
+         {
+         return Const_Iterator( this, end, true );
+         }
 
+      Const_Iterator cend( char const *end ) const
+         {
+         return Const_Iterator( this, end, false );
+         }
 
    };
 
