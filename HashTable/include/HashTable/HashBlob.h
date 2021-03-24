@@ -429,5 +429,6 @@ class HashFile
       ~HashFile( )
          {
          // Your code here.
+         HashBlob::Discard( blob );
          }
    };
