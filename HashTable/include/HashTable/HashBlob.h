@@ -493,7 +493,12 @@ public:
 
    File& operator=( File&& file )
       {
-      std::swap( fd, file.fd );
+      #ifdef LOCAL
+            using APESEARCH::swap;
+       #else
+            using std::swap;
+       #endif
+      swap( fd, file.fd );
       return *this;
       }
 
@@ -654,9 +659,14 @@ public:
 
    void swap( unique_mmap& other )
       {
-      std::swap( map, other.map );
-      std::swap( bytesMapped, other.bytesMapped );
-      std::swap( file, other.file );
+      #ifdef LOCAL
+            using APESEARCH::swap;
+      #else
+            using std::swap;
+      #endif
+      swap( map, other.map );
+      swap( bytesMapped, other.bytesMapped );
+      swap( file, other.file );
       }
 
    /* 
