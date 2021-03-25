@@ -422,7 +422,7 @@ TEST( test_hashBlob_basicWItr_Opt )
 
    size_t bytesReq = HashBlob::BytesRequired( &hashTable );
 
-   uint8_t hbStack[ bytesReq ];
+   uint8_t *hbStack = new uint8_t[ bytesReq ];
 
    HashBlob *hb = HashBlob::Write( reinterpret_cast< HashBlob *>( hbStack ), bytesReq,
       &hashTable );
@@ -464,6 +464,74 @@ TEST( test_hashBlob_basicWItr_Opt )
          }
       } // end for
    ASSERT_EQUAL( constItr, hb->cend( end ) );
+
+   delete []hbStack;
+   }
+
+void testingFlattening( std::vector<std::string>& strings, const size_t val, HashTable<const char*, size_t>& hashTable)
+   {
+   for ( unsigned n = 0; n < val; ++n )
+      {
+      strings.emplace_back( std::to_string( n ) );
+      const char * ptr = strings[n].c_str();
+      hashTable.Find( ptr, n );
+      Tuple<const char*, size_t> * kv = hashTable.Find( strings[n].c_str() );
+      ASSERT_TRUE( kv );
+      ASSERT_EQUAL( kv->value, n );
+      } // end for
+
+   for ( unsigned n = 0; n < val; ++n )
+      {
+      Tuple<const char*, size_t> * kv = hashTable.Find( strings[n].c_str() );
+      ASSERT_TRUE( kv );
+      ASSERT_EQUAL( kv->value, n );
+      } // end for
+
+   std::vector< const Bucket< const char*, size_t> * > vec( hashTable.constflattenHashTable() );
+
+   std::sort( vec.begin(), vec.end(), 
+      []( Bucket< const char*, size_t> const *lhs, Bucket< const char*, size_t> const *rhs ) { return lhs->tuple.value > rhs->tuple.value; } );
+   ASSERT_EQUAL( vec.size(), val );
+
+   for ( int n = val - 1, ind = 0; n >= 0; --n, ++ind )
+      {
+      std::string str = std::to_string( n );
+      const Tuple<const char*, size_t>& tuple = vec[(size_t) ind]->tuple;
+      ASSERT_EQUAL( tuple.key, std::to_string( n ) );
+      ASSERT_EQUAL( tuple.value , n );
+      } // end for
+   }
+
+TEST( test_hashBlobExtensive )
+   {
+    static size_t val = 10000;
+   HashTable<const char*, size_t> hashTable;
+   std::vector<std::string> strings; // To keep pointers around
+   strings.reserve( val ); // Very important
+   testingFlattening( strings, val, hashTable );
+
+   ASSERT_EQUAL( strings.size(), hashTable.size() );
+   ASSERT_EQUAL( 4096, hashTable.table_size() );
+   hashTable.Optimize(); // Current load factor becomes at most 0.5
+   ASSERT_EQUAL( strings.size(), hashTable.size() );
+
+   HashBlob *hb = HashBlob::Create( &hashTable );
+
+   for ( int n = val - 1; n >= 0; --n )
+      {
+      std::string copy( strings[n] );
+      const SerialTuple *kv = hb->Find( strings[n].c_str() );
+      ASSERT_TRUE( kv );
+      ASSERT_EQUAL( kv->Value, n );
+      ASSERT_TRUE( CompareEqual( kv->Key, strings[n].c_str() ) );
+
+      // Show that key is no longer linked to strings
+      strings.pop_back();
+      strings.shrink_to_fit();
+      ASSERT_TRUE( CompareEqual( kv->Key, copy.c_str() ) );
+      } // end for
+
+   HashBlob::Discard( hb );
    }
 
 TEST_MAIN()

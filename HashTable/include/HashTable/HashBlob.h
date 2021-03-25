@@ -155,6 +155,8 @@ class HashBlob
    friend class Const_Iterator;
 
    public:
+      static constexpr size_t decidedMagicNum = 69;
+      static constexpr size_t verison = 1;
 
       // Define a MagicNumber and Version so you can validate
       // a HashBlob really is one of your HashBlobs.
@@ -239,8 +241,8 @@ class HashBlob
          // Your code here.
 
          // placeholders for now
-         hb->MagicNumber = 69;
-         hb->Version = 1;
+         hb->MagicNumber = HashBlob::decidedMagicNum;
+         hb->Version = HashBlob::verison;
 
          
          hb->BlobSize = bytes;
