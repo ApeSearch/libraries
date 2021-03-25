@@ -29,7 +29,7 @@ class Timer
 
       unsigned long Elapsed( )
          {
-         return ( finish - start ).count( );
+         return ( unsigned ) ( finish - start ).count( );
          }
 
       void PrintElapsed( )

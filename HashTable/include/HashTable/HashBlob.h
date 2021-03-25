@@ -12,6 +12,8 @@
 #include <cassert>
 #include <cstring>
 #include <cstdint>
+#include <exception>
+#include <cerrno> // for errno
 #ifdef MACOS
    #include <malloc/malloc.h>
 #endif
@@ -22,7 +24,10 @@
 #include <sys/mman.h>
 
 #include "HashTable.h"
+#include <utility> // for std::swap and std::move
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wzero-length-array" // You can trust us
 
 using Hash = HashTable< const char *, size_t >;
 using Pair = Tuple< const char *, size_t >;
@@ -113,7 +118,7 @@ struct SerialTuple
          // Your code here.
          size_t bytesReq = BytesRequired( b );
 
-         assert( bufferEnd - buffer >= bytesReq );
+         assert( static_cast<size_t> ( bufferEnd - buffer ) >= bytesReq );
 
          SerialTuple *serialTuple = initSerialTuple( buffer, b, bytesReq );
 
@@ -156,7 +161,7 @@ class HashBlob
 
    public:
       static constexpr size_t decidedMagicNum = 69;
-      static constexpr size_t verison = 1;
+      static constexpr size_t version = 1;
 
       // Define a MagicNumber and Version so you can validate
       // a HashBlob really is one of your HashBlobs.
@@ -173,7 +178,6 @@ class HashBlob
       const SerialTuple *Find( const char *key ) const
          {
          static HashFunc func;
-         static constexpr size_t offsetToBuckets = sizeof( size_t ) * 4;
          // Search for the key k and return a pointer to the
          // ( key, value ) entry.  If the key is not found,
          // return nullptr.
@@ -199,6 +203,12 @@ class HashBlob
                } // end if
             }
          return nullptr;
+         }
+      
+      bool verifyHashBlob() const
+         {
+         return MagicNumber == HashBlob::decidedMagicNum &&
+               Version == HashBlob::version;
          }
 
       inline static size_t BytesForHeaderBuckets( const Hash *hashTable )
@@ -242,7 +252,7 @@ class HashBlob
 
          // placeholders for now
          hb->MagicNumber = HashBlob::decidedMagicNum;
-         hb->Version = HashBlob::verison;
+         hb->Version = HashBlob::version;
 
          
          hb->BlobSize = bytes;
@@ -260,7 +270,7 @@ class HashBlob
             {
             // Write the absolute address into the bucket represented...
             size_t bucketInd = bucketsVec->front()->hashValue & ( hashTable->table_size() - 1 );
-            hb->Buckets[ bucketInd ] =  serialPtr - reinterpret_cast< char *>( hb );  
+            hb->Buckets[ bucketInd ] = size_t( serialPtr - reinterpret_cast< char *>( hb ) );  
 
             for ( typename std::vector<HashBucket*>::iterator bucket = bucketsVec->begin(); 
                bucket != bucketsVec->end(); ++bucket )
@@ -378,6 +388,12 @@ class HashBlob
                copy.advanceSerialTuple();
             return copy;
             } // end operator+()
+
+         const HashBlob *Blob( )
+            {
+            return hashBlob;
+            }
+
          };
       
       Const_Iterator cbegin( char const *end ) const
@@ -392,46 +408,319 @@ class HashBlob
 
    };
 
+class File
+   {
+   int fd;
+   friend class failure;
+public:
+
+   class failure : public std::exception
+      {
+      friend class File;
+   protected:
+      int error_number;
+      int error_offset;
+      std::string error_message;
+
+   public:
+      explicit failure( const std::string& msg, int err_num, int err_off )
+         : error_number( err_num ), error_offset( err_off ), error_message( msg ) {}
+
+      explicit failure( const std::string&& msg, int err_num, int err_off )
+         : error_number( err_num ), error_offset( err_off ), error_message( std::move( msg ) ) {}
+      
+      virtual ~failure() throw () {}
+
+      virtual const char *what() const throw()
+         {
+         return error_message.c_str();
+         }
+
+      virtual int getErrorNumber() const throw() 
+         {
+         return error_number;
+         }
+
+      virtual int getErrorOffset() const throw()
+         {
+         return error_offset;
+         }
+      };
+
+   File( ) : fd( -1 ) {}
+
+   File( const char *pathname, int flags, mode_t mode )
+      {
+      fd = open( pathname, flags, mode );
+      if ( fd == -1 )
+         {
+         perror("Error opening file");
+         throw failure( "Issue with opening file", errno, 0 );
+         } // end if
+      }  // end File
+
+   File( const char *pathname, int flags )
+      {
+      fd = open( pathname, flags );
+      if ( fd == -1 )
+         {
+         perror("Error opening file");
+         throw failure( "Issue with opening file", errno, 0 );
+         } // end if
+      }
+
+   // More efficent than std::swap
+   File( File&& file ) : fd( file.fd )
+      {
+      file.fd = -1;
+      }
+
+   File& operator=( File&& file )
+      {
+      std::swap( fd, file.fd );
+      return *this;
+      }
+
+   // Const Operator and constructor or not allowed
+   File( const File& ) = delete;
+   File& operator=( const File& ) =delete;
+
+   ~File()
+      {
+      if ( fd != -1 )
+         close( fd );
+      } // end ~File()
+
+   inline int getFD() const
+      {
+      return fd;
+      }
+   };
+
+class unique_mmap
+   {
+   void *map;
+   size_t bytesMapped;
+   File file;
+
+public:
+   class failure : public std::exception
+      {
+      friend class unique_mmap;
+   protected:
+      int error_number;
+      int error_offset;
+      std::string error_message;
+
+   public:
+      explicit failure( const std::string& msg, int err_num, int err_off )
+         : error_number( err_num ), error_offset( err_off ), error_message( msg ) {}
+
+      explicit failure( const std::string&& msg, int err_num, int err_off )
+         : error_number( err_num ), error_offset( err_off ), error_message( std::move( msg ) ) {}
+      
+      virtual ~failure() throw () {}
+
+      virtual const char *what() const throw()
+         {
+         return error_message.c_str();
+         }
+
+      virtual int getErrorNumber() const throw() 
+         {
+         return error_number;
+         }
+
+      virtual int getErrorOffset() const throw()
+         {
+         return error_offset;
+         }
+
+      static constexpr int LENGTHZERO = 100; 
+      };
+   
+   unique_mmap() : map ( nullptr ) {}
+
+   /*
+    * FYI:
+    * addr: asks which address in which one would like to map poitner to.
+    *       If NULL, the kernel chooses the address (page aligned ofc)
+    *       in which to linked the mmap to.
+    *       O.W., the kenrel takes it as a hint and places the mapping in
+    *       a page boundary, ( which is alwys within the arena ( linux specifies:
+    *       /proc/sys/vm/mmap_min_addr )).
+    *       It may be the cas tha a mapping already exists in which the kernel
+    *       decides to pick an address at its own discretion.
+    * 
+    * length: The amount of bytes after offset in which mmap initializes the values
+    *       ,i.e. creating an appropriate virtual page. ( initialized as non-resident ).
+    * 
+    * prot: Describes desired mmeory protection of mapping ( of which must not conflic with open mode )
+    *       of file.
+    *       Following: PROT_EXEC: Pages may be executed ( forked )
+    *       Prot_READ: pages may be read
+    *       PROT_WRITE: Pages may be written
+    *       PROT_NONE: Pages may be not accessed???
+    * 
+    * flags: Determins whether updates to mapping are visible to other processes mapping same region
+    *        and whether updates are carried through to underlying file (interesting ).
+    * 
+    * offset: The location in file in which mmap is started from 
+    *        ( this must be a muptiple of page size which can be returned by sysconf(_SC_PAGE_SIZE)
+   */
+   unique_mmap( void *addr, std::size_t length, int prot, int flags, int fd, off_t offset )
+      {
+      if ( !length )
+         {
+         close( fd );
+         throw failure( " Error in unique_mmap constructor. length must be greater than zero! ", 
+            failure::LENGTHZERO, 0 );
+         } // end if
+      map = mmap( addr, length, prot, flags, fd, offset );
+
+      if ( map == MAP_FAILED )
+         {
+         close( fd );
+         perror( "Error mmapping file" );
+         throw failure( " Mmapping failed... ", errno, 0 );
+         }
+      }
+
+   // Give a pointer anywhere in virtual address space...
+   unique_mmap( std::size_t length, int prot, int flags, int fd, off_t offset ) : 
+      unique_mmap( 0, length, prot, flags, fd, offset ) {}
+
+   unique_mmap( void *addr, std::size_t length, int prot, int flags, off_t offset, File&& fd )
+      :  file( std::move( fd ) )
+      {
+      if ( !length )
+         {
+         throw failure( " Error in unique_mmap constructor. length must be greater than zero! ", 
+            failure::LENGTHZERO, 0 );
+         } // end if
+      map = mmap( addr, length, prot, flags, file.getFD(), offset );
+
+      if ( map == MAP_FAILED )
+         {
+         perror( "Error mmapping file" );
+         throw failure( " Mmapping failed... ", errno, 0 );
+         }
+      }
+   
+   unique_mmap( unique_mmap&& other ) : map( other.map ), bytesMapped( other.bytesMapped ), file( std::move( other.file ) )
+      {
+      other.map = nullptr;
+      }
+
+   unique_mmap& operator=( unique_mmap&& other )
+      {
+      swap( other );
+      return *this;
+      }
+
+   unique_mmap( const unique_mmap& ) = delete;
+   unique_mmap& operator=( const unique_mmap& ) = delete;
+
+   void swap( unique_mmap& other )
+      {
+      std::swap( map, other.map );
+      std::swap( bytesMapped, other.bytesMapped );
+      std::swap( file, other.file );
+      }
+
+   /* 
+    *   Though the region is automatically unmapped when the process is terminated.  On
+    *   the other hand, closing the file descriptor does not unmap the
+    *   region.
+   */
+   ~unique_mmap( ) noexcept(false)
+      {
+      if ( map && munmap( map, bytesMapped ) == -1 )
+         {
+         perror( "err un-mapping the file " );
+         throw failure( "error unmapping file", errno, 0 );
+         } // end if
+      }
+
+   inline void *get() const
+      {
+      return map;
+      } // end getPointer()
+   };
+
 class HashFile
    {
    private:
 
-      HashBlob *blob;
+      //HashBlob *blob;
+      unique_mmap blob;
+      File file;
+      bool good = false;
 
       size_t FileSize( int f )
          {
          struct stat fileInfo;
          fstat( f, &fileInfo );
-         return fileInfo.st_size;
+         return ( size_t )fileInfo.st_size;
          }
 
    public:
 
       const HashBlob *Blob( )
          {
-         return blob;
+         return reinterpret_cast< const HashBlob *> ( blob.get() );
          }
 
-      HashFile( const char *filename )
+      HashFile( const char *filename ) : file( filename, O_RDONLY )
          {
+         int fd = file.getFD();
+
+         blob = unique_mmap( 0, FileSize( fd ), PROT_READ, MAP_SHARED, fd, 0 );
          // Open the file for reading, map it, check the header,
          // and note the blob address.
 
+         good = Blob()->verifyHashBlob();
          // Your code here.
          }
+      
+      inline bool isCorrectVersion() const { return good; }
 
-      HashFile( const char *filename, const Hash *hashtable )
+      HashFile( const char *filename, const Hash *hashtable ) 
+         : file( filename, O_RDWR | O_CREAT | O_TRUNC, (mode_t)0600 )
          {
          // Open the file for write, map it, write
          // the hashtable out as a HashBlob, and note
          // the blob address.
 
          // Your code here.
+
+         const std::size_t bytesReq = HashBlob::BytesRequired( hashtable );
+         ssize_t result = lseek( file.getFD(), off_t( bytesReq - 1 ), SEEK_SET );
+         
+         if ( result == -1 )
+            {
+            perror( "Issue with lseek while trying to stretch file" );
+            return;
+            } // end if
+         
+         result = write( file.getFD(), "", 1 );
+
+         if ( result == -1 )
+            {
+            perror( "Error writing bytes to file" );
+            return;
+            }
+         
+         blob = unique_mmap( 0, bytesReq, PROT_READ | PROT_WRITE, MAP_SHARED, file.getFD(), 0 );
+         HashBlob *hb = reinterpret_cast< HashBlob *> ( blob.get() );
+         assert( HashBlob::Write( hb, bytesReq, hashtable ) == hb );
          }
 
       ~HashFile( )
          {
          // Your code here.
-         HashBlob::Discard( blob );
          }
    };
+
+
+#pragma GCC diagnostic pop

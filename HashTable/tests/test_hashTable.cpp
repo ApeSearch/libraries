@@ -27,38 +27,38 @@ void testingFind( HashTable<const char*, size_t>& hashTable )
    ASSERT_EQUAL(hashTable.Find( "testing" ), nullptr);
     Tuple<const char *, size_t> * kv = hashTable.Find( "testing", 100 );
     ASSERT_TRUE( kv );
-    ASSERT_EQUAL( kv->value, 100 );
+    ASSERT_EQUAL( kv->value, 100ul );
     kv = hashTable.Find( "testing" );
     ASSERT_TRUE( kv );
-    ASSERT_EQUAL( kv->value, 100 );
+    ASSERT_EQUAL( kv->value, 100ul );
 
    // insert "lololol"
     kv = hashTable.Find( "lololol" );
     ASSERT_TRUE( !kv );
     kv = hashTable.Find( "lololol", 42 );
     ASSERT_TRUE( kv );
-    ASSERT_EQUAL( kv->value, 42 );
+    ASSERT_EQUAL( kv->value, 42ul );
     kv = hashTable.Find( "lololol" );
     ASSERT_TRUE( kv );
-    ASSERT_EQUAL( kv->value, 42 );
+    ASSERT_EQUAL( kv->value, 42ul );
 
    // insert "1 2 3 3 4 5 "
     kv = hashTable.Find( "1 2 3 3 4 5 " );
     ASSERT_TRUE( !kv );
     kv = hashTable.Find( "1 2 3 3 4 5 ", 666 );
     ASSERT_TRUE( kv );
-    ASSERT_EQUAL( kv->value, 666 );
+    ASSERT_EQUAL( kv->value, 666ul );
     kv = hashTable.Find( "1 2 3 3 4 5 " );
     ASSERT_TRUE( kv );
-    ASSERT_EQUAL( kv->value, 666 );
+    ASSERT_EQUAL( kv->value, 666ul );
 
     // Now check previous values...
     kv = hashTable.Find( "testing" );
     ASSERT_TRUE( kv );
-    ASSERT_EQUAL( kv->value, 100 );
+    ASSERT_EQUAL( kv->value, 100ul );
     kv = hashTable.Find( "lololol" );
     ASSERT_TRUE( kv );
-    ASSERT_EQUAL( kv->value, 42 );
+    ASSERT_EQUAL( kv->value, 42ul );
    }
 
 TEST( test_find_nothing )
@@ -76,11 +76,11 @@ TEST( test_modify )
    // Insert "testing"
     Tuple<const char *, size_t> *kv = hashTable.Find( "testing", 100 );
     ASSERT_TRUE( kv );
-    ASSERT_EQUAL( kv->value, 100 );
+    ASSERT_EQUAL( kv->value, 100ul );
     kv->value = 9001;
     kv = hashTable.Find( "testing" );
     ASSERT_TRUE( kv );
-    ASSERT_EQUAL( kv->value, 9001 );
+    ASSERT_EQUAL( kv->value, 9001ul );
    }
 
 // Testing the issue if ( *bucket )->tuple.key == k 
@@ -93,12 +93,12 @@ TEST( test_Comparison )
    std::string str2( "testing" );
    Tuple<const char *, size_t> *kv = hashTable.Find( str1.c_str(), 100 );
    ASSERT_TRUE( kv );
-   ASSERT_EQUAL( kv->value, 100 );
+   ASSERT_EQUAL( kv->value, 100ul );
    kv = hashTable.Find( str2.c_str(), 42 );
    ASSERT_TRUE( kv );
-   ASSERT_EQUAL( kv->value, 100 );
+   ASSERT_EQUAL( kv->value, 100ul );
 
-   ASSERT_EQUAL( hashTable.size(), 1 );
+   ASSERT_EQUAL( hashTable.size(), 1ul );
    }
 
 static void testingFlattening( std::vector<std::string>& strings, const size_t val, HashTable<const char*, size_t>& hashTable);
@@ -145,12 +145,12 @@ void testingFlattening( std::vector<std::string>& strings, const size_t val, Has
       []( Bucket< const char*, size_t> const *lhs, Bucket< const char*, size_t> const *rhs ) { return lhs->tuple.value > rhs->tuple.value; } );
    ASSERT_EQUAL( vec.size(), val );
 
-   for ( int n = val - 1, ind = 0; n >= 0; --n, ++ind )
+   for ( int n = ( int )val - 1, ind = 0; n >= 0; --n, ++ind )
       {
       std::string str = std::to_string( n );
       const Tuple<const char*, size_t>& tuple = vec[(size_t) ind]->tuple;
       ASSERT_EQUAL( tuple.key, std::to_string( n ) );
-      ASSERT_EQUAL( tuple.value , n );
+      ASSERT_EQUAL( tuple.value , (size_t)n );
       } // end for
    }
 
@@ -163,7 +163,7 @@ TEST( test_optimize )
    testingFlattening( strings, val, hashTable );
 
    ASSERT_EQUAL( strings.size(), hashTable.size() );
-   ASSERT_EQUAL( 4096, hashTable.table_size() );
+   ASSERT_EQUAL( 4096ul, hashTable.table_size() );
    hashTable.Optimize(); // Current load factor becomes at most 0.5
    ASSERT_EQUAL( strings.size(), hashTable.size() );
    //ASSERT_EQUAL( 32768, hashTable.table_size() );
@@ -186,10 +186,10 @@ TEST( test_optimize_shrink )
    testingFlattening( strings, val, hashTable );
 
    ASSERT_EQUAL( strings.size(), hashTable.size() );
-   ASSERT_EQUAL( 4096, hashTable.table_size() ); // 4096
+   ASSERT_EQUAL( 4096ul, hashTable.table_size() ); // 4096
    hashTable.Optimize();
    ASSERT_EQUAL( strings.size(), hashTable.size() );
-   ASSERT_EQUAL( 8, hashTable.table_size() );
+   ASSERT_EQUAL( 8ul, hashTable.table_size() );
 
    for ( unsigned n = 0; n < val; ++n )
       {
@@ -209,11 +209,11 @@ TEST( test_optimize_shrink2 )
    testingFlattening( strings, val, hashTable );
 
    ASSERT_EQUAL( strings.size(), hashTable.size() );
-   ASSERT_EQUAL( 4096, hashTable.table_size() ); // 4096
+   ASSERT_EQUAL( 4096ul, hashTable.table_size() ); // 4096
    hashTable.Optimize();
    ASSERT_EQUAL( strings.size(), hashTable.size() );
    //ASSERT_EQUAL( 8, hashTable.table_size() );
-   ASSERT_EQUAL( 4, hashTable.table_size() );
+   ASSERT_EQUAL( 4ul, hashTable.table_size() );
 
    for ( unsigned n = 0; n < val; ++n )
       {
@@ -231,10 +231,10 @@ TEST( test_optimizeElegant )
    strings.reserve( val ); // Very important
    testingFlattening( strings, val, hashTable );
    ASSERT_EQUAL( strings.size(), hashTable.size() );
-   ASSERT_EQUAL( 4096, hashTable.table_size() );
+   ASSERT_EQUAL( 4096ul, hashTable.table_size() );
    hashTable.OptimizeElegant(); // Current load factor becomes at most 0.5
    ASSERT_EQUAL( strings.size(), hashTable.size() );
-   ASSERT_EQUAL( 32768, hashTable.table_size() );
+   ASSERT_EQUAL( 32768ul, hashTable.table_size() );
 
    for ( unsigned n = 0; n < val; ++n )
       {
@@ -253,16 +253,16 @@ TEST( test_optimizeElegant_shrink )
    testingFlattening( strings, val, hashTable );
 
    ASSERT_EQUAL( strings.size(), hashTable.size() );
-   ASSERT_EQUAL( 4096, hashTable.table_size() ); // 4096
+   ASSERT_EQUAL( 4096ul, hashTable.table_size() ); // 4096
    hashTable.OptimizeElegant();
    ASSERT_EQUAL( strings.size(), hashTable.size() );
-   ASSERT_EQUAL( 8, hashTable.table_size() );
+   ASSERT_EQUAL( 8ul, hashTable.table_size() );
 
    for ( unsigned n = 0; n < val; ++n )
       {
-      Tuple<const char*, size_t> * kv = hashTable.Find( strings[n].c_str() );
+      Tuple<const char*, size_t> * kv = hashTable.Find( strings[(size_t)n].c_str() );
       ASSERT_TRUE( kv );
-      ASSERT_EQUAL( kv->value, n );
+      ASSERT_EQUAL( kv->value, (size_t)n );
       } // end for
    }
 
@@ -276,16 +276,16 @@ TEST( test_optimizeElegant_shrink2 )
    testingFlattening( strings, val, hashTable );
 
    ASSERT_EQUAL( strings.size(), hashTable.size() );
-   ASSERT_EQUAL( 4096, hashTable.table_size() ); // 4096
+   ASSERT_EQUAL( 4096ul, hashTable.table_size() ); // 4096
    hashTable.OptimizeElegant();
    ASSERT_EQUAL( strings.size(), hashTable.size() );
-   ASSERT_EQUAL( 8, hashTable.table_size() );
+   ASSERT_EQUAL( 8ul, hashTable.table_size() );
 
    for ( unsigned n = 0; n < val; ++n )
       {
-      Tuple<const char*, size_t> * kv = hashTable.Find( strings[n].c_str() );
+      Tuple<const char*, size_t> * kv = hashTable.Find( strings[(size_t)n].c_str() );
       ASSERT_TRUE( kv );
-      ASSERT_EQUAL( kv->value, n );
+      ASSERT_EQUAL( kv->value, (size_t)n );
       } // end for
    }
 
@@ -305,7 +305,7 @@ TEST( test_numOfLinkedLists )
       ASSERT_EQUAL( kv->value, n );
       } // end for
 
-   ASSERT_EQUAL( hashTable.numOfLinkedLists(), 1 );
+   ASSERT_EQUAL( hashTable.numOfLinkedLists(), 1ul );
 
    hashTable.Optimize();
 
@@ -323,9 +323,9 @@ TEST( test_power_of_two )
    strings.reserve( val ); // Very important
    testingFlattening( strings, val, hashTable );
 
-   ASSERT_EQUAL( hashTable.table_size(), DEFAULTSIZE );
+   ASSERT_EQUAL( hashTable.table_size(), (size_t)DEFAULTSIZE );
    hashTable.Optimize();
-   ASSERT_EQUAL( hashTable.table_size(), 32 );
+   ASSERT_EQUAL( hashTable.table_size(), 32ul );
    //ASSERT_EQUAL( hashTable.table_size(), 16 );
 
    for ( unsigned n = 0; n < val; ++n )
@@ -338,19 +338,19 @@ TEST( test_power_of_two )
 
 TEST( test_power_of_two_general )
    {
-   ASSERT_EQUAL( computeTwosPow(1), 1 );
-   ASSERT_EQUAL( computeTwosPow(2), 2 );
-   ASSERT_EQUAL( computeTwosPow(3), 4 );
-   ASSERT_EQUAL( computeTwosPow(16), 16 );
-   ASSERT_EQUAL( computeTwosPow(17), 32 );
-   ASSERT_EQUAL( computeTwosPow(1, false), 1 );
-   ASSERT_EQUAL( computeTwosPow(2, false), 2 );
-   ASSERT_EQUAL( computeTwosPow(3, false), 2 );
-   ASSERT_EQUAL( computeTwosPow(16, false), 16 );
-   ASSERT_EQUAL( computeTwosPow(17, false), 16 );
-   ASSERT_EQUAL( computeTwosPow(65536, false), 65536 );
-   ASSERT_EQUAL( computeTwosPow( 65536 ), 65536 );
-   ASSERT_EQUAL( computeTwosPow( 65535, false ), 32768 );
+   ASSERT_EQUAL( computeTwosPow(1), 1ul );
+   ASSERT_EQUAL( computeTwosPow(2), 2ul );
+   ASSERT_EQUAL( computeTwosPow(3), 4ul );
+   ASSERT_EQUAL( computeTwosPow(16), 16ul );
+   ASSERT_EQUAL( computeTwosPow(17), 32ul );
+   ASSERT_EQUAL( computeTwosPow(1, false), 1ul );
+   ASSERT_EQUAL( computeTwosPow(2, false), 2ul );
+   ASSERT_EQUAL( computeTwosPow(3, false), 2ul );
+   ASSERT_EQUAL( computeTwosPow(16, false), 16ul );
+   ASSERT_EQUAL( computeTwosPow(17, false), 16ul );
+   ASSERT_EQUAL( computeTwosPow(65536, false), 65536ul );
+   ASSERT_EQUAL( computeTwosPow( 65536 ), 65536ul );
+   ASSERT_EQUAL( computeTwosPow( 65535, false ), 32768ul );
 
    }
 
@@ -364,7 +364,7 @@ TEST( test_iterators )
    kv = hashTable.Find( "testing" );
 
    HashTable<const char*, size_t>::iterator itr = hashTable.begin();
-   ASSERT_EQUAL( itr->value, 100 );
+   ASSERT_EQUAL( itr->value, 100ul );
 
    }
 
@@ -381,7 +381,7 @@ TEST( test_iterator_operators )
       hashTable.Find( ptr, n );
       Tuple<const char*, size_t> * kv = hashTable.Find( strings[n].c_str(), val );
       ASSERT_TRUE( kv );
-      ASSERT_EQUAL( kv->value, n );
+      ASSERT_EQUAL( kv->value, (size_t)n );
       } // end for
 
    HashTable<const char*, size_t>::iterator itr = hashTable.begin();
@@ -481,7 +481,7 @@ TEST ( test_topN )
    for ( size_t n = val - 1;  i < 15 && ( p = top10[ i ] );  i++, --n )
       ASSERT_EQUAL( n, p->value );
 
-   ASSERT_EQUAL( i , val );
+   ASSERT_EQUAL( (size_t)i , val );
 
    delete [ ] top10;
 
@@ -493,7 +493,7 @@ TEST ( test_topN )
    for ( size_t n = val - 1;  i < 15 && ( p = top10[ i ] );  i++, --n )
       ASSERT_EQUAL( n, p->value );
 
-   ASSERT_EQUAL( i , val );
+   ASSERT_EQUAL( (size_t)i , val );
 
    delete [ ] top10;
 

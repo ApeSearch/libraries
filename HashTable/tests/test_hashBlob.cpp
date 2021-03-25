@@ -2,6 +2,7 @@
 #include "../include/HashTable/HashBlob.h"
 #include "../../unit_test_framework/include/unit_test_framework/unit_test_framework.h"
 #include <sys/mman.h>
+#include <utility>
 
 static void testingFind( HashTable<const char*, size_t>& hashTable );
 
@@ -29,18 +30,17 @@ TEST( test_helperBytesRequire )
    
 
    Hash::const_iterator itr = hashTable.cbegin();
-   size_t serialTupleSize = sizeof( size_t ) * 2 + sizeof( uint32_t );
 
    for ( Hash::const_iterator itr = hashTable.cbegin(); itr != hashTable.cend(); ++itr )
       {
       if ( CompareEqual( itr->key, "testing" ) || CompareEqual( itr->key, "lololol" ) )
          {
-         ASSERT_EQUAL( SerialTuple::helperBytesRequired( *itr ), 32 );
+         ASSERT_EQUAL( SerialTuple::helperBytesRequired( *itr ), 32ul );
          }
       else if ( CompareEqual( itr->key, "1 2 3 3 4 5 " ) )
          {
-         ASSERT_EQUAL( strlen( "1 2 3 3 4 5 " ), 12 );
-         ASSERT_EQUAL( SerialTuple::helperBytesRequired( *itr ), 40 );
+         ASSERT_EQUAL( strlen( "1 2 3 3 4 5 " ), 12ul );
+         ASSERT_EQUAL( SerialTuple::helperBytesRequired( *itr ), 40ul );
          }
       } // end for
    }
@@ -58,18 +58,17 @@ TEST( test_helperBytesRequireStrict )
    ASSERT_EQUAL( bytesReq, expectedBytes );
 
    Hash::const_iterator itr = hashTable.cbegin();
-   size_t serialTupleSize = sizeof( size_t ) * 2 + sizeof( uint32_t );
 
    for ( Hash::const_iterator itr = hashTable.cbegin(); itr != hashTable.cend(); ++itr )
       {
       if ( CompareEqual( itr->key, "testing" ) || CompareEqual( itr->key, "lololol" ) )
          {
-         ASSERT_EQUAL( SerialTuple::helperBytesRequired( *itr ), 32 );
+         ASSERT_EQUAL( SerialTuple::helperBytesRequired( *itr ), 32ul );
          }
       else if ( CompareEqual( itr->key, "1 2 3 3 4 5 " ) )
          {
-         ASSERT_EQUAL( strlen( "1 2 3 3 4 5" ) + 1, 12 );
-         ASSERT_EQUAL( SerialTuple::helperBytesRequired( *itr ), 32 );
+         ASSERT_EQUAL( strlen( "1 2 3 3 4 5" ) + 1, 12ul );
+         ASSERT_EQUAL( SerialTuple::helperBytesRequired( *itr ), 32ul );
          }
       } // end for
    }
@@ -80,18 +79,16 @@ TEST( test_TotBytesRequired )
    testingFind( hashTable ); // Insert into hashTable...
 
    size_t headerAndBucketsBytes = HashBlob::BytesForHeaderBuckets( &hashTable ); 
-   size_t charactersTaken = strlen( "testing" ) + strlen( "lololol") + strlen( "1 2 3 3 4 5 " );
-
 
     // "testing" == 32
     // "lololol" == 32
     // "1 2 3 3 4 5 " == 40
 
-   ASSERT_EQUAL( hashTable.size(), 3 );
-   ASSERT_EQUAL( hashTable.numOfLinkedLists(), 3 );
+   ASSERT_EQUAL( hashTable.size(), 3ul );
+   ASSERT_EQUAL( hashTable.numOfLinkedLists(), 3ul );
 
    // 104 are from the valid serial tuples while 24 ( 8 * 3 ) the null serial tuples
-   ASSERT_EQUAL( HashBlob::BytesRequired(( &hashTable )), 104 + 
+   ASSERT_EQUAL( HashBlob::BytesRequired(( &hashTable )), 104ul + 
       ( hashTable.numOfLinkedLists() * SerialTuple::sizeOfNullSentinel ) + headerAndBucketsBytes );
    }
 
@@ -103,38 +100,38 @@ void testingFind( HashTable<const char*, size_t>& hashTable )
    ASSERT_EQUAL(hashTable.Find( "testing" ), nullptr);
     Tuple<const char *, size_t> * kv = hashTable.Find( "testing", 100 );
     ASSERT_TRUE( kv );
-    ASSERT_EQUAL( kv->value, 100 );
+    ASSERT_EQUAL( kv->value, 100ul );
     kv = hashTable.Find( "testing" );
     ASSERT_TRUE( kv );
-    ASSERT_EQUAL( kv->value, 100 );
+    ASSERT_EQUAL( kv->value, 100ul );
 
    // insert "lololol"
     kv = hashTable.Find( "lololol" );
     ASSERT_TRUE( !kv );
     kv = hashTable.Find( "lololol", 42 );
     ASSERT_TRUE( kv );
-    ASSERT_EQUAL( kv->value, 42 );
+    ASSERT_EQUAL( kv->value, 42ul );
     kv = hashTable.Find( "lololol" );
     ASSERT_TRUE( kv );
-    ASSERT_EQUAL( kv->value, 42 );
+    ASSERT_EQUAL( kv->value, 42ul );
 
    // insert "1 2 3 3 4 5 "
     kv = hashTable.Find( "1 2 3 3 4 5 " );
     ASSERT_TRUE( !kv );
     kv = hashTable.Find( "1 2 3 3 4 5 ", 666 );
     ASSERT_TRUE( kv );
-    ASSERT_EQUAL( kv->value, 666 );
+    ASSERT_EQUAL( kv->value, 666ul );
     kv = hashTable.Find( "1 2 3 3 4 5 " );
     ASSERT_TRUE( kv );
-    ASSERT_EQUAL( kv->value, 666 );
+    ASSERT_EQUAL( kv->value, 666ul );
 
     // Now check previous values...
     kv = hashTable.Find( "testing" );
     ASSERT_TRUE( kv );
-    ASSERT_EQUAL( kv->value, 100 );
+    ASSERT_EQUAL( kv->value, 100ul );
     kv = hashTable.Find( "lololol" );
     ASSERT_TRUE( kv );
-    ASSERT_EQUAL( kv->value, 42 );
+    ASSERT_EQUAL( kv->value, 42ul );
    }
 
 TEST( test_SerialTupleWrite )
@@ -175,7 +172,7 @@ TEST( test_SerialTupleWriteStrict )
    SerialTuple *serialTuple = reinterpret_cast< SerialTuple *>( &buffer );
 
    ASSERT_EQUAL( buffer + bytesReq, end );
-   ASSERT_EQUAL( RoundUp( end - buffer, 8 ), bytesReq );
+   ASSERT_EQUAL( RoundUp( size_t( end - buffer ), 8 ), bytesReq );
    ASSERT_EQUAL( serialTuple->Length, bytesReq );
    ASSERT_EQUAL( serialTuple->Value, value );
    ASSERT_EQUAL( serialTuple->HashValue, hashValue );
@@ -206,7 +203,7 @@ TEST( test_SerialTupleWrite_WITHFILEWRITE )
       ASSERT_TRUE( false );
       }
 
-   int result = lseek( fd, bytesReq - 1, SEEK_SET );
+   ssize_t result = lseek( fd, off_t (bytesReq - 1 ), SEEK_SET );
    if ( result == -1 )
       {
       close( fd );
@@ -267,12 +264,22 @@ TEST( test_SerialTupleWrite_WITHFILEWRITE_READAFTER )
    void *map;
 
    fd = open( FILEPATH, O_RDONLY );
-   if ( fd == -1 )
+
+   File file;
+
+   try
       {
-      perror( "Error opening file for reading" );
+      File temp( FILEPATH, O_RDONLY );
+      file = std::move( temp );
+      }
+   catch ( const File::failure& e )
+      {
+      std::cout << e.what() << std::endl;
       ASSERT_TRUE( false );
       }
    
+   fd = file.getFD();
+
    map = mmap( 0, bytesReq, PROT_READ, MAP_SHARED, fd, 0 );
    if ( map == MAP_FAILED )
       {
@@ -295,7 +302,6 @@ TEST( test_SerialTupleWrite_WITHFILEWRITE_READAFTER )
       close( fd );
       ASSERT_TRUE( false );
       }
-   close( fd );
    }
 
 TEST( test_hashBlob_basic )
@@ -309,15 +315,15 @@ TEST( test_hashBlob_basic )
    HashBlob *hb = HashBlob::Create( &hashTable );
 
    const SerialTuple *tuple = hb->Find( "testing" );
-   ASSERT_EQUAL( tuple->Value, 100 );
+   ASSERT_EQUAL( tuple->Value, 100ul );
    ASSERT_TRUE(  CompareEqual( tuple->Key, "testing" ) );
 
    tuple = hb->Find( "lololol" );
-   ASSERT_EQUAL( tuple->Value, 101 );
+   ASSERT_EQUAL( tuple->Value, 101ul );
    ASSERT_TRUE( CompareEqual( tuple->Key, "lololol" ) );
 
    tuple = hb->Find( "1 2 3 3 4 5" );
-   ASSERT_EQUAL( tuple->Value, 102 );
+   ASSERT_EQUAL( tuple->Value, 102ul );
    ASSERT_TRUE( CompareEqual( tuple->Key, "1 2 3 3 4 5" ) );
 
    tuple = hb->Find( "Nope Aint finding this sht ");
@@ -339,7 +345,7 @@ TEST( test_hashBlob_basicWItr )
 
    size_t bytesReq = HashBlob::BytesRequired( &hashTable );
 
-   uint8_t hbStack[ bytesReq ];
+   uint8_t *hbStack = new uint8_t[ bytesReq ];
 
    HashBlob *hb = HashBlob::Write( reinterpret_cast< HashBlob *>( hbStack ), bytesReq,
       &hashTable );
@@ -350,31 +356,31 @@ TEST( test_hashBlob_basicWItr )
    HashBlob::Const_Iterator constItr = hb->cbegin( end );
 
    const SerialTuple *tuple = hb->Find( "testing" );
-   ASSERT_EQUAL( tuple->Value, 100 );
+   ASSERT_EQUAL( tuple->Value, 100ul );
    ASSERT_TRUE(  CompareEqual( tuple->Key, "testing" ) );
 
-   ASSERT_EQUAL( constItr->Value, 100 );
+   ASSERT_EQUAL( constItr->Value, 100ul );
    ASSERT_TRUE( CompareEqual( constItr->Key, "testing" ) );
    ++constItr;
 
    tuple = hb->Find( "lololol" );
-   ASSERT_EQUAL( tuple->Value, 101 );
+   ASSERT_EQUAL( tuple->Value, 101ul );
    ASSERT_TRUE( CompareEqual( tuple->Key, "lololol" ) );
 
-   ASSERT_EQUAL( constItr->Value, 101 );
+   ASSERT_EQUAL( constItr->Value, 101ul );
    ASSERT_TRUE( CompareEqual( constItr->Key, "lololol" ) );
    ++constItr;
 
    tuple = hb->Find( "1 2 3 3 4 5" );
-   ASSERT_EQUAL( tuple->Value, 102 );
+   ASSERT_EQUAL( tuple->Value, 102ul );
    ASSERT_TRUE( CompareEqual( tuple->Key, "1 2 3 3 4 5" ) );
 
-   ASSERT_EQUAL( constItr->Value, 102 );
+   ASSERT_EQUAL( constItr->Value, 102ul );
    ASSERT_TRUE( CompareEqual( constItr->Key, "1 2 3 3 4 5" ) );
    ++constItr;
 
    ASSERT_EQUAL( constItr, hb->cend( end ) );
-
+   delete[] hbStack;
    }
 
 TEST( test_hashBlob_basic_Opt )
@@ -390,15 +396,15 @@ TEST( test_hashBlob_basic_Opt )
    HashBlob *hb = HashBlob::Create( &hashTable );
 
    const SerialTuple *tuple = hb->Find( "testing" );
-   ASSERT_EQUAL( tuple->Value, 100 );
+   ASSERT_EQUAL( tuple->Value, 100ul );
    ASSERT_TRUE(  CompareEqual( tuple->Key, "testing" ) );
 
    tuple = hb->Find( "lololol" );
-   ASSERT_EQUAL( tuple->Value, 101 );
+   ASSERT_EQUAL( tuple->Value, 101ul );
    ASSERT_TRUE( CompareEqual( tuple->Key, "lololol" ) );
 
    tuple = hb->Find( "1 2 3 3 4 5" );
-   ASSERT_EQUAL( tuple->Value, 102 );
+   ASSERT_EQUAL( tuple->Value, 102ul );
    ASSERT_TRUE( CompareEqual( tuple->Key, "1 2 3 3 4 5" ) );
 
    tuple = hb->Find( "Nope Aint finding this sht ");
@@ -433,30 +439,30 @@ TEST( test_hashBlob_basicWItr_Opt )
    HashBlob::Const_Iterator constItr = hb->cbegin( end );
 
    const SerialTuple *tuple = hb->Find( "testing" );
-   ASSERT_EQUAL( tuple->Value, 100 );
+   ASSERT_EQUAL( tuple->Value, 100ul );
    ASSERT_TRUE(  CompareEqual( tuple->Key, "testing" ) );
 
    tuple = hb->Find( "lololol" );
-   ASSERT_EQUAL( tuple->Value, 101 );
+   ASSERT_EQUAL( tuple->Value, 101ul );
    ASSERT_TRUE( CompareEqual( tuple->Key, "lololol" ) );
 
    tuple = hb->Find( "1 2 3 3 4 5" );
-   ASSERT_EQUAL( tuple->Value, 102 );
+   ASSERT_EQUAL( tuple->Value, 102ul );
    ASSERT_TRUE( CompareEqual( tuple->Key, "1 2 3 3 4 5" ) );
 
    for ( ; constItr != hb->cend( end ); ++constItr )
       {
       if ( CompareEqual( constItr->Key, "testing" ) )
          {
-         ASSERT_EQUAL( constItr->Value, 100 );
+         ASSERT_EQUAL( constItr->Value, 100ul );
          }
       else if ( CompareEqual( tuple->Key, "lololol" ) )
          {
-         ASSERT_EQUAL( constItr->Value, 101 );
+         ASSERT_EQUAL( constItr->Value, 101ul );
          }
       else if ( CompareEqual( tuple->Key, "1 2 3 3 4 5" ) )
          {
-         ASSERT_EQUAL( tuple->Value, 102 );
+         ASSERT_EQUAL( tuple->Value, 102ul );
          }
       else // Must be one of these values
          {
@@ -473,18 +479,18 @@ void testingFlattening( std::vector<std::string>& strings, const size_t val, Has
    for ( unsigned n = 0; n < val; ++n )
       {
       strings.emplace_back( std::to_string( n ) );
-      const char * ptr = strings[n].c_str();
+      const char * ptr = strings[(size_t)n].c_str();
       hashTable.Find( ptr, n );
-      Tuple<const char*, size_t> * kv = hashTable.Find( strings[n].c_str() );
+      Tuple<const char*, size_t> * kv = hashTable.Find( strings[(size_t)n].c_str() );
       ASSERT_TRUE( kv );
-      ASSERT_EQUAL( kv->value, n );
+      ASSERT_EQUAL( kv->value, (size_t)n );
       } // end for
 
    for ( unsigned n = 0; n < val; ++n )
       {
-      Tuple<const char*, size_t> * kv = hashTable.Find( strings[n].c_str() );
+      Tuple<const char*, size_t> * kv = hashTable.Find( strings[(size_t)n].c_str() );
       ASSERT_TRUE( kv );
-      ASSERT_EQUAL( kv->value, n );
+      ASSERT_EQUAL( kv->value, (size_t)n );
       } // end for
 
    std::vector< const Bucket< const char*, size_t> * > vec( hashTable.constflattenHashTable() );
@@ -493,12 +499,12 @@ void testingFlattening( std::vector<std::string>& strings, const size_t val, Has
       []( Bucket< const char*, size_t> const *lhs, Bucket< const char*, size_t> const *rhs ) { return lhs->tuple.value > rhs->tuple.value; } );
    ASSERT_EQUAL( vec.size(), val );
 
-   for ( int n = val - 1, ind = 0; n >= 0; --n, ++ind )
+   for ( int n = ( int ) val - 1, ind = 0; n >= 0; --n, ++ind )
       {
       std::string str = std::to_string( n );
       const Tuple<const char*, size_t>& tuple = vec[(size_t) ind]->tuple;
       ASSERT_EQUAL( tuple.key, std::to_string( n ) );
-      ASSERT_EQUAL( tuple.value , n );
+      ASSERT_EQUAL( tuple.value , (size_t)n );
       } // end for
    }
 
@@ -515,19 +521,18 @@ TEST( test_hashBlobExtensive )
    copyOfStrings = strings; // Copy every string ( same but different addresses )
 
    ASSERT_EQUAL( strings.size(), hashTable.size() );
-   ASSERT_EQUAL( 4096, hashTable.table_size() );
+   ASSERT_EQUAL( 4096ul, hashTable.table_size() );
    hashTable.Optimize(); // Current load factor becomes at most 0.5
    ASSERT_EQUAL( strings.size(), hashTable.size() );
    hb = HashBlob::Create( &hashTable );
    } // Delete memory of original strings to show that hb will not seg fault
 
-   for ( int n = val - 1; n >= 0; --n )
+   for ( int n = ( int )val - 1; n >= 0; --n )
       {
-      std::string copy( copyOfStrings[n] );
-      const SerialTuple *kv = hb->Find( copyOfStrings[n].c_str() );
+      const SerialTuple *kv = hb->Find( copyOfStrings[(size_t)n].c_str() );
       ASSERT_TRUE( kv );
-      ASSERT_EQUAL( kv->Value, n );
-      ASSERT_TRUE( CompareEqual( kv->Key, copyOfStrings[n].c_str() ) );
+      ASSERT_EQUAL( kv->Value, (size_t)n );
+      ASSERT_TRUE( CompareEqual( kv->Key, copyOfStrings[(size_t)n].c_str() ) );
 
       } // end for
 
