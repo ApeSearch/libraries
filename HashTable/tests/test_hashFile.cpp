@@ -42,7 +42,7 @@ TEST( test_hashFile )
     {
     char const *filename = "./tests/hashFiles/hashFile.txt";
 
-    static size_t val = 10000;
+    static size_t val = 100;
     HashTable<const char*, size_t> hashTable;
     std::vector<std::string> strings; // To keep pointers around
     strings.reserve( val ); // Very important
@@ -64,6 +64,7 @@ TEST( test_hashFile )
         ASSERT_EQUAL( kv->Value, (size_t)n );
         ASSERT_TRUE( CompareEqual( kv->Key, strings[(size_t)n].c_str() ) );
         } // end for
+    ASSERT_TRUE( true ); // placeholder
     } 
 
 TEST( test_hashFileReadAfter )

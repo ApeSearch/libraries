@@ -488,7 +488,11 @@ public:
    ~File()
       {
       if ( fd != -1 )
+         {
+         std::cout << "Closing fd\n";
          close( fd );
+          std::cout << "Closed fd\n";
+         }
       } // end ~File()
 
    inline int getFD() const
@@ -640,6 +644,7 @@ public:
          perror( "err un-mapping the file " );
          throw failure( "error unmapping file", errno, 0 );
          } // end if
+         std::cout << "Deleting unique_mmap\n";
       }
 
    inline void *get() const
@@ -653,8 +658,8 @@ class HashFile
    private:
 
       //HashBlob *blob;
-      unique_mmap blob;
       File file;
+      unique_mmap blob;
       bool good = false;
 
       size_t FileSize( int f )

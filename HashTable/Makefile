@@ -73,5 +73,5 @@ HashFile:  HashFile.cpp HashTable.h HashBlob.h Common.h Timer.h
 #	diff HashTable.correct.txt HashFile.testout.txt
 
 clean:
-	rm -rf Top10 HashTable HashBlob HashFile *.testout.* ${OBJS} ${EXECDIR} ${OUTPUT}
+	rm -rf Top10 HashTable HashBlob HashFile *.testout.* ${OBJS} ${EXECDIR} ${OUTPUT} tests/HashFiles/*
 
