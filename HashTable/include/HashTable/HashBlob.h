@@ -21,9 +21,9 @@
    #include <malloc.h>
 #endif
 #include <unistd.h>
-#include <sys/mman.h>
+#include <sys/mman.h> // for mmap and munmap
 
-#include "HashTable.h"
+#include "HashTable.h" // for hashTable
 #include <utility> // for std::swap and std::move
 
 #pragma GCC diagnostic push
@@ -75,8 +75,7 @@ struct SerialTuple
       size_t Length, Value;
       uint32_t HashValue;
 
-      // Should be 20
-      static constexpr size_t sizeOfMetaData = sizeof( size_t ) * 2 + sizeof( uint32_t );
+      static constexpr size_t sizeOfMetaData = sizeof( size_t ) * 2 + sizeof( uint32_t ); // About 20
       static constexpr size_t sizeOfNullSentinel = sizeof( size_t ); // Just needs to be a Length
 
       // The Key will be a C-string of whatever length.
@@ -84,7 +83,6 @@ struct SerialTuple
 
       // Calculate the bytes required to encode a HashBucket as a
       // SerialTuple.
-
       static size_t helperBytesRequired( const Pair& pair )
          {
          // Extra character for null-character
@@ -171,16 +169,16 @@ class HashBlob
          BlobSize,
          NumberOfBuckets,
          Buckets[ Unknown ];
-
       // The SerialTuples will follow immediately after.
 
+
+      // Search for the key k and return a pointer to the
+      // ( key, value ) entry.  If the key is not found,
+      // return nullptr.
       template<class HashFunc = FNV> 
       const SerialTuple *Find( const char *key ) const
          {
          static HashFunc func;
-         // Search for the key k and return a pointer to the
-         // ( key, value ) entry.  If the key is not found,
-         // return nullptr.
 
          uint8_t const *byteAddr = reinterpret_cast< uint8_t const * > ( &MagicNumber );
 
@@ -188,6 +186,7 @@ class HashBlob
          size_t bucketInd = hashVal & ( NumberOfBuckets - 1 );
          size_t offset = Buckets[ bucketInd ];
 
+         // If non-zero, we have found a list to look into
          if ( offset )
             {
             // Okay since everything is continous in memory...
@@ -218,24 +217,23 @@ class HashBlob
          return sizeOfBuckets + header;
          }
 
+      // Calculate how much space it will take to
+      // represent a HashTable as a HashBlob.
+
+      // Need space for the header + buckets +
+      // all the serialized tuples.
       static size_t BytesRequired( const Hash *hashTable )
          {
-         // Calculate how much space it will take to
-         // represent a HashTable as a HashBlob.
-
-         // Need space for the header + buckets +
-         // all the serialized tuples.
-
-         // Your code here.
          size_t totSizeOfSerialTuples = 0; // Count bytes that go to serial tuples...
 
-         // Add up the 
+         // Add up the bytes needed for every bucket
          for ( Hash::const_iterator itr = hashTable->cbegin(); itr != hashTable->cend(); ++itr )
             totSizeOfSerialTuples += SerialTuple::helperBytesRequired( *itr );
 
          // Add null sentinal bytes
          totSizeOfSerialTuples += hashTable->numOfLinkedLists() * SerialTuple::sizeOfNullSentinel;
 
+         // And finaly added to the bytes needed for the header + buckets array
          size_t totBytes = totSizeOfSerialTuples + BytesForHeaderBuckets( hashTable );
          // It should be the case that the resultant value is a multiple of 8
          assert( RoundUp( totBytes, 8 ) == totBytes );
@@ -248,13 +246,12 @@ class HashBlob
       static HashBlob *Write( HashBlob *hb, size_t bytes,
             const Hash *hashTable )
          {
-         // Your code here.
-
          // placeholders for now
          hb->MagicNumber = HashBlob::decidedMagicNum;
          hb->Version = HashBlob::version;
 
          
+         // Initialize the rest of variables
          hb->BlobSize = bytes;
          hb->NumberOfBuckets = hashTable->table_size();
 
@@ -266,18 +263,17 @@ class HashBlob
 
          typename std::vector< std::vector< HashBucket *> >::iterator bucketsVec = buckets.begin();
 
+         // Iterate through every bucket and append it to the serial tuples list
          for ( ; bucketsVec != buckets.end(); ++bucketsVec )
             {
             // Write the absolute address into the bucket represented...
+            //! Note will not work with minimal perfect hashing
             size_t bucketInd = bucketsVec->front()->hashValue & ( hashTable->table_size() - 1 );
             hb->Buckets[ bucketInd ] = size_t( serialPtr - reinterpret_cast< char *>( hb ) );  
 
             for ( typename std::vector<HashBucket*>::iterator bucket = bucketsVec->begin(); 
-               bucket != bucketsVec->end(); ++bucket )
-               {
+                  bucket != bucketsVec->end(); ++bucket )
                serialPtr = SerialTuple::Write( serialPtr, end, *bucket );
-               } // end for
-            
             
             // Now add null serial Tuple
             serialPtr = SerialTuple::WriteNull( serialPtr, end );
@@ -294,7 +290,6 @@ class HashBlob
       // variable sized object.)
       static HashBlob *Create( const Hash *hashTable )
          {
-         // Your code here.
          const size_t bytesReq = HashBlob::BytesRequired( hashTable );
 
          // Need to use malloc to get the exact right number of bytes
@@ -310,6 +305,20 @@ class HashBlob
          free( blob );
          }
 
+//------------------------------------------------------------------------------------------------
+//
+//                                 Const_Iterator Definition
+//
+//------------------------------------------------------------------------------------------------
+/*
+ * Used to help with testing hashblobs and the serial tuples. Will iterate through the serial tuples
+ * until it reaches the end specified by bufferEnd.
+ * 
+ * buffer: A byte-addressed pointer that points to the beginning of a serial tuple. Reinterpreted as 
+ *         a serial tuple whenever the value needs to be dereferenced.
+ * bufferEnd: Points to one past the last byte in the hashblob. Used to represent when an iterator
+ *          has reached the end.
+*/
       class Const_Iterator
          {
          
@@ -320,6 +329,14 @@ class HashBlob
          char const *buffer;
          char const * const bufferEnd;
 
+         /*
+          * REQUIRES: buffer != bufferEnd i.e. buffer doesn't point to the end of the hashblob
+          *  MODIFES: buffer ( incremented in a way such that it points to the beginning of the next serial tuple or bufferEnd )
+          *  EFFECTS: Uses the serial tuple's length variable to move buffer so that it points to the 
+          *           beginning of the next serial tuple. In the case that the next is a null serial,
+          *           moves buffer again past the null sentinal.
+          * 
+         */
          inline void advanceSerialTuple( )
             {
             assert( buffer != bufferEnd );
@@ -408,6 +425,7 @@ class HashBlob
 
    };
 
+// A RAII for Files
 class File
    {
    int fd;
@@ -495,6 +513,21 @@ public:
       }
    };
 
+//------------------------------------------------------------------------------------------------
+//
+//                                  unique_mmap Definition 
+//
+//------------------------------------------------------------------------------------------------
+/*
+ * A RAII for mmap. It ensures that at the end of the scope, an mmapped file is guaranteed to
+ * deallocate and free any acquired resources.
+ * 
+ *         map: Pointer that holds the memory mapped region.
+ * bytesMapped: The amount of bytes that was mapped into memory. Mainly used for calling munmap so that
+ *              the object knows how many bytes is needed to be freed.
+ *       file: A file object. If such an object is passed into the constructor, unique_mmap becomes
+ *              responsible for the deallocation ( closing of the file object ).
+*/
 class unique_mmap
    {
    void *map;
@@ -630,6 +663,7 @@ public:
     *   Though the region is automatically unmapped when the process is terminated.  On
     *   the other hand, closing the file descriptor does not unmap the
     *   region.
+    *   Note: this destructor needs to be made allowalbe to throw in case munmap fails.
    */
    ~unique_mmap( ) noexcept(false)
       {
@@ -650,8 +684,8 @@ class HashFile
    {
    private:
 
-      unique_mmap blob;
-      File file;
+      unique_mmap blob; // RAII for mmap
+      File file;        // RAII for open() => close()
       bool good = false;
 
       size_t FileSize( int f )
