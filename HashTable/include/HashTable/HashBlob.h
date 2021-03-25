@@ -103,7 +103,7 @@ struct SerialTuple
 
       static SerialTuple *initSerialTuple( char *buffer, const HashBucket *b, size_t lengthSerialized )
          {
-         SerialTuple *serialTuple = reinterpret_cast< SerialTuple * > ( buffer );
+         SerialTuple *serialTuple = reinterpret_cast< SerialTuple * >( buffer );
 
          serialTuple->Length = lengthSerialized;
          serialTuple->Value = b->tuple.value;
