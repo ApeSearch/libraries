@@ -354,9 +354,9 @@ class HashBlob
 
             } // end advanceSerialTuple()
 
-         Const_Iterator( HashBlob const *hb, char const *end, bool start ) : hashBlob( hb ), 
-            buffer( start && hb ? reinterpret_cast< char const * >( hb->Buckets + hb->NumberOfBuckets ) : end ), 
-            bufferEnd( end ) {}
+         Const_Iterator( HashBlob const *hb, const std::size_t offset ) : hashBlob( hb ),
+            buffer( hb ? reinterpret_cast< char const * >( hb->Buckets + hb->NumberOfBuckets ) + offset : nullptr ), 
+            bufferEnd( hb ? reinterpret_cast< char const * > ( &hb->MagicNumber ) + hb->BlobSize : nullptr ) {}
 
       public:
          Const_Iterator( ) : hashBlob( nullptr ), buffer( nullptr ), bufferEnd( nullptr ) {}
@@ -395,6 +395,15 @@ class HashBlob
             {
             return buffer != rhs.buffer;
             }
+         
+         bool operator==( const char *rhs ) const
+            {
+            return buffer == rhs;
+            }
+         bool operator!=( const char *rhs ) const
+            {
+            return buffer != rhs;
+            }
 
          Const_Iterator operator+( ssize_t var )
             {
@@ -404,21 +413,23 @@ class HashBlob
             return copy;
             } // end operator+()
 
-         const HashBlob *Blob( )
+         const HashBlob *Blob( ) const
             {
             return hashBlob;
             }
 
          };
       
-      Const_Iterator cbegin( char const *end ) const
+      Const_Iterator cbegin( ) const
          {
-         return Const_Iterator( this, end, true );
+         return Const_Iterator( this, 0 );
          }
 
-      Const_Iterator cend( char const *end ) const
+      Const_Iterator cend( ) const
          {
-         return Const_Iterator( this, end, false );
+         return Const_Iterator( this, BlobSize - 
+            (size_t) ( reinterpret_cast< char const * >( Buckets + NumberOfBuckets ) - 
+               reinterpret_cast< char const * > ( &MagicNumber ) ) );
          }
 
    };
@@ -493,9 +504,9 @@ public:
       {
       #ifdef LOCAL
             using APESEARCH::swap;
-       #else
+      #else
             using std::swap;
-       #endif
+      #endif
       swap( fd, file.fd );
       return *this;
       }

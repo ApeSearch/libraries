@@ -353,7 +353,7 @@ TEST( test_hashBlob_basicWItr )
    char const *end = reinterpret_cast< char *>( hb ) + HashBlob::BytesRequired( &hashTable );
    ASSERT_EQUAL( reinterpret_cast< char const *>( hbStack + bytesReq ), end );
 
-   HashBlob::Const_Iterator constItr = hb->cbegin( end );
+   HashBlob::Const_Iterator constItr = hb->cbegin( );
 
    const SerialTuple *tuple = hb->Find( "testing" );
    ASSERT_EQUAL( tuple->Value, 100ul );
@@ -379,7 +379,7 @@ TEST( test_hashBlob_basicWItr )
    ASSERT_TRUE( CompareEqual( constItr->Key, "1 2 3 3 4 5" ) );
    ++constItr;
 
-   ASSERT_EQUAL( constItr, hb->cend( end ) );
+   ASSERT_EQUAL( constItr, hb->cend( ) );
    delete[] hbStack;
    }
 
@@ -435,8 +435,9 @@ TEST( test_hashBlob_basicWItr_Opt )
 
    char const *end = reinterpret_cast< char *>( hb ) + HashBlob::BytesRequired( &hashTable );
    ASSERT_EQUAL( reinterpret_cast< char const *>( hbStack + bytesReq ), end );
+   ASSERT_EQUAL( hb->cend(), end );
 
-   HashBlob::Const_Iterator constItr = hb->cbegin( end );
+   HashBlob::Const_Iterator constItr = hb->cbegin( );
 
    const SerialTuple *tuple = hb->Find( "testing" );
    ASSERT_EQUAL( tuple->Value, 100ul );
@@ -450,26 +451,27 @@ TEST( test_hashBlob_basicWItr_Opt )
    ASSERT_EQUAL( tuple->Value, 102ul );
    ASSERT_TRUE( CompareEqual( tuple->Key, "1 2 3 3 4 5" ) );
 
-   for ( ; constItr != hb->cend( end ); ++constItr )
+   for ( ; constItr != hb->cend( ); ++constItr )
       {
       if ( CompareEqual( constItr->Key, "testing" ) )
          {
          ASSERT_EQUAL( constItr->Value, 100ul );
          }
-      else if ( CompareEqual( tuple->Key, "lololol" ) )
+      else if ( CompareEqual( constItr->Key, "lololol" ) )
          {
          ASSERT_EQUAL( constItr->Value, 101ul );
          }
-      else if ( CompareEqual( tuple->Key, "1 2 3 3 4 5" ) )
+      else if ( CompareEqual( constItr->Key, "1 2 3 3 4 5" ) )
          {
-         ASSERT_EQUAL( tuple->Value, 102ul );
+         ASSERT_EQUAL( constItr->Value, 102ul );
          }
       else // Must be one of these values
          {
          ASSERT_TRUE( false );
          }
+      ASSERT_EQUAL( constItr->Length, 32ul );
       } // end for
-   ASSERT_EQUAL( constItr, hb->cend( end ) );
+   ASSERT_EQUAL( constItr, hb->cend( ) );
 
    delete []hbStack;
    }
