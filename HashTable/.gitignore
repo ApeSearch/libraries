@@ -5,6 +5,7 @@ tests/bin
 tests/bin/*
 tests/output/*
 tests/wrongOutput/*
+tests/hashFiles/*
 !.gitignore
 *.dSYM
 *.o

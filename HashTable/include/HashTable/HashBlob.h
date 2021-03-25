@@ -449,9 +449,8 @@ public:
 
    File( ) : fd( -1 ) {}
 
-   File( const char *pathname, int flags, mode_t mode )
+   File( const char *pathname, int flags, mode_t mode ) : fd( open( pathname, flags, mode ) )
       {
-      fd = open( pathname, flags, mode );
       if ( fd == -1 )
          {
          perror("Error opening file");
@@ -459,9 +458,8 @@ public:
          } // end if
       }  // end File
 
-   File( const char *pathname, int flags )
+   File( const char *pathname, int flags ) : fd( open( pathname, flags ) )
       {
-      fd = open( pathname, flags );
       if ( fd == -1 )
          {
          perror("Error opening file");
@@ -488,11 +486,7 @@ public:
    ~File()
       {
       if ( fd != -1 )
-         {
-         std::cout << "Closing fd\n";
          close( fd );
-          std::cout << "Closed fd\n";
-         }
       } // end ~File()
 
    inline int getFD() const
@@ -572,7 +566,7 @@ public:
     * offset: The location in file in which mmap is started from 
     *        ( this must be a muptiple of page size which can be returned by sysconf(_SC_PAGE_SIZE)
    */
-   unique_mmap( void *addr, std::size_t length, int prot, int flags, int fd, off_t offset )
+   unique_mmap( void *addr, std::size_t length, int prot, int flags, int fd, off_t offset ) : bytesMapped( length )
       {
       if ( !length )
          {
@@ -595,7 +589,7 @@ public:
       unique_mmap( 0, length, prot, flags, fd, offset ) {}
 
    unique_mmap( void *addr, std::size_t length, int prot, int flags, off_t offset, File&& fd )
-      :  file( std::move( fd ) )
+      : bytesMapped( length ), file( std::move( fd ) )
       {
       if ( !length )
          {
@@ -639,13 +633,12 @@ public:
    */
    ~unique_mmap( ) noexcept(false)
       {
-      if ( map && munmap( map, bytesMapped ) == -1 )
+      if ( map &&  munmap( map, bytesMapped ) == -1  )
          {
          perror( "err un-mapping the file " );
          throw failure( "error unmapping file", errno, 0 );
          } // end if
-         std::cout << "Deleting unique_mmap\n";
-      }
+      } // end ~unique_mmap(0)
 
    inline void *get() const
       {
@@ -657,9 +650,8 @@ class HashFile
    {
    private:
 
-      //HashBlob *blob;
-      File file;
       unique_mmap blob;
+      File file;
       bool good = false;
 
       size_t FileSize( int f )
@@ -678,14 +670,11 @@ class HashFile
 
       HashFile( const char *filename ) : file( filename, O_RDONLY )
          {
-         int fd = file.getFD();
+         int fd = open( filename, O_RDONLY );
 
          blob = unique_mmap( 0, FileSize( fd ), PROT_READ, MAP_SHARED, fd, 0 );
-         // Open the file for reading, map it, check the header,
-         // and note the blob address.
 
          good = Blob()->verifyHashBlob();
-         // Your code here.
          }
       
       inline bool isCorrectVersion() const { return good; }
@@ -698,9 +687,9 @@ class HashFile
          // the blob address.
 
          // Your code here.
-
+         int fd = file.getFD();
          const std::size_t bytesReq = HashBlob::BytesRequired( hashtable );
-         ssize_t result = lseek( file.getFD(), off_t( bytesReq - 1 ), SEEK_SET );
+         ssize_t result = lseek( fd, off_t( bytesReq - 1 ), SEEK_SET );
          
          if ( result == -1 )
             {
@@ -708,7 +697,7 @@ class HashFile
             return;
             } // end if
          
-         result = write( file.getFD(), "", 1 );
+         result = write( fd, "", 1 );
 
          if ( result == -1 )
             {
@@ -716,14 +705,13 @@ class HashFile
             return;
             }
          
-         blob = unique_mmap( 0, bytesReq, PROT_READ | PROT_WRITE, MAP_SHARED, file.getFD(), 0 );
+         blob = unique_mmap( 0, bytesReq, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0 );
          HashBlob *hb = reinterpret_cast< HashBlob *> ( blob.get() );
          assert( HashBlob::Write( hb, bytesReq, hashtable ) == hb );
          }
 
       ~HashFile( )
          {
-         // Your code here.
          }
    };
 

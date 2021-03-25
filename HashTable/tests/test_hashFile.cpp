@@ -42,7 +42,7 @@ TEST( test_hashFile )
     {
     char const *filename = "./tests/hashFiles/hashFile.txt";
 
-    static size_t val = 100;
+    static size_t val = 500;
     HashTable<const char*, size_t> hashTable;
     std::vector<std::string> strings; // To keep pointers around
     strings.reserve( val ); // Very important
@@ -71,7 +71,7 @@ TEST( test_hashFileReadAfter )
     {
     char const *filename = "./tests/hashFiles/hashFile.txt";
 
-    static size_t val = 10000;
+    static size_t val = 500;
     std::vector<std::string> strings; // To keep pointers around
     strings.reserve( val ); // Very important
     for ( unsigned n = 0; n < val; ++n )
@@ -89,6 +89,15 @@ TEST( test_hashFileReadAfter )
         ASSERT_TRUE( CompareEqual( kv->Key, strings[(size_t)n].c_str() ) );
         } // end for
     } 
+   
+TEST( test_uniquemmap )
+   {
+   char const *filename = "./tests/hashFiles/hashFile.txt";
+   File file( filename, O_RDONLY );
+   struct stat fileInfo;
+   fstat( file.getFD(), &fileInfo );
+   unique_mmap uniqMap( 0, (size_t)fileInfo.st_size, PROT_READ, MAP_SHARED, file.getFD(), 0 );
+   }
 
 
 TEST_MAIN()
