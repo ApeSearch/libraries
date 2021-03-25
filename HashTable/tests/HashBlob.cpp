@@ -82,7 +82,7 @@ int main( int argc, char **argv )
       time.Finish( );
       time.PrintElapsed( );
 
-      if ( !useHashFile )
+      if ( argc < 3 )
          {
          // Build the Hasblob in memory only.
 
@@ -141,7 +141,7 @@ int main( int argc, char **argv )
       Hash *hashtable = BuildHashTable( words );
       hashtable->Optimize( );
 
-      if ( !useHashFile )
+      if ( argc < 3 )
          {
          // Build the Hasblob in memory only.
 
