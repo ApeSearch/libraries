@@ -1,0 +1,14 @@
+Running test: test_hashFile
+PASS
+Running test: test_hashFileReadAfter
+PASS
+Running test: test_uniquemmap
+PASS
+
+*** Results ***
+** Test case 'test_hashFile': PASS
+** Test case 'test_hashFileReadAfter': PASS
+** Test case 'test_uniquemmap': PASS
+*** Summary ***
+Out of 3 tests run:
+0 failure(s), 0 error(s)

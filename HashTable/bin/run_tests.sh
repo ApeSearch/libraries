@@ -14,6 +14,11 @@ for test in tests/bin/*; do
             exec="${test} ./tests/input/BigJunkHtml.txt < ./tests/input/BigJunkHtml.txt"
         elif [[ ${test} = "tests/bin/Top10" ]]; then
             exec="${test} ./tests/input/BigJunkHtml.txt"
+        elif [[ ${test} = "tests/bin/HashBlob" ]]; then
+            exec="${test} ./tests/input/BigJunkHtml.txt < ./tests/input/BigJunkHtml.txt"
+        elif [[ ${test} = "tests/bin/HashFile" ]]; then
+            exec="tests/bin/HashBlob ./tests/input/BigJunkHtml.txt ./tests/hashFiles/HashBlob.testout.bin < /dev/null;
+            ${test} ./tests/hashFiles/HashBlob.testout.bin < ./tests/input/BigJunkHtml.txt"
         else
             exec="${test}"
         fi

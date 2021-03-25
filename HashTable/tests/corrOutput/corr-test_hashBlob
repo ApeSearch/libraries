@@ -1,0 +1,44 @@
+Running test: test_BytesForHeaderBuckets
+PASS
+Running test: test_SerialTupleWrite
+PASS
+Running test: test_SerialTupleWriteStrict
+PASS
+Running test: test_SerialTupleWrite_WITHFILEWRITE
+PASS
+Running test: test_SerialTupleWrite_WITHFILEWRITE_READAFTER
+PASS
+Running test: test_TotBytesRequired
+PASS
+Running test: test_hashBlobExtensive
+PASS
+Running test: test_hashBlob_basic
+PASS
+Running test: test_hashBlob_basicWItr
+PASS
+Running test: test_hashBlob_basicWItr_Opt
+PASS
+Running test: test_hashBlob_basic_Opt
+PASS
+Running test: test_helperBytesRequire
+PASS
+Running test: test_helperBytesRequireStrict
+PASS
+
+*** Results ***
+** Test case 'test_BytesForHeaderBuckets': PASS
+** Test case 'test_SerialTupleWrite': PASS
+** Test case 'test_SerialTupleWriteStrict': PASS
+** Test case 'test_SerialTupleWrite_WITHFILEWRITE': PASS
+** Test case 'test_SerialTupleWrite_WITHFILEWRITE_READAFTER': PASS
+** Test case 'test_TotBytesRequired': PASS
+** Test case 'test_hashBlobExtensive': PASS
+** Test case 'test_hashBlob_basic': PASS
+** Test case 'test_hashBlob_basicWItr': PASS
+** Test case 'test_hashBlob_basicWItr_Opt': PASS
+** Test case 'test_hashBlob_basic_Opt': PASS
+** Test case 'test_helperBytesRequire': PASS
+** Test case 'test_helperBytesRequireStrict': PASS
+*** Summary ***
+Out of 13 tests run:
+0 failure(s), 0 error(s)

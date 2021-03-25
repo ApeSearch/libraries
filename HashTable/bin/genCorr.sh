@@ -11,3 +11,5 @@ done
 
 cp tests/corrOutput/HashTable.correct.txt tests/corrOutput/corr-HashTable
 cp tests/corrOutput/Top10.correct.txt tests/corrOutput/corr-Top10
+cp tests/corrOutput/HashTable.correct.txt tests/corrOutput/corr-HashBlob
+cp tests/corrOutput/HashTable.correct.txt tests/corrOutput/corr-HashFile
