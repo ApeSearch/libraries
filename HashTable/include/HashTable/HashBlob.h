@@ -427,9 +427,9 @@ class HashBlob
 
       Const_Iterator cend( ) const
          {
-         return Const_Iterator( this, BlobSize - 
-            (size_t) ( reinterpret_cast< char const * >( Buckets + NumberOfBuckets ) - 
-               reinterpret_cast< char const * > ( &MagicNumber ) ) );
+         const std::size_t bytesBeforeSerialTupleBeg = (size_t) ( reinterpret_cast< char const * >( Buckets + NumberOfBuckets ) 
+            - reinterpret_cast< char const * > ( &MagicNumber ) );
+         return Const_Iterator( this, BlobSize - bytesBeforeSerialTupleBeg );
          }
 
    };
