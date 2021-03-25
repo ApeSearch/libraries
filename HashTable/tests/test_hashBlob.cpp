@@ -506,29 +506,29 @@ TEST( test_hashBlobExtensive )
    {
     static size_t val = 10000;
    HashTable<const char*, size_t> hashTable;
+   HashBlob *hb;
+   std::vector<std::string> copyOfStrings;
+   {
    std::vector<std::string> strings; // To keep pointers around
    strings.reserve( val ); // Very important
    testingFlattening( strings, val, hashTable );
+   copyOfStrings = strings; // Copy every string ( same but different addresses )
 
    ASSERT_EQUAL( strings.size(), hashTable.size() );
    ASSERT_EQUAL( 4096, hashTable.table_size() );
    hashTable.Optimize(); // Current load factor becomes at most 0.5
    ASSERT_EQUAL( strings.size(), hashTable.size() );
-
-   HashBlob *hb = HashBlob::Create( &hashTable );
+   hb = HashBlob::Create( &hashTable );
+   } // Delete memory of original strings to show that hb will not seg fault
 
    for ( int n = val - 1; n >= 0; --n )
       {
-      std::string copy( strings[n] );
-      const SerialTuple *kv = hb->Find( strings[n].c_str() );
+      std::string copy( copyOfStrings[n] );
+      const SerialTuple *kv = hb->Find( copyOfStrings[n].c_str() );
       ASSERT_TRUE( kv );
       ASSERT_EQUAL( kv->Value, n );
-      ASSERT_TRUE( CompareEqual( kv->Key, strings[n].c_str() ) );
+      ASSERT_TRUE( CompareEqual( kv->Key, copyOfStrings[n].c_str() ) );
 
-      // Show that key is no longer linked to strings
-      strings.pop_back();
-      strings.shrink_to_fit();
-      ASSERT_TRUE( CompareEqual( kv->Key, copy.c_str() ) );
       } // end for
 
    HashBlob::Discard( hb );
