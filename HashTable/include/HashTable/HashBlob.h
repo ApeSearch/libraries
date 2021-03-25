@@ -715,5 +715,4 @@ class HashFile
          }
    };
 
-
 #pragma GCC diagnostic pop

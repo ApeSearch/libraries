@@ -313,7 +313,7 @@ template< typename Key, typename Value, class Hash = FNV, class Comparator = CSt
    Bucket< Key, Value > **helperFind( const Key& k, uint32_t hashVal ) const
       {
       // Applying a bit-wise mask on the least-sig bits
-      uint32_t index = hashVal & ( tableSize - 1 ); // modulo operation using bitwise AND (only works with power of two table size)
+      size_t index = (size_t)hashVal & ( tableSize - 1 ); // modulo operation using bitwise AND (only works with power of two table size)
       Bucket< Key, Value > **bucket = buckets + index;
 
       for ( ; *bucket; bucket = &( *bucket )->next )
@@ -385,7 +385,7 @@ template< typename Key, typename Value, class Hash = FNV, class Comparator = CSt
          // .e.g computeTwosPow( 100 * 2 ) = 256
          size_t newTbSize = computeTwosPow( (ssize_t) (expectedTS - 1 ), computeCeiling );
          // Check if load factor is too small
-         if ( (static_cast<double>(numberOfBuckets) /  newTbSize ) - loadFactor < LOWEREPSILON )
+         if ( (static_cast<double>(numberOfBuckets) / static_cast<double>( newTbSize ) ) - loadFactor < LOWEREPSILON )
             newTbSize >>= 1; // Instead strink table size by a power of two
          //size_t newTbSize = computeTwosPow( (ssize_t) (expectedTS - 1), computeCeiling );
 
@@ -399,7 +399,7 @@ template< typename Key, typename Value, class Hash = FNV, class Comparator = CSt
          for ( Bucket< Key, Value > *bucket : flattened )
             {
             bucket->next = nullptr; // Remove any pointer relationship
-            uint32_t index = bucket->hashValue & ( tableSize - 1 );
+            size_t index = (size_t)bucket->hashValue & ( tableSize - 1 );
             Bucket< Key, Value > **bucketPtr = buckets + index;
             if ( *bucketPtr )
                ++collisions;
@@ -552,7 +552,7 @@ public:
          if ( !numberOfBuckets )
             return 0;
          size_t numOfLL = numOfLinkedLists();
-         return ( numberOfBuckets - numOfLL ) / static_cast<double> ( numOfLL );
+         return static_cast<double> ( numberOfBuckets - numOfLL ) / static_cast<double> ( numOfLL );
          }
 
       double averageBucketsPerLL() const 
@@ -560,7 +560,7 @@ public:
          if ( !numberOfBuckets )
             return 0;
          size_t numOfLL = numOfLinkedLists();
-         return ( numberOfBuckets ) / static_cast<double> ( numOfLL );
+         return static_cast<double> ( numberOfBuckets ) / static_cast<double> ( numOfLL );
          }
 
       void printStats() const 
