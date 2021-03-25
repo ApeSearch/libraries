@@ -3,8 +3,6 @@
 // HashBlob, a serialization of a HashTable into one contiguous
 // block of memory, possibly memory-mapped to a HashFile.
 
-// Nicole Hamilton  nham@umich.edu
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -751,7 +749,7 @@ class HashFile
          
          blob = unique_mmap( 0, bytesReq, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0 );
          HashBlob *hb = reinterpret_cast< HashBlob *> ( blob.get() );
-         assert( HashBlob::Write( hb, bytesReq, hashtable ) == hb );
+         HashBlob::Write( hb, bytesReq, hashtable );
          }
 
       ~HashFile( )
