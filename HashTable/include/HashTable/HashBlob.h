@@ -247,6 +247,8 @@ class HashBlob
          // Initialize the rest of variables
          hb->BlobSize = bytes;
          hb->NumberOfBuckets = hashTable->table_size();
+         // Set the array to zero for safety
+         memset( hb->Buckets, 0, sizeof( size_t ) * hb->NumberOfBuckets );
 
          // Points to the beginning of the Serial Tuples...
          char *serialPtr =reinterpret_cast< char *>( hb->Buckets + hashTable->table_size() );
