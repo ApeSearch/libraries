@@ -99,7 +99,7 @@ public:
     k = 0;
     for (size_t i = len & 3; i; i--) {
         k <<= 8;
-        k |= key[i - 1];
+        k |= (unsigned int )key[i - 1];
     }
     // A swap is *not* necessary here because the preceding loop already
     // places the low bytes in the low places according to whatever endianness
