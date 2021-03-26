@@ -66,6 +66,56 @@ public:
       } //end operator()
 };
 
+class Murmur
+{
+public:
+   Murmur() = default;
+   virtual ~Murmur(){}
+   static inline uint32_t murmur_32_scramble(uint32_t k) 
+   {
+    k *= 0xcc9e2d51;
+    k = (k << 15) | (k >> 17);
+    k *= 0x1b873593;
+    return k;
+   }
+
+   virtual size_t operator()( const char *key ) const
+   {
+   size_t len = strlen( key );
+   uint32_t k;
+   size_t h = 420;
+   
+    /* Read in groups of 4. */
+    for (size_t i = len >> 2; i; i--) {
+        // Here is a source of differing results across endiannesses.
+        // A swap here has no effects on hash properties though.
+        memcpy(&k, key, sizeof(uint32_t));
+        key += sizeof(uint32_t);
+        h ^= murmur_32_scramble(k);
+        h = (h << 13) | (h >> 19);
+        h = h * 5 + 0xe6546b64;
+    }
+    /* Read the rest. */
+    k = 0;
+    for (size_t i = len & 3; i; i--) {
+        k <<= 8;
+        k |= key[i - 1];
+    }
+    // A swap is *not* necessary here because the preceding loop already
+    // places the low bytes in the low places according to whatever endianness
+    // we use. Swaps only apply when the memory is copied in a chunk.
+    h ^= murmur_32_scramble(k);
+    /* Finalize. */
+   h ^= len;
+   h ^= h >> 16;
+   h *= 0x85ebca6b;
+   h ^= h >> 13;
+   h *= 0xc2b2ae35;
+   h ^= h >> 16;
+   return h;
+   }
+};
+
 // Compare C-strings, return true if they are the same.
 bool CompareEqual( const char *L, const char *R );
 
@@ -273,7 +323,7 @@ public:
 };
 
 
-template< typename Key, typename Value, class Hash = FNV, class Comparator = CStringComparator > class HashTable
+template< typename Key, typename Value, class Hash = Murmur, class Comparator = CStringComparator > class HashTable
    {
    private:
 
@@ -385,8 +435,8 @@ template< typename Key, typename Value, class Hash = FNV, class Comparator = CSt
          // .e.g computeTwosPow( 100 * 2 ) = 256
          size_t newTbSize = computeTwosPow( (ssize_t) (expectedTS - 1 ), computeCeiling );
          // Check if load factor is too small
-         if ( (static_cast<double>(numberOfBuckets) / static_cast<double>( newTbSize ) ) - loadFactor < LOWEREPSILON )
-            newTbSize >>= 1; // Instead strink table size by a power of two
+         //if ( (static_cast<double>(numberOfBuckets) / static_cast<double>( newTbSize ) ) - loadFactor < LOWEREPSILON )
+         //   newTbSize >>= 1; // Instead strink table size by a power of two
          //size_t newTbSize = computeTwosPow( (ssize_t) (expectedTS - 1), computeCeiling );
 
          // Adjust member variables
@@ -432,7 +482,7 @@ template< typename Key, typename Value, class Hash = FNV, class Comparator = CSt
       // Your constructor may take as many default arguments
       // as you like.
 
-      HashTable( size_t tb = DEFAULTSIZE, Hash *hasher = new FNV(), Comparator comp = CStringComparator() ) : tableSize( computeTwosPow( (ssize_t)tb ) ), 
+      HashTable( size_t tb = DEFAULTSIZE, Hash *hasher = new Hash(), Comparator comp = CStringComparator() ) : tableSize( computeTwosPow( (ssize_t)tb ) ), 
          buckets( new Bucket< Key, Value > *[ tableSize ] ), numberOfBuckets( 0 ), compare( comp ), hashFunc( hasher )
          {
          assert( tb );
@@ -569,6 +619,7 @@ public:
          std::cout << "------- Hash Table Stats Beg -------\n";
          std::cout << std::setw( width ) << std::left << "Total Buckets Allocated: " << size() << '\n';
          std::cout << std::setw( width ) << std::left << "Table Size: " << table_size() << '\n';
+         std::cout << std::setw( width ) << std::left << "Number of Collisions: " << collisions << '\n';
          std::cout << std::setw( width ) << std::left << "load_factor: " << load_factor() << '\n';
          std::cout << std::setw( width ) << std::left << "Percentage of Collisions: " << ratioOfColli() << '\n';
          std::cout << std::setw( width ) << std::left << "Average Collisions per Bucket: "  << averageCollisonsPerBucket() << '\n';
@@ -697,7 +748,7 @@ public:
 
       const_iterator cbegin( ) const
          {
-          return const_iterator( this, size_t ( 0 ) );
+         return const_iterator( this, size_t ( 0 ) );
          }
       
       const_iterator cend( ) const

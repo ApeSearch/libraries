@@ -36,12 +36,7 @@ static const size_t Unknown = 0;
 
 constexpr size_t RoundUpConstExpr( size_t length, size_t boundary = 8 )
    {
-   // Round up to the next multiple of the boundary, which
-   // must be a power of 2.
-
-   const size_t oneless = boundary - 1,
-      mask = ~( oneless );
-   return ( length + oneless ) & mask;
+   return ( length + ( boundary - 1 ) ) & ~( boundary - 1 );
    }
 
 size_t RoundUp( size_t length, size_t boundary = 8 )
@@ -173,7 +168,7 @@ class HashBlob
       // Search for the key k and return a pointer to the
       // ( key, value ) entry.  If the key is not found,
       // return nullptr.
-      template<class HashFunc = FNV> 
+      template<class HashFunc = Murmur> 
       const SerialTuple *Find( const char *key ) const
          {
          static HashFunc func;
@@ -267,9 +262,9 @@ class HashBlob
             // Write the absolute address into the bucket represented...
             //! Note will not work with minimal perfect hashing
             size_t bucketInd = bucketsVec->front()->hashValue & ( hashTable->table_size() - 1 );
-            hb->Buckets[ bucketInd ] = size_t( serialPtr - reinterpret_cast< char *>( hb ) );  
+            hb->Buckets[ bucketInd ] = size_t( serialPtr - reinterpret_cast< char * >( hb ) );
 
-            for ( typename std::vector<HashBucket*>::iterator bucket = bucketsVec->begin(); 
+            for ( typename std::vector<HashBucket*>::iterator bucket = bucketsVec->begin();
                   bucket != bucketsVec->end(); ++bucket )
                serialPtr = SerialTuple::Write( serialPtr, end, *bucket );
             
@@ -360,7 +355,6 @@ class HashBlob
 
       public:
          Const_Iterator( ) : hashBlob( nullptr ), buffer( nullptr ), bufferEnd( nullptr ) {}
-
 
          ~Const_Iterator( ) {}
 
@@ -588,7 +582,7 @@ public:
 
    /*
     * FYI:
-    * addr: asks which address in which one would like to map poitner to.
+    * addr: asks which address in which one would like to map pointer to.
     *       If NULL, the kernel chooses the address (page aligned ofc)
     *       in which to linked the mmap to.
     *       O.W., the kenrel takes it as a hint and places the mapping in
@@ -610,7 +604,7 @@ public:
     * flags: Determins whether updates to mapping are visible to other processes mapping same region
     *        and whether updates are carried through to underlying file (interesting ).
     * 
-    * offset: The location in file in which mmap is started from 
+    * offset: The location in file in which mmap is started from
     *        ( this must be a muptiple of page size which can be returned by sysconf(_SC_PAGE_SIZE)
    */
    unique_mmap( void *addr, std::size_t length, int prot, int flags, int fd, off_t offset ) : bytesMapped( length )
@@ -686,7 +680,7 @@ public:
    */
    ~unique_mmap( ) noexcept(false)
       {
-      if ( map &&  munmap( map, bytesMapped ) == -1  )
+      if ( map &&  munmap( map, bytesMapped ) == -1 )
          {
          perror( "err un-mapping the file " );
          throw failure( "error unmapping file", errno, 0 );
@@ -704,7 +698,7 @@ class HashFile
    private:
 
       unique_mmap blob; // RAII for mmap
-      File file;        // RAII for open() => close()
+      File file;        // RAII for File open() => close()
       bool good = false;
 
       size_t FileSize( int f )
@@ -761,6 +755,7 @@ class HashFile
          blob = unique_mmap( 0, bytesReq, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0 );
          HashBlob *hb = reinterpret_cast< HashBlob *> ( blob.get() );
          HashBlob::Write( hb, bytesReq, hashtable );
+         good = true;
          }
 
       ~HashFile( )
