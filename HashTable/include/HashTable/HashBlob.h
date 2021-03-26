@@ -155,7 +155,7 @@ class HashBlob
       static constexpr size_t version = 1;
 
       // Define a MagicNumber and Version so you can validate
-      // a HashBlob really is one of your HashBlobs.
+      // a HashBlob really is one of our HashBlobs.
 
       size_t MagicNumber,
          Version,
@@ -327,9 +327,9 @@ class HashBlob
          /*
           * REQUIRES: buffer != bufferEnd i.e. buffer doesn't point to the end of the hashblob
           *  MODIFES: buffer ( incremented in a way such that it points to the beginning of the next serial tuple or bufferEnd )
-          *  EFFECTS: Uses the serial tuple's length variable to move buffer so that it points to the 
+          *  EFFECTS: Uses the serial tuple's length variable to increment buffer so that it points to the 
           *           beginning of the next serial tuple. In the case that the next is a null serial,
-          *           moves buffer again past the null sentinal.
+          *           adjust buffer again past the null sentinal.
           * 
          */
          inline void advanceSerialTuple( )
@@ -383,11 +383,11 @@ class HashBlob
             return old;
             } // end postfix
 
-         bool operator==( const Const_Iterator & rhs ) const
+         bool operator==( const Const_Iterator& rhs ) const
             {
             return buffer == rhs.buffer;
             }
-         bool operator!=( const Const_Iterator & rhs ) const
+         bool operator!=( const Const_Iterator& rhs ) const
             {
             return buffer != rhs.buffer;
             }
@@ -596,18 +596,18 @@ public:
     * length: The amount of bytes after offset in which mmap initializes the values
     *       ,i.e. creating an appropriate virtual page. ( initialized as non-resident ).
     * 
-    * prot: Describes desired mmeory protection of mapping ( of which must not conflic with open mode )
-    *       of file.
+    * prot: Describes desired memory protection of mapping ( of which must not conflict with open mode 
+    *       of file ).
     *       Following: PROT_EXEC: Pages may be executed ( forked )
     *       Prot_READ: pages may be read
     *       PROT_WRITE: Pages may be written
-    *       PROT_NONE: Pages may be not accessed???
+    *       PROT_NONE: Pages may be not accessed
     * 
-    * flags: Determins whether updates to mapping are visible to other processes mapping same region
+    * flags: Determines whether updates to mapping are visible to other processes mapping same region
     *        and whether updates are carried through to underlying file (interesting ).
     * 
     * offset: The location in file in which mmap is started from
-    *        ( this must be a muptiple of page size which can be returned by sysconf(_SC_PAGE_SIZE)
+    *        ( this must be a multiple of page size which can be returned by sysconf(_SC_PAGE_SIZE)
    */
    unique_mmap( void *addr, std::size_t length, int prot, int flags, int fd, off_t offset ) : bytesMapped( length )
       {
@@ -728,6 +728,7 @@ class HashFile
       
       inline bool isCorrectVersion() const { return good; }
 
+      // O_TRUNC: If writing is allowed, file will be truncated to length 0.
       HashFile( const char *filename, const Hash *hashtable ) 
          : file( filename, O_RDWR | O_CREAT | O_TRUNC, (mode_t)0600 )
          {
