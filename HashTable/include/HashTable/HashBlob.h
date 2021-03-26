@@ -76,7 +76,7 @@ struct SerialTuple
 
       // Calculate the bytes required to encode a HashBucket as a
       // SerialTuple.
-      static size_t helperBytesRequired( const Pair& pair )
+      static size_t BytesRequired( const Pair& pair )
          {
          // Extra character for null-character
          size_t keyLen = strlen( pair.key ) + 1;
@@ -86,7 +86,7 @@ struct SerialTuple
 
       static size_t BytesRequired( const HashBucket *b )
          {
-         return helperBytesRequired( b->tuple );
+         return BytesRequired( b->tuple );
          }
 
       // Write the HashBucket out as a SerialTuple in the buffer,
@@ -221,7 +221,7 @@ class HashBlob
 
          // Add up the bytes needed for every bucket
          for ( Hash::const_iterator itr = hashTable->cbegin(); itr != hashTable->cend(); ++itr )
-            totSizeOfSerialTuples += SerialTuple::helperBytesRequired( *itr );
+            totSizeOfSerialTuples += SerialTuple::BytesRequired( *itr );
 
          // Add null sentinal bytes
          totSizeOfSerialTuples += hashTable->numOfLinkedLists() * SerialTuple::sizeOfNullSentinel;

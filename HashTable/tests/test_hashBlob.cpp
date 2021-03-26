@@ -35,12 +35,12 @@ TEST( test_helperBytesRequire )
       {
       if ( CompareEqual( itr->key, "testing" ) || CompareEqual( itr->key, "lololol" ) )
          {
-         ASSERT_EQUAL( SerialTuple::helperBytesRequired( *itr ), 32ul );
+         ASSERT_EQUAL( SerialTuple::BytesRequired( *itr ), 32ul );
          }
       else if ( CompareEqual( itr->key, "1 2 3 3 4 5 " ) )
          {
          ASSERT_EQUAL( strlen( "1 2 3 3 4 5 " ), 12ul );
-         ASSERT_EQUAL( SerialTuple::helperBytesRequired( *itr ), 40ul );
+         ASSERT_EQUAL( SerialTuple::BytesRequired( *itr ), 40ul );
          }
       } // end for
    }
@@ -63,12 +63,12 @@ TEST( test_helperBytesRequireStrict )
       {
       if ( CompareEqual( itr->key, "testing" ) || CompareEqual( itr->key, "lololol" ) )
          {
-         ASSERT_EQUAL( SerialTuple::helperBytesRequired( *itr ), 32ul );
+         ASSERT_EQUAL( SerialTuple::BytesRequired( *itr ), 32ul );
          }
       else if ( CompareEqual( itr->key, "1 2 3 3 4 5 " ) )
          {
          ASSERT_EQUAL( strlen( "1 2 3 3 4 5" ) + 1, 12ul );
-         ASSERT_EQUAL( SerialTuple::helperBytesRequired( *itr ), 32ul );
+         ASSERT_EQUAL( SerialTuple::BytesRequired( *itr ), 32ul );
          }
       } // end for
    }
