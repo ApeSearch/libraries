@@ -103,7 +103,7 @@ struct SerialTuple
          return serialTuple;
          }
 
-      static char *Write( char *buffer, char *bufferEnd,
+      static char *Write( char *buffer, char const * const bufferEnd,
             const HashBucket *b )
          {
          // Your code here.
@@ -123,7 +123,7 @@ struct SerialTuple
          return buffer + bytesReq;
          } // end Write()
       
-      static char *WriteNull( char *buffer, char *bufferEnd )
+      static char *WriteNull( char *buffer, char const * const bufferEnd )
          {
          // Ensures that the buffer can fit the null sentinel to begin with...
          assert( size_t( bufferEnd - buffer ) >= SerialTuple::sizeOfNullSentinel );
@@ -192,7 +192,7 @@ class HashBlob
                   return tupleArr;
                byteAddr += tupleArr->Length;
                tupleArr = reinterpret_cast<SerialTuple const *>( byteAddr );
-               } // end if
+               } // end while
             }
          return nullptr;
          }
@@ -529,7 +529,7 @@ public:
 //
 //------------------------------------------------------------------------------------------------
 /*
- * A RAII for mmap. It ensures that at the end of the scope, an mmapped file is guaranteed to
+ * A RAII for mmap. It ensures that at the end of the lifetime of this object, an mmapped file is guaranteed to
  * deallocate and free any acquired resources.
  * 
  *         map: Pointer that holds the memory mapped region.
@@ -594,7 +594,7 @@ public:
     *       decides to pick an address at its own discretion.
     * 
     * length: The amount of bytes after offset in which mmap initializes the values
-    *       ,i.e. creating an appropriate virtual page. ( initialized as non-resident ).
+    *       ,i.e. creating an appropriate virtual page. ( likely initialized as non-resident ).
     * 
     * prot: Describes desired memory protection of mapping ( of which must not conflict with open mode 
     *       of file ).
