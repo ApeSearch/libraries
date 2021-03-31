@@ -9,7 +9,7 @@
 // as values.
 
 #ifdef LOCAL
-   #include "../include/HashTable/HashTable.h"
+   #include "../include/HashTable/HashTable.h" // Includes swap
    #include "../include/HashTable/TopN.h"
 #else
    #include "HashTable.h"
@@ -17,10 +17,7 @@
 #endif
 
 using namespace std;
-#include <queue>
-#include <vector>
 
-#include <utility>     // You'll need swap() eventually
 #include <assert.h>
 
 using Hash = HashTable< const char *, size_t >;
@@ -35,6 +32,45 @@ public:
       }
    };
 
+// OO version
+template<class Comparator>
+class TopNFinder
+{
+   Pair **pairArray;
+   Pair **validEnd;
+   Pair ** end;
+   size_t numOfVals;
+   Comparator comp;
+
+public:
+
+   TopNFinder( const size_t n ) : pairArray( new Pair*[ n + 1 ]() ), validEnd( pairArray ), end( pairArray + n + 1 ), numOfVals( n ) {}
+   ~TopNFinder()
+      {
+      delete[] pairArray;
+      }
+
+   void operator()( Pair *tuple )
+      {
+      assert( validEnd != end );
+      Pair **itr = validEnd;
+      *itr = tuple; // Set it to the end
+
+      for ( ;itr != pairArray && comp( *itr, *( itr - 1 ) ); --itr )
+         swap( *itr, *( itr -1 ) );
+
+      if ( validEnd + 1 != end )
+         ++validEnd;
+      } // end inserSortN()
+   inline Pair ** release() 
+      { 
+      Pair **rawData = pairArray;
+      pairArray = nullptr;
+      return rawData; 
+      }
+};
+
+// Procedural Version
 template<class Comparator>
 Pair ** insertSortN( Pair **pairArray, Pair **pairValidEnd, Pair ** pairTrueEnd, Pair *tuple, Comparator comp )
    {
@@ -43,12 +79,11 @@ Pair ** insertSortN( Pair **pairArray, Pair **pairValidEnd, Pair ** pairTrueEnd,
    *itr = tuple;
    // while tuple > currentVal
    for ( ;itr != pairArray && comp( *itr, *( itr - 1 ) ); --itr )
-      std::swap( *itr, *(itr - 1) );
+      swap( *itr, *(itr - 1) );
    
    return pairValidEnd + 1 == pairTrueEnd ? pairValidEnd : pairValidEnd + 1;
    } // end inserSortN()
 
-//TODO maybe don't use pairing heap.
 Pair **TopN( Hash *hashtable, int N )
    {
    // Find the top N pairs based on the values and return
