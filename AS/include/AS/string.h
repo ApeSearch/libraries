@@ -173,6 +173,19 @@ class string
          return b + i != other.cend() ? npos : j - other.size();
          }
 
+      size_t find (char c, size_t pos = 0) const
+         {
+         size_t i = pos;
+         char *curr;
+         while ((curr = buffer + i) < cend())
+            {
+            if (*curr == c)
+               return i;
+            ++i;
+            }
+         return npos;
+         }
+
       /*
        * REQUIRES: substr to be a valid string.
        *  EFFECTS: Returns a pointer to the beginning of a substring specified by substr.
