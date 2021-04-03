@@ -22,7 +22,7 @@ APESEARCH::circular_buffer<T, buffer_type>::circular_buffer( buffer_type&& _buff
 template <class T, class buffer_type>
 APESEARCH::circular_buffer<T, buffer_type>::circular_buffer( std::initializer_list<T> list ) : circular_buffer( list.size() )
    {
-    APESEARCH::for_each( list.begin(), list.end(), [this](const T& val) { put( val ); } );
+    for_each( list.begin(), list.end(), [this](const T& val) { put( val ); } );
    }
 
 template <class T, class buffer_type>

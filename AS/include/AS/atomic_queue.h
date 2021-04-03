@@ -27,7 +27,7 @@ namespace APESEARCH
 template<typename T, class Container = std::deque<T> >
 class atomic_queue
 {
-   APESEARCH::queue<T, Container> safeQueue;
+   queue<T, Container> safeQueue;
    mutex queueMutex;
    static mutex classMutex; // dealing with move constructors
 public:

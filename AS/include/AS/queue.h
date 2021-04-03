@@ -129,13 +129,16 @@ protected:
     ApesearchPQ() {}
     explicit ApesearchPQ( const comparator &comp ) : compare( comp ) {}
 public:
+    virtual ~ApesearchPQ() {}
     virtual void push( const T& val ) noexcept = 0;
+    virtual void push( const T&& val ) noexcept = 0;
+    //template< class ...Args>
+    //virtual void push( Args&& ...args ) = 0;
     virtual void pop() noexcept = 0;
     virtual const T& top() const = 0;
     virtual std::size_t size() const = 0;
     virtual bool empty() const = 0;
-    virtual ~ApesearchPQ();
-    virtual void make_heap(); // Restores heap invariant
+    virtual void make_heap() = 0; // Restores heap invariant
 };
 template<typename T>
 class less

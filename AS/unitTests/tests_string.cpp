@@ -237,4 +237,39 @@ TEST(fill_constructor)
     ASSERT_EQUAL(filled, "xxxxxxxxxx");
     } // end test fill_constructor
 
+TEST(find_char_default)
+   {
+   string ex(5, 'x');
+   size_t loc = ex.find('x');
+   ASSERT_EQUAL(loc, 0);
+
+   ex.push_back('y');
+   loc = ex.find('y');
+   ASSERT_EQUAL(loc, 5);
+
+   loc = ex.find('z');
+   ASSERT_EQUAL(loc, string::npos);
+   } // end test fill_constructor
+
+TEST(find_char_pos)
+   {
+   string ex(5, 'x');
+   size_t loc = ex.find('x', 3);
+   ASSERT_EQUAL(loc, 3);
+
+   ex.push_back('y');
+   loc = ex.find('y', 4);
+   ASSERT_EQUAL(loc, 5);
+
+   loc = ex.find('z', 3);
+   ASSERT_EQUAL(loc, string::npos);
+
+   ex = "aabbccdd";
+   loc = ex.find('a', 2);
+   ASSERT_EQUAL(loc, string::npos);
+
+   loc = ex.find('a', 400);
+   ASSERT_EQUAL(loc, string::npos);
+   } // end test fill_constructor
+
 TEST_MAIN()

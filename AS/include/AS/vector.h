@@ -39,7 +39,8 @@ class vector
       // EFFECTS: Performs any neccessary clean up operations
       ~vector ( )
          {
-         delete [] _elts;
+         //delete [] _elts;
+         free( _elts );
          }
 
       // Resize Constructor
@@ -49,7 +50,7 @@ class vector
       //    all default constructed
       // ! It is okay to call new[0] but dlete must also be done
       vector ( size_t num_elements ) : _capacity( num_elements ? computeTwosPowCeiling(num_elements) : 0 )
-            , _size( num_elements ) ,_elts(new T[ _capacity ]())
+            , _size( num_elements ) ,_elts( ( T *) malloc( sizeof( T ) * _capacity ) )
          {
          }
 
@@ -58,7 +59,7 @@ class vector
       // MODIFIES: *this
       // EFFECTS: Creates a vector with size num_elements, all assigned to val
       vector ( size_t num_elements, const T& val ) : _capacity( num_elements ? computeTwosPowCeiling(num_elements) : 0 )
-            , _size( num_elements ) ,_elts(new T[ _capacity ] )
+            , _size( num_elements ) ,_elts( ( T * ) malloc( sizeof( T ) * _capacity ) )
          {
          for (T *ptr = _elts, * const end = _elts + _size; ptr != end; )
               *ptr++ = val;
@@ -68,7 +69,7 @@ class vector
       // REQUIRES: Nothing
       // MODIFIES: *this
       // EFFECTS: Creates a clone of the vector other
-      vector ( const vector& other ) : _capacity( other._capacity ), _size( other._size ), _elts( new T[ _capacity ] )
+      vector ( const vector& other ) : _capacity( other._capacity ), _size( other._size ), _elts( ( T* ) malloc( sizeof( T ) * _capacity ) )
          {
          for (T *ptr = _elts, *otherPtr = other._elts, * const end = _elts + _size; ptr != end; )
             *ptr++ = *otherPtr++;
@@ -120,14 +121,7 @@ class vector
       // EFFECTS: Takes the data from other in constant time
       vector& operator= ( vector&& other )
          {
-         delete[ ] _elts;
-         _elts = other._elts;
-         other._elts = nullptr;
-         _size = other._size;
-         _capacity = other._capacity;
-
-         other._size = 0;
-         other._capacity = 0;
+         swap( other );
          return *this;
          }
 
@@ -139,12 +133,13 @@ class vector
          {
          if (newCapacity <= _capacity) return;
 
-         T* newElements = new T[newCapacity];
+         //T* newElements = new T[newCapacity];
+         T *newElements = ( T* ) malloc( sizeof( T ) * newCapacity );
 
          for (T *ptr = newElements, *otherPtr = _elts, * const end = ptr + _size; ptr != end; )
-            *ptr++ = *otherPtr++;
+            *ptr++ = std::move( *otherPtr++ );
 
-         delete [] _elts;
+         free( _elts );
          _elts = newElements;
          _capacity = newCapacity;
          }
@@ -190,10 +185,28 @@ class vector
       void push_back ( const T& x )
          {
          if (_size == _capacity)
-            {
             reserve( _capacity ? _capacity << 1 : DEFAULT_BUCKET_SIZE );
-            }
+
          *( _elts + _size++ ) = x;
+         }
+      void push_back( T&& x )
+         {
+         if (_size == _capacity)
+            reserve( _capacity ? _capacity << 1 : DEFAULT_BUCKET_SIZE );
+         new ( _elts + _size++ ) T( std::forward<T>( x ) );
+         }
+      
+      // vector.emplace_back( std::forward<Args>( args )... );
+      template< class ...Args>
+      T& emplace_back ( Args&& ...args )
+         {
+         if (_size == _capacity)
+            reserve( _capacity ? _capacity << 1 : DEFAULT_BUCKET_SIZE );
+
+         T *end = _elts + _size;
+         end = new ( _elts + _size++ ) T( std::forward<Args>( args )... );
+         return *end;
+         //return (*( _elts + _size++ ) = std::move( T( std::forward<Args>( args )... ) ) );
          }
 
       // REQUIRES: Nothing
@@ -239,6 +252,26 @@ class vector
       const T* end ( ) const
          {
          return _elts + _size;
+         }
+      
+      inline T& front()
+         {
+         return *_elts;
+         }
+      inline const T& front() const
+         {
+         return *_elts;
+         }
+      
+      inline T& back()
+         {
+         assert( _size );
+         return _elts[ _size - 1 ];
+         }
+      inline const T& backc() const
+         {
+         assert( _size );
+         return _elts[ _size - 1 ];
          }
 
    private:
