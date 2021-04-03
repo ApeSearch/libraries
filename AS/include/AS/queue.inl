@@ -59,6 +59,9 @@ class BinaryPQ : public ApesearchPQ<T, COMP>
     *   The setup at the beginning is to ensure that when dividing by two, that the parent does
     *   align properly. For example, 4's parent is 1 but 4/2 gives 2. Therefore it's necessary
     *   to always check before dividing...
+    * 
+    * Note: this->compare can work instead of BaseClass::compare. The reason is that this
+    *       points to the base class section of memory and can then directly access the comparator
     */
    void fixUp( int child )
       {
@@ -187,7 +190,7 @@ public:
          T& lChild = data[ child - 1 ];
          T& rChild = data[ child ];
          T& parVal = data[ parent ];
-         assert( compare( lChild, parVal ) && compare( rChild, parVal ) );
+         assert( this->compare( lChild, parVal ) && this->compare( rChild, parVal ) );
          parent = child;
          child = ( parent + 1 ) << 1;
          } // end for
@@ -195,7 +198,7 @@ public:
       if ( child == data.size() )
          {
          --child;
-         assert( compare( data[ child ], data[ parent ] ) );
+         assert( BaseClass::compare( data[ child ], data[ parent ] ) );
          }  // end if
       } // checkHeapInvariant()
 };
