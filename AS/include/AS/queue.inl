@@ -152,7 +152,7 @@ public:
       {
       size_t index = data.size();
       data.emplace_back( std::forward<Args>( args )... );// Pack is getting expanded whne esplison is other way...
-      fixUp( index );
+      fixUp( (int) index );
       }
    
    virtual const T& top() const override
