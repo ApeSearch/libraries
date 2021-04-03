@@ -156,7 +156,7 @@ class vector
             {
             for (T *ptr = newElements, *otherPtr = _elts, * const end = ptr + _size; ptr != end; )
                new ( ptr++ ) T( std::move( *otherPtr++ ) );
-               customDestructor( _elts, _elts + _size );
+            customDestructor( _elts, _elts + _size );
             free( _elts );
             } // end if
 
