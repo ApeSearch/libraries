@@ -9,8 +9,6 @@
 
 #include "vector.h"
 #include <type_traits>
-//#include <fuctional>
-#include <queue>
 
 namespace APESEARCH
 {
