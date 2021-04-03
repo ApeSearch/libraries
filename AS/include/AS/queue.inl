@@ -1,20 +1,20 @@
 
 template<class T, class Container, class Compare>
-priority_queue<T, Container, Compare>::priority_queue( const Compare& comp ) : compare( comp ) {}
+priority_queue<T, Container, Compare>::priority_queue( const Compare& comp ) : cont( comp ) {}
 
 template<class T, class Container, class Compare>
-priority_queue<T, Container, Compare>::priority_queue(const Compare& comp, const Container& c) : cont( c ), compare( comp ) {}
-
-template<class T, class Container, class Compare>
-template <class InputIterator>
-priority_queue<T, Container, Compare>::priority_queue(InputIterator first, InputIterator last,
-        const Compare& comp) : cont ( first, last ), compare( comp ) {}
-
+priority_queue<T, Container, Compare>::priority_queue(const Compare& comp, const Container& c) : cont( c, comp ) {}
 
 template<class T, class Container, class Compare>
 template <class InputIterator>
 priority_queue<T, Container, Compare>::priority_queue(InputIterator first, InputIterator last,
-        const Compare& comp, const Container& c) : cont ( c ( first, last ) ), compare( comp ) {}
+        const Compare& comp) : cont ( first, last, comp ) {}
+
+
+template<class T, class Container, class Compare>
+template <class InputIterator>
+priority_queue<T, Container, Compare>::priority_queue(InputIterator first, InputIterator last,
+        const Compare& comp, const Container& c) : cont ( c ( first, last ), comp ) {}
 
 template<class T, class Container, class Compare>
 template <class InputIterator>
@@ -42,7 +42,7 @@ inline static int alignDivision( const int index )
  *             /
  *            7     
 */
-template<class T, typename COMP = less<T> >
+template<class T, typename COMP >
 class BinaryPQ : public ApesearchPQ<T, COMP>
 {
    using BaseClass = ApesearchPQ<T, COMP>;
@@ -62,10 +62,10 @@ class BinaryPQ : public ApesearchPQ<T, COMP>
     */
    void fixUp( int child )
       {
-        assert( child < data.size() );
+        assert( child < ( int )data.size() );
         int parent = child & 1 ? child : child - 1;
         // While parent < child ( where values comparied is priority )
-        for ( ; parent >= 1 && compare( data[ unsigned( parent >>= 1 ) ], data[ (unsigned) child ] );
+        for ( ; parent >= 1 && BaseClass::compare( data[ unsigned( parent >>= 1 ) ], data[ (unsigned) child ] );
               child = parent, parent = alignDivision( child ) )
            {
             swap( data[ (unsigned)parent ], data[ (unsigned)child ] );
@@ -88,9 +88,9 @@ class BinaryPQ : public ApesearchPQ<T, COMP>
       while( child < data.size() )
          {
           // First find the higher priority child ( it might get upgraded! )
-          if ( compare( data[ child ], data[ child - 1 ] ) )
+          if ( BaseClass::compare( data[ child ], data[ child - 1 ] ) )
              --child; // left child has the higher priority
-          if ( !compare( data[ parent ], data[ child ] ) )
+          if ( !BaseClass::compare( data[ parent ], data[ child ] ) )
              break;
         
           swap( data[ parent ], data[ child ] );
@@ -104,11 +104,16 @@ class BinaryPQ : public ApesearchPQ<T, COMP>
       if ( child == data.size() )
          {
          --child;
-         if ( compare( data[ parent ], data[ child ] ) )
+         if ( BaseClass::compare( data[ parent ], data[ child ] ) )
                 swap( data[ parent ], data[ child ] );
          } // end if
       } // end fixDown()
 public:
+   //typedef typename BinaryPQ::T   value_type;
+   //typedef typename value_type::&    reference;
+   //typedef typename const reference const_reference;
+   //typedef typename std::size_t       size_type;
+
    explicit BinaryPQ( COMP comp = COMP() ) : BaseClass( comp ) {}
 
    template<typename InputIterator>
@@ -122,7 +127,7 @@ public:
 
    virtual void make_heap() override
       {
-      int n = int( data.size() ) - ( data.size() - 1 ) & 1 ? 1 : 2;
+      int n = int( data.size() ) - ( ( data.size() - 1 ) & 1 ? 1 : 2 );
       n >>= 1; // to start at the lowest parent...
       for( ; n >= 0; --n )
         fixDown( ( size_t )n );
@@ -132,33 +137,38 @@ public:
       {
       size_t index = data.size();
       data.push_back( val );
-      fixUp( index );
+      fixUp( (int) index );
       } // end push()
    virtual void push( T&& val ) noexcept override
       {
-      size_t index = data.size();
-      data.emplace_back( std::forward<T>( val ) );
-      fixUp( index );
+      emplace( std::forward<T>( val ) );
       } // end push()
    
-   template< class Args>
-   void push( Args&& arg ) noexcept
+   template< class ...Args>
+   void emplace( Args&& ...args ) noexcept
       {
       size_t index = data.size();
-      data.emplace_back( std::forward<Args>( arg ) );
+      data.emplace_back( std::forward<Args>( args )... );// Pack is getting expanded whne esplison is other way...
       fixUp( index );
       }
-
-   template< class ...Args>
-   void push( Args&& ...args )
+   
+   virtual const T& top() const override
       {
-      size_t index = data.size();
-      data.emplace_back( args... );// Pack is getting expanded whne esplison is other way...
-      fixUp( index );
+      return data.front();
+      }
+   
+   virtual std::size_t size() const override
+      {
+      return data.size();
+      }
+   
+   virtual bool empty() const override
+      {
+      return data.empty();
       }
 
    
-   virtual void pop() noexcept 
+   virtual void pop() noexcept override
       {
       swap( data.front(), data.back() );
       data.pop_back();

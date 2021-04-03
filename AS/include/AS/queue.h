@@ -3,13 +3,7 @@
 #ifndef QUEUE_H_APESEARCH
 #define QUEUE_H_APESEARCH
 
-#ifdef testing
-    #include <deque>
-    using std::deque;
-#else
-    #include "deque.h"
-    using APESEARCH::deque;
-#endif
+#include <deque>
 #include <type_traits> // for std::is_nothrow_swappable
 #include "algorithms.h" // for swap
 
@@ -21,7 +15,7 @@
 namespace APESEARCH
 {
 
-template <class T, class Container = deque<T>>
+template <class T, class Container = std::deque<T>>
 class queue
 {
 public:
@@ -131,9 +125,7 @@ protected:
 public:
     virtual ~ApesearchPQ() {}
     virtual void push( const T& val ) noexcept = 0;
-    virtual void push( const T&& val ) noexcept = 0;
-    //template< class ...Args>
-    //virtual void push( Args&& ...args ) = 0;
+    virtual void push( T&& val ) noexcept = 0;
     virtual void pop() noexcept = 0;
     virtual const T& top() const = 0;
     virtual std::size_t size() const = 0;
@@ -143,26 +135,29 @@ public:
 template<typename T>
 class less
 {
+public:
     constexpr bool operator()(const T &lhs, const T &rhs) const 
     {
     return lhs < rhs;
     }
 };
 
+template<class T, typename COMP = less<T> >
+class BinaryPQ;
 
-template <class T, class Container = vector<T>, class Compare = less<T> >
+
+template <class T, class Container = BinaryPQ<T, less<T> >, class Compare = less<T> >
 class priority_queue 
 {
 public:
     typedef Container                                container_type;
-    typedef typename container_type::value_type      value_type;
-    typedef typename container_type::reference       reference;
-    typedef typename container_type::const_reference const_reference;
-    typedef typename container_type::size_type       size_type;
+    //typedef typename container_type::value_type      value_type;
+    //typedef typename container_type::reference       reference;
+    //typedef typename container_type::const_reference const_reference;
+    //typedef typename container_type::size_type       size_type;
 
 protected:
     container_type cont;
-    Compare compare;
 
 public:
     priority_queue() = default;
@@ -188,12 +183,12 @@ public:
                        const Compare& comp, container_type&& c);
 
     inline bool            empty() const { return cont.empty(); }
-    inline size_type       size() const { return cont.size(); }
-    inline const_reference top() const { return cont.top(); }
+    inline std::size_t size() const { return cont.size(); }
+    inline const T& top() const { return cont.top(); }
 
-    inline void push(const value_type& v) { cont.push( v ); }
-    inline void push(value_type&& v) { cont.push( std::forward<value_type> ( v ) ); }
-    //template <class... Args> void emplace(Args&&... args) { cont.push(   ) }
+    inline void push(const T& v) { cont.push( v ); }
+    inline void push( T&& v) { cont.push( std::forward<T> ( v ) ); }
+    template <class... Args> void emplace(Args&&... args) { cont.emplace( std::forward<Args> ( args )... ); }
     void pop() { cont.pop(); }
 
     void swap(priority_queue& q)

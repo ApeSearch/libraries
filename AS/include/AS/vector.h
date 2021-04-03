@@ -171,6 +171,11 @@ class vector
          { 
             return _size;
          }
+      
+      bool empty() const
+         {
+         return !_size;
+         }
 
       // REQUIRES: Nothing
       // MODIFIES: Nothing
