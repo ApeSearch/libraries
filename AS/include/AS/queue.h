@@ -43,19 +43,6 @@ public:
 
     explicit queue(container_type&& _c) : c( std::move( _c ) ) {}
 
-    /*    
-    template <class Alloc>
-        explicit queue(const Alloc& a);
-    template <class Alloc>
-        queue(const container_type& c, const Alloc& a);
-    template <class Alloc>
-        queue(container_type&& c, const Alloc& a);
-    template <class Alloc>
-        queue(const queue& q, const Alloc& a);
-    template <class Alloc>
-        queue(queue&& q, const Alloc& a);
-    */
-
     bool      empty() const { return c.empty(); }
     size_type size() const { return c.size(); }
 
@@ -69,9 +56,9 @@ public:
 
     template <class... Args> 
     decltype( auto ) emplace(Args&&... args)
-    {
+        {
         return c.emplace_back( std::forward<Args>( args )... );
-    }
+        }
     void pop() { c.pop_front(); }
 
     void swap(queue& q) noexcept
