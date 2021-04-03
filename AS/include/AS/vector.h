@@ -216,9 +216,6 @@ class vector
          }
       void push_back( T&& x )
          {
-         if (_size == _capacity)
-            reserve( _capacity ? _capacity << 1 : DEFAULT_BUCKET_SIZE );
-
          emplace_back( std::forward<T>( x ) );
          }
       

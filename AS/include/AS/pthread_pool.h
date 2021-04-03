@@ -50,7 +50,7 @@ struct defer_init_t { explicit defer_init_t() = default; };
 
 using Func = std::function<void()>;
 
-template<class Container = deque<Func> >
+template<class Container = std::deque<Func> >
 class PThreadPool
 {
    class ThreadWorker
