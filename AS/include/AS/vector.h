@@ -24,6 +24,8 @@ namespace APESEARCH
 template<typename T>
 class vector
    {
+   // Required since malloc doesn't call destructor
+   // automaically ( like new and new[] does )
    void customDestructor( T *begin, T *end )
       {
       while( begin != end )
@@ -48,6 +50,7 @@ class vector
       // EFFECTS: Performs any neccessary clean up operations
       ~vector ( )
          {
+         // To prevent undefined behavior of nullptr arithmetic
          if ( _elts )
             customDestructor( _elts, _elts + _size );
          free( _elts );
@@ -58,10 +61,12 @@ class vector
       // MODIFIES: *this
       // EFFECTS: Constructs a vector with size num_elements,
       //    all default constructed
-      // ! It is okay to call new[0] but dlete must also be done
+      // ! It is okay to call new[0] but delete must also be done
       vector ( size_t num_elements ) : _capacity( num_elements ? computeTwosPowCeiling(num_elements) : 0 )
             , _size( num_elements ) ,_elts( ( T *) malloc( sizeof( T ) * _capacity ) )
          {
+         for (T *ptr = _elts, * const end = _elts + _size; ptr != end; )
+              new (ptr++) T( );
          }
 
       // Fill Constructor
@@ -118,6 +123,7 @@ class vector
       // REQUIRES: Nothing
       // MODIFIES: *this, leaves other in a default constructed state
       // EFFECTS: Takes the data from other into a newly constructed vector
+      //! Guys please donot try to indirectly have reserve called after an object has been moved
       vector ( vector&& other ) : _capacity( other._capacity  ), _size( other._size  ), _elts( other._elts  )
          {
          other._elts = nullptr; // To ensure no double deletes
@@ -145,11 +151,14 @@ class vector
 
          T *newElements = ( T* ) malloc( sizeof( T ) * newCapacity );
 
-         for (T *ptr = newElements, *otherPtr = _elts, * const end = ptr + _size; ptr != end; )
-            new ( ptr++ ) T( std::move( *otherPtr++ ) );
-
-         customDestructor( _elts, _elts + _size );
-         free( _elts );
+         // Incase _elts is a nullptr ( from move constructor )
+         if ( _elts )
+            {
+            for (T *ptr = newElements, *otherPtr = _elts, * const end = ptr + _size; ptr != end; )
+               new ( ptr++ ) T( std::move( *otherPtr++ ) );
+               customDestructor( _elts, _elts + _size );
+            free( _elts );
+            } // end if
 
          _elts = newElements;
          _capacity = newCapacity;
