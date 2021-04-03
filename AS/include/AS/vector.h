@@ -185,10 +185,15 @@ class vector
       void push_back ( const T& x )
          {
          if (_size == _capacity)
-            {
             reserve( _capacity ? _capacity << 1 : DEFAULT_BUCKET_SIZE );
-            }
+
          *( _elts + _size++ ) = x;
+         }
+      void push_back( T&& x )
+         {
+         if (_size == _capacity)
+            reserve( _capacity ? _capacity << 1 : DEFAULT_BUCKET_SIZE );
+         new ( _elts + _size++ ) T( std::forward<T>( x ) );
          }
       
       // vector.emplace_back( std::forward<Args>( args )... );
@@ -196,10 +201,12 @@ class vector
       T& emplace_back ( Args&& ...args )
          {
          if (_size == _capacity)
-            {
             reserve( _capacity ? _capacity << 1 : DEFAULT_BUCKET_SIZE );
-            }
-         return (*( _elts + _size++ ) = std::move( T( std::forward<Args>( args )... ) ) );
+
+         T *end = _elts + _size;
+         end = new ( _elts + _size++ ) T( std::forward<Args>( args )... );
+         return *end;
+         //return (*( _elts + _size++ ) = std::move( T( std::forward<Args>( args )... ) ) );
          }
 
       // REQUIRES: Nothing
