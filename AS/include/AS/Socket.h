@@ -4,6 +4,7 @@
 #define SOCKET_H_AS
 
 #include "Address.h"
+#include "unique_ptr.h"
 #include <sys/time.h> //timeval
 
 class Socket 
@@ -19,11 +20,10 @@ class Socket
       //Default Constructor
       Socket();
 
-      ~Socket();
-
-      accept(struct sockaddr *addr, socklen_t *addrlen);
-      
       virtual ~Socket();
+
+      APESEARCH::unique_ptr<Socket> accept(struct sockaddr *addr, socklen_t *addrlen);
+      
 
       virtual ssize_t send(const char* buffer, int length);
 

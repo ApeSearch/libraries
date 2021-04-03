@@ -40,7 +40,7 @@ Socket::Socket(int port)
         throw;
 
     //Set socket options to reuse address and port
-    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &(int){1}, sizeof(int)) < 0)
+    if (setsockopt(socketFD, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, reinterpret_cast<void *>(1), sizeof(int)) < 0)
         //TODO
         throw;
     
@@ -67,13 +67,13 @@ Socket::Socket(int port)
 
 Socket::Socket() : socketFD(-1){}
 
-Socket Socket::accept(struct sockaddr *addr, socklen_t *addrlen);
+APESEARCH::unique_ptr<Socket> Socket::accept(struct sockaddr *addr, socklen_t *addrlen)
 {
-        int connectionFD = accept(socketFD, addr, addrlen);
-        Socket socket();
-        socket.socketFD = connectionFD;
+        int connectionFD = ::accept(socketFD, addr, addrlen);
+        APESEARCH::unique_ptr<Socket> socket( new Socket() );
+        socket->socketFD = connectionFD;
 
-        return socket;
+        return std::move( socket );
 }
 
 Socket::~Socket() 
