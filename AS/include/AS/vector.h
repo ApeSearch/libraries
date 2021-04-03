@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <utility>
 #include <iostream>
+#include <cstring>
 
 #define DEFAULT_BUCKET_SIZE 8
 
@@ -23,6 +24,14 @@ namespace APESEARCH
 template<typename T>
 class vector
    {
+   void customDestructor( T *begin, T *end )
+      {
+      while( begin != end )
+         {
+         begin->~T();
+         ++begin;
+         } // end while
+      }
    public:
 
       // Default Constructor
@@ -39,7 +48,8 @@ class vector
       // EFFECTS: Performs any neccessary clean up operations
       ~vector ( )
          {
-         //delete [] _elts;
+         if ( _elts )
+            customDestructor( _elts, _elts + _size );
          free( _elts );
          }
 
@@ -62,7 +72,7 @@ class vector
             , _size( num_elements ) ,_elts( ( T * ) malloc( sizeof( T ) * _capacity ) )
          {
          for (T *ptr = _elts, * const end = _elts + _size; ptr != end; )
-              *ptr++ = val;
+              new (ptr++) T( val );
          }
 
       // Copy Constructor
@@ -72,7 +82,7 @@ class vector
       vector ( const vector& other ) : _capacity( other._capacity ), _size( other._size ), _elts( ( T* ) malloc( sizeof( T ) * _capacity ) )
          {
          for (T *ptr = _elts, *otherPtr = other._elts, * const end = _elts + _size; ptr != end; )
-            *ptr++ = *otherPtr++;
+            new (ptr++) T( *otherPtr++ );
          }
 
       // Assignment operator
@@ -133,13 +143,14 @@ class vector
          {
          if (newCapacity <= _capacity) return;
 
-         //T* newElements = new T[newCapacity];
          T *newElements = ( T* ) malloc( sizeof( T ) * newCapacity );
 
          for (T *ptr = newElements, *otherPtr = _elts, * const end = ptr + _size; ptr != end; )
-            *ptr++ = std::move( *otherPtr++ );
+            new ( ptr++ ) T( std::move( *otherPtr++ ) );
 
+         customDestructor( _elts, _elts + _size );
          free( _elts );
+
          _elts = newElements;
          _capacity = newCapacity;
          }
@@ -187,13 +198,14 @@ class vector
          if (_size == _capacity)
             reserve( _capacity ? _capacity << 1 : DEFAULT_BUCKET_SIZE );
 
-         *( _elts + _size++ ) = x;
+         new ( _elts + _size++ ) T ( x );
          }
       void push_back( T&& x )
          {
          if (_size == _capacity)
             reserve( _capacity ? _capacity << 1 : DEFAULT_BUCKET_SIZE );
-         new ( _elts + _size++ ) T( std::forward<T>( x ) );
+
+         emplace_back( std::forward<T>( x ) );
          }
       
       // vector.emplace_back( std::forward<Args>( args )... );
@@ -206,7 +218,6 @@ class vector
          T *end = _elts + _size;
          end = new ( _elts + _size++ ) T( std::forward<Args>( args )... );
          return *end;
-         //return (*( _elts + _size++ ) = std::move( T( std::forward<Args>( args )... ) ) );
          }
 
       // REQUIRES: Nothing
@@ -216,14 +227,14 @@ class vector
       void pop_back ( )
          {
          //if (_size == 0) return;
-         (_elts + --_size)->~T();
+         (_elts + --_size)->~T(); // Good since it frees associated resources immediately
          }
 
       // REQUIRES: Nothing
       // MODIFIES: Allows mutable access to the vector's contents
       // EFFECTS: Returns a mutable random access iterator to the 
       //    first element of the vector
-      T* begin ( )
+      inline T* begin ( )
          {
          return _elts;
          }
@@ -232,7 +243,7 @@ class vector
       // MODIFIES: Allows mutable access to the vector's contents
       // EFFECTS: Returns a mutable random access iterator to 
       //    one past the last valid element of the vector
-      T* end ( )
+      inline T* end ( )
          {
          return _elts + _size;
          }
@@ -240,7 +251,7 @@ class vector
       // REQUIRES: Nothing
       // MODIFIES: Nothing
       // EFFECTS: Returns a random access iterator to the first element of the vector
-      const T* begin ( ) const
+      inline const T* begin ( ) const
          {
          return _elts;
          }
@@ -249,7 +260,7 @@ class vector
       // MODIFIES: Nothing
       // EFFECTS: Returns a random access iterator to 
       //    one past the last valid element of the vector
-      const T* end ( ) const
+      inline const T* end ( ) const
          {
          return _elts + _size;
          }
@@ -268,7 +279,7 @@ class vector
          assert( _size );
          return _elts[ _size - 1 ];
          }
-      inline const T& backc() const
+      inline const T& back() const
          {
          assert( _size );
          return _elts[ _size - 1 ];
@@ -280,25 +291,6 @@ class vector
       size_t _size;
       T* _elts;
 
-
-
-
-
-   /*
-      void swap( vector<T> &other ) 
-         {
-         swap( _elts, other._elts );
-         swap( _size, other._size );
-         swap( _capacity, other.capacity );
-         }
-
-      template<typename Type> void swap( Type& itemF, Type& itemS )
-         {
-         T temp( std::move( itemF ) );
-         itemF = std::move( itemS );
-         itemS = std::move( temp );
-         } 
-   */
    };
    
 } // end namespace APESEARCH

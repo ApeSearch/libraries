@@ -51,7 +51,7 @@ namespace APESEARCH
     {
     while( first != last )
         *destIter++ = *first++;
-        return destIter;
+    return destIter;
     }
 
     template<class InputIterator, class Function>
