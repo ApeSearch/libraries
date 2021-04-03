@@ -9,7 +9,19 @@
 class Socket 
 {
    public:
+
+      //Client Socket
       Socket(const Address& address, time_t seconds);
+
+      //Server Socket
+      Socket(int port);
+
+      //Default Constructor
+      Socket();
+
+      ~Socket();
+
+      accept(struct sockaddr *addr, socklen_t *addrlen);
       
       virtual ~Socket();
 
