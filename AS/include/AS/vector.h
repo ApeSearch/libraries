@@ -145,7 +145,7 @@ class vector
       // MODIFIES: capacity()
       // EFFECTS: Ensures that the vector can contain size() = new_capacity
       //    elements before having to reallocate
-      void reserve ( size_t newCapacity )
+      void reserve ( const size_t newCapacity )
          {
          if (newCapacity <= _capacity) return;
 
