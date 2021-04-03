@@ -2,7 +2,6 @@
 #include <unistd.h>
 #include <iostream>
 #include <errno.h>
-#define PORT 8080
 #define QUEUESIZE 32
 
 Socket::Socket(const Address& address, time_t seconds)
@@ -53,7 +52,7 @@ Socket::Socket(int port)
     //Let OS map it to the correct address
     addr.sin_addr.s_addr = INADDR_ANY;
     
-    addr.sin_port = htons(PORT);
+    addr.sin_port = htons(port);
 
     //Bind socket
     if(bind(socketFD, (sockaddr *) &addr, sizeof(addr)) < 0)
