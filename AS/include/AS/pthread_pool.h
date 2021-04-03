@@ -21,7 +21,7 @@
 #include "atomic_queue.h" // for APESEARCH::atomic_queue
 #include "mutex.h"
 #include "condition_variable.h"
-#include <functional> // fod std::bind
+#include <functional> // for std::bind
 #include <future> // for std::future, get_future()
 #include <pthread.h> // for pthread
 #include <utility> // for std::forward
@@ -69,7 +69,7 @@ class PThreadPool
         while ( true ) // runs until party ends
            {
             {
-            APESEARCH::unique_lock<APESEARCH::mutex> uniqLock( pool->prodMutex );
+            unique_lock<mutex> uniqLock( pool->prodMutex );
             auto pred = [this]() -> bool { return pool->halt.load() || !pool->_queue.empty(); };
             pool->waitingProd.wait( uniqLock, pred );
             if ( pool->halt.load() && pool->_queue.empty() )
@@ -83,13 +83,13 @@ class PThreadPool
         } // end operator()()
         
    }; // end ThreadWorker
-   APESEARCH::atomic_queue< std::function<void()>, Container > _queue;
-   APESEARCH::vector< pthread_t > _threads;
+   atomic_queue< std::function<void()>, Container > _queue;
+   vector< pthread_t > _threads;
    const size_t maxSubmits;
-   APESEARCH::mutex prodMutex;
-   APESEARCH::mutex consumerMutex;
-   APESEARCH::condition_variable waitingProd;
-   APESEARCH::condition_variable waitingCons;
+   mutex prodMutex;
+   mutex consumerMutex;
+   condition_variable waitingProd;
+   condition_variable waitingCons;
    std::atomic<bool> halt;
 
    static void *indirectionStrikesAgain( void *func )
@@ -171,7 +171,7 @@ public:
    template<typename Func, typename...Args>
    auto submit( Func&& f, Args&&... args ) -> std::future<decltype( f(args...) )>
       {
-      APESEARCH::unique_lock<APESEARCH::mutex> uniqLock( consumerMutex );
+      unique_lock<mutex> uniqLock( consumerMutex );
       waitingCons.wait( uniqLock, [this]() { return halt.load() || _queue.size() < maxSubmits; } );
       // Don't allow thread to continue submitting
       if ( halt.load() )
