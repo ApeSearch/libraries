@@ -24,9 +24,9 @@ void release(ptrdiff_t update = 1);
 void acquire();
 bool try_acquire() noexcept;
 template<class Rep, class Period>
-    bool try_acquire_for(const chrono::duration<Rep, Period>& rel_time);
+    bool try_acquire_for(const std::chrono::duration<Rep, Period>& rel_time);
 template<class Clock, class Duration>
-    bool try_acquire_until(const chrono::time_point<Clock, Duration>& abs_time);
+    bool try_acquire_until(const std::chrono::time_point<Clock, Duration>& abs_time);
 
 private:
 ptrdiff_t counter; // exposition only
@@ -74,7 +74,7 @@ public:
     /*
 
     template <class Rep, class Period>
-    bool try_acquire_for(chrono::duration<Rep, Period> const& __rel_time)
+    bool try_acquire_for(std::chrono::duration<Rep, Period> const& __rel_time)
     {
         auto const __test_fn = [=]() -> bool {
             auto __old = __a.load(memory_order_acquire);
@@ -91,61 +91,85 @@ public:
 };
 #endif
 
-/*
+//Uses native semaphores
 
-Uses native semaphores
+#include <semaphore.h>
+#include <iostream>
+#include <limits>
 
-*/
+#define SEMAPHORE_MAX (std::numeric_limits<ptrdiff_t>::max())
 
-class __platform_semaphore_base
+class semaphore
 {
-    sem_t semaphore;
+#ifdef MACOS
+    sem_t *pSema;
+#else
+    sem_t pSema;
+#endif
 
 public:
-    __platform_semaphore_base(ptrdiff_t __count) :
-    {
-        
-        __libcpp_semaphore_init(&__semaphore, __count);
-    }
-    _LIBCPP_INLINE_VISIBILITY
-    ~__platform_semaphore_base() {
-        __libcpp_semaphore_destroy(&__semaphore);
-    }
-    _LIBCPP_INLINE_VISIBILITY
-    void release(ptrdiff_t __update)
-    {
+    semaphore(ptrdiff_t __count)
+        {
+        #ifdef MACOS
+            if ( ( pSema = sem_open( "/s", O_CREAT, 0645, __count ) ) == SEM_FAILED )
+            {
+                std::cerr << "sem_open() failed, errono: " << errno << '\n';
+            }
+            
+            sem_unlink( "/s" );
+        #else 
+            sem_init( &pSema, 0, (unsigned) __count );
+        #endif
+        }
+    inline ~semaphore() 
+        {
+        #if MACOS
+            sem_close( pSema );
+        #else
+            sem_destroy( &pSema );
+        #endif
+        }
+    inline void release( ptrdiff_t __update = 1 )
+        {
         for(; __update; --__update)
-            __libcpp_semaphore_post(&__semaphore);
-    }
-    _LIBCPP_INLINE_VISIBILITY
+            {
+            #ifdef MACOS
+               sem_post( pSema );
+            #else
+               sem_post( &pSema );
+            #endif
+            }
+        }
     void acquire()
-    {
-        __libcpp_semaphore_wait(&__semaphore);
-    }
-    _LIBCPP_INLINE_VISIBILITY
-    bool try_acquire_for(chrono::nanoseconds __rel_time)
-    {
-        return __libcpp_semaphore_wait_timed(&__semaphore, __rel_time);
-    }
+        {
+        #ifdef MACOS
+           sem_wait( pSema );
+        #else
+           sem_wait( &pSema );
+        #endif
+        }
+        //    
+        // bool try_acquire_for(std::chrono::nanoseconds __rel_time)
+        // {
+        //     return __libcpp_semaphore_wait_timed(&__semaphore, __rel_time);
+        // }
 };
 
-template<ptrdiff_t __least_max_value>
-using __semaphore_base =
-    typename conditional<(__least_max_value > 1 && __least_max_value <= _LIBCPP_SEMAPHORE_MAX),
-                         __platform_semaphore_base,
-                         __atomic_semaphore_base>::type;
-
-#else
-
+/*
+#if __cplusplus > 201703L
 template<ptrdiff_t __least_max_value>
 using __semaphore_base =
     __atomic_semaphore_base;
+#else
+#include<type_traits>
+template<ptrdiff_t __least_max_value>
+using __semaphore_base =
+    typename conditional<(__least_max_value > 1 && __least_max_value <= SEMAPHORE_MAX),
+                         semaphore, __atomic_semaphore_base>::type;
 
-#define _LIBCPP_SEMAPHORE_MAX (numeric_limits<ptrdiff_t>::max())
+#endif
 
-#endif //_LIBCPP_NO_NATIVE_SEMAPHORES
-
-template<ptrdiff_t __least_max_value = _LIBCPP_SEMAPHORE_MAX>
+template<ptrdiff_t __least_max_value = SEMAPHORE_MAX>
 class counting_semaphore
 {
     __semaphore_base<__least_max_value> __semaphore;
@@ -155,51 +179,42 @@ public:
         return __least_max_value;
     }
 
-    _LIBCPP_INLINE_VISIBILITY
     counting_semaphore(ptrdiff_t __count = 0) : __semaphore(__count) { }
     ~counting_semaphore() = default;
 
     counting_semaphore(const counting_semaphore&) = delete;
     counting_semaphore& operator=(const counting_semaphore&) = delete;
 
-    _LIBCPP_AVAILABILITY_SYNC _LIBCPP_INLINE_VISIBILITY
     void release(ptrdiff_t __update = 1)
-    {
+        {
         __semaphore.release(__update);
-    }
-    _LIBCPP_AVAILABILITY_SYNC _LIBCPP_INLINE_VISIBILITY
+        }
+
     void acquire()
-    {
+        {
         __semaphore.acquire();
-    }
+        }
     template<class Rep, class Period>
-    _LIBCPP_AVAILABILITY_SYNC _LIBCPP_INLINE_VISIBILITY
-    bool try_acquire_for(chrono::duration<Rep, Period> const& __rel_time)
-    {
-        return __semaphore.try_acquire_for(chrono::duration_cast<chrono::nanoseconds>(__rel_time));
-    }
-    _LIBCPP_AVAILABILITY_SYNC _LIBCPP_INLINE_VISIBILITY
+    bool try_acquire_for(std::chrono::duration<Rep, Period> const& __rel_time)
+        {
+        return __semaphore.try_acquire_for(std::chrono::duration_cast<std::chrono::nanoseconds>(__rel_time));
+        }
     bool try_acquire()
-    {
-        return try_acquire_for(chrono::nanoseconds::zero());
-    }
+        {
+        return try_acquire_for(std::chrono::nanoseconds::zero());
+        }
     template <class Clock, class Duration>
-    _LIBCPP_AVAILABILITY_SYNC _LIBCPP_INLINE_VISIBILITY
-    bool try_acquire_until(chrono::time_point<Clock, Duration> const& __abs_time)
-    {
+    bool try_acquire_until(std::chrono::time_point<Clock, Duration> const& __abs_time)
+        {
         auto const current = Clock::now();
         if(current >= __abs_time)
             return try_acquire();
         else
             return try_acquire_for(__abs_time - current);
-    }
+        }
 };
 
 using binary_semaphore = counting_semaphore<1>;
-
-
-
-
-
+*/
 
 #endif
