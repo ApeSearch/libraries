@@ -39,7 +39,7 @@ struct Buffer
     virtual ~Buffer() {}
     inline virtual value_type *getBuffer() noexcept = 0;
     inline virtual void insert(const T&, size_t) noexcept = 0;
-    inline virtual void insert( T&&, size_t ) noexcept;
+    inline virtual void insert( size_t, T&& ) noexcept = 0;
     inline virtual T& get(size_t) = 0;
     inline virtual size_t getCapacity() const = 0;
     inline virtual T *begin() noexcept = 0;
@@ -89,9 +89,20 @@ public:
 
     void putOverwrite( const value_type & ) noexcept;
     inline bool put( const value_type & ) noexcept;
-    inline bool emplace( value_type&& ) noexcept;
     void push_back( const value_type & val) noexcept { put( std::forward<const value_type&>( val ) ); }
-    void emplace_back( value_type && val ) noexcept { emplace( std::forward< value_type >( val ) ); }
+
+    template< class... Args>
+    inline bool emplace( Args&& ...args ) noexcept
+        {
+        if ( _full )
+            return false;
+
+        buffer.insert( tail, std::forward< Args&& >( args)... );
+        interal_push();
+        return true;
+        }
+    template< class... Args>
+    void emplace_back( Args&& ...args ) noexcept { emplace( std::forward< Args&& >( args )... ); }
 
     reference front() noexcept;
     const_reference front() const noexcept { return std::move( front() ); }
