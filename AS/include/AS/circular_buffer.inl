@@ -55,6 +55,17 @@ bool APESEARCH::circular_buffer<T, buffer_type>::put( const T& val ) noexcept
    }
 
 template <class T, class buffer_type>
+bool APESEARCH::circular_buffer<T, buffer_type>::emplace( value_type&& val ) noexcept
+   {
+    if ( _full )
+       return false;
+
+    buffer.insert( std::forward<value_type&&>( val ), tail );
+    interal_push();
+    return true;
+   }
+
+template <class T, class buffer_type>
 T& APESEARCH::circular_buffer<T, buffer_type>::front() noexcept
    {
     assert( !empty() );
@@ -152,6 +163,20 @@ struct defaultBuffer : public Buffer<T>
        assert( index < defaultBuffer::capacity );
        buf[ index ] = val;
       }
+   
+   inline void insert(T&& val, size_t index) noexcept
+      {
+       assert( index < defaultBuffer::capacity );
+       buf[ index ] = std::forward<T>( val );
+      }
+   
+   template< typename ...Args >
+   inline void emplace( Args&& ...args, size_t index ) noexcept
+      {
+       assert( index < defaultBuffer::capacity );
+       buf[ index ] = T( std::forward< Args >( args )... );
+      }
+
    inline virtual T& get(size_t index)
       {
        assert( index < defaultBuffer::capacity );
