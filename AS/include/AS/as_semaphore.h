@@ -41,56 +41,6 @@ using binary_semaphore = counting_semaphore<1>;
 #include <atomic>
 #include <chrono>
 
-#if __cplusplus > 201703L
-
-class __atomic_semaphore_base
-{
-    std::atomic<std::size_t> __a;
-
-public:
-    __atomic_semaphore_base(std::size_t __count) : __a(__count)
-    {
-    }
-    void release(std::size_t __update = 1)
-    {
-        if(0 < __a.fetch_add(__update, std::memory_order_release))
-            ;
-        else if(__update > 1)
-            __a.notify_all();
-        else
-            __a.notify_one();
-    }
-    void acquire()
-    {
-        /*
-        auto const __test_fn = [=]() -> bool {
-            ptrdiff_t __old = __a.load(std::memory_order_relaxed);
-            return (__old != 0) && __a.compare_exchange_strong(__old, __old - 1, std::memory_order_acquire, std::memory_order_relaxed);
-        };
-        */
-        __a.atomic_wait(__a.load(std::memory_order_relaxed));
-    }
-
-    /*
-
-    template <class Rep, class Period>
-    bool try_acquire_for(std::chrono::duration<Rep, Period> const& __rel_time)
-    {
-        auto const __test_fn = [=]() -> bool {
-            auto __old = __a.load(memory_order_acquire);
-            while(1) {
-                if (__old == 0)
-                    return false;
-                if(__a.compare_exchange_strong(__old, __old - 1, memory_order_acquire, memory_order_relaxed))
-                    return true;
-            }
-        };
-        return __libcpp_thread_poll_with_backoff(__test_fn, __libcpp_timed_backoff_policy(), __rel_time);
-    }
-    */
-};
-#endif
-
 //Uses native semaphores
 
 #include <semaphore.h>
@@ -154,6 +104,58 @@ public:
         //     return __libcpp_semaphore_wait_timed(&__semaphore, __rel_time);
         // }
 };
+
+#if __cplusplus > 201703L
+
+class __atomic_semaphore_base
+{
+    std::atomic<std::size_t> __a;
+
+public:
+    __atomic_semaphore_base(std::size_t __count) : __a(__count)
+    {
+    }
+    void release(std::size_t __update = 1)
+    {
+        if(0 < __a.fetch_add(__update, std::memory_order_release))
+            ;
+        else if(__update > 1)
+            __a.notify_all();
+        else
+            __a.notify_one();
+    }
+    void acquire()
+    {
+        /*
+        auto const __test_fn = [=]() -> bool {
+            ptrdiff_t __old = __a.load(std::memory_order_relaxed);
+            return (__old != 0) && __a.compare_exchange_strong(__old, __old - 1, std::memory_order_acquire, std::memory_order_relaxed);
+        };
+        */
+        __a.atomic_wait(__a.load(std::memory_order_relaxed));
+    }
+
+    /*
+
+    template <class Rep, class Period>
+    bool try_acquire_for(std::chrono::duration<Rep, Period> const& __rel_time)
+    {
+        auto const __test_fn = [=]() -> bool {
+            auto __old = __a.load(memory_order_acquire);
+            while(1) {
+                if (__old == 0)
+                    return false;
+                if(__a.compare_exchange_strong(__old, __old - 1, memory_order_acquire, memory_order_relaxed))
+                    return true;
+            }
+        };
+        return __libcpp_thread_poll_with_backoff(__test_fn, __libcpp_timed_backoff_policy(), __rel_time);
+    }
+    */
+};
+#endif
+
+
 
 /*
 #if __cplusplus > 201703L
