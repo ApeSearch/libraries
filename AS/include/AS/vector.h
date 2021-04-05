@@ -94,9 +94,12 @@ class vector
 
       // Initializer List Constructor
       vector(std::initializer_list<T> list): _capacity( list.size() ? computeTwosPowCeiling(list.size()) : 0 )
-            , _size(list.size()), _elts(new T[list.size()])
+            , _size(list.size()), _elts( ( T * ) malloc( sizeof( T ) * _capacity ) )
          {
-        APESEARCH::copy(list.begin(), list.end(), _elts);
+         T *ptr = _elts;
+         for ( const T& item : list )
+            new ( ptr++ ) T( item );
+         //APESEARCH::copy(list.begin(), list.end(), _elts);
          }
 
       // Assignment operator
