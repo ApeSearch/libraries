@@ -45,13 +45,13 @@ using binary_semaphore = counting_semaphore<1>;
 
 class __atomic_semaphore_base
 {
-    std::atomic<ptrdiff_t> __a;
+    std::atomic<std::size_t> __a;
 
 public:
-    __atomic_semaphore_base(ptrdiff_t __count) : __a(__count)
+    __atomic_semaphore_base(std::size_t __count) : __a(__count)
     {
     }
-    void release(ptrdiff_t __update = 1)
+    void release(std::size_t __update = 1)
     {
         if(0 < __a.fetch_add(__update, std::memory_order_release))
             ;
@@ -97,7 +97,7 @@ public:
 #include <iostream>
 #include <limits>
 
-#define SEMAPHORE_MAX (std::numeric_limits<ptrdiff_t>::max())
+#define SEMAPHORE_MAX (std::numeric_limits<std::size_t>::max())
 
 class semaphore
 {
@@ -108,7 +108,7 @@ class semaphore
 #endif
 
 public:
-    semaphore(ptrdiff_t __count)
+    semaphore(std::size_t __count)
         {
         #ifdef MACOS
             if ( ( pSema = sem_open( "/s", O_CREAT, 0645, __count ) ) == SEM_FAILED )
@@ -129,7 +129,7 @@ public:
             sem_destroy( &pSema );
         #endif
         }
-    inline void release( ptrdiff_t __update = 1 )
+    inline void release( std::size_t __update = 1 )
         {
         for(; __update; --__update)
             {
