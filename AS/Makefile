@@ -4,6 +4,7 @@ CC=g++ -g3 -std=c++17 -Wall -pedantic -Wconversion -Wextra -Wreorder -fno-builti
 
 ## Define certain variables based on system
 # -I likely means (Include) -L likely means (Library)
+FLAGS:=EMPTY
 ifeq ($(shell uname -s | tr A-Z a-z), darwin)
 	FLAGS:=MACOS
 endif
@@ -33,7 +34,7 @@ $(TEST_SRC): %: %.cpp ${OBJS}
 	@mkdir -p ${STDEXECDIR}
 	@mkdir -p ${OUTPUT}
 	${CC} -Dtesting -D${FLAGS} -o  ${EXECDIR}/$(notdir $@) $^ -pthread
-	${CC} -D STD -Dtesting -D${FLAGS} ${LDFLAGS} -lz -o ${STDEXECDIR}/$(notdir $@) $^ -pthread
+	${CC} -DSTD -Dtesting -D${FLAGS} ${LDFLAGS} -lz -o ${STDEXECDIR}/$(notdir $@) $^ -pthread
 
 test: ${TEST_SRC}
 	make unit_test
@@ -44,7 +45,7 @@ ${UNITTESTDIR}/unit_test_framework.o:
 UNIT_TEST_SRC:=$(basename $(wildcard ${UNITTESTDIR}/*.cpp))
 $(UNIT_TEST_SRC): %: %.cpp ${UNITTESTDIR}/unit_test_framework.o ${OBJS}
 	${CC} -D${FLAGS} -o ${EXECDIR}/$(notdir $@) $^ -pthread
-	${CC} -D ${FLAGS} -DSTD -o ${STDEXECDIR}/$(notdir $@) $^ -pthread
+	${CC} -D${FLAGS} -DSTD -o ${STDEXECDIR}/$(notdir $@) $^ -pthread
 
 unit_test: ${UNIT_TEST_SRC}
 
