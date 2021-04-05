@@ -193,6 +193,28 @@ public:
 
       return taskPtr->get_future();
       } // end submit()
+   
+   // Used when a future object isn't required
+   template<typename Func, typename...Args>
+   void submitNoFuture( Func&& f, Args&&... args )
+      {
+      unique_lock<mutex> uniqLock( consumerMutex );
+      waitingCons.wait( uniqLock, [this]() { return halt.load() || _queue.size() < maxSubmits; } );
+
+      if ( !halt.load() )
+         {
+         std::function<decltype( f(args...) )( )> func = std::bind( std::forward<Func>( f ), std::forward<Args>( args )... );
+
+         auto taskPtr = make_shared<std::function<decltype( f(args...) )( )>>( func );
+         std::function<void()> wrapper = [taskPtr]()
+            {
+            (*taskPtr)(); // invoke the callable entity here
+            };
+         _queue.enqueue( wrapper );
+
+         waitingProd.notify_one();
+         } // end if
+      } // end submitNoFuture()
 };
 
 } // end namespace APESEARCH
