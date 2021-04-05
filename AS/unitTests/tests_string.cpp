@@ -272,4 +272,17 @@ TEST(find_char_pos)
    ASSERT_EQUAL(loc, string::npos);
    } // end test fill_constructor
 
+TEST(convertToLower)
+   {
+   string uppercase = "HERE BE UPPERCASE CHARACTERS";
+   string lowercase = "here be uppercase characters";
+   uppercase.convertToLower();
+   ASSERT_EQUAL(uppercase, lowercase);
+
+   uppercase = "HeRE Be uPPERCaSE CHARACTERS";
+   lowercase = "here be uppercase characters";
+   uppercase.convertToLower();
+   ASSERT_EQUAL(uppercase, lowercase);
+   } // end test fill_constructor
+
 TEST_MAIN()

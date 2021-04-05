@@ -8,6 +8,8 @@
 #include <iostream>
 #include <cstring>
 
+#include "algorithms.h"
+
 #define DEFAULT_BUCKET_SIZE 8
 
 static inline size_t computeTwosPowCeiling(size_t num) 
@@ -88,6 +90,13 @@ class vector
          {
          for (T *ptr = _elts, *otherPtr = other._elts, * const end = _elts + _size; ptr != end; )
             new (ptr++) T( *otherPtr++ );
+         }
+
+      // Initializer List Constructor
+      vector(std::initializer_list<T> list): _capacity( list.size() ? computeTwosPowCeiling(list.size()) : 0 )
+            , _size(list.size()), _elts(new T[list.size()])
+         {
+        APESEARCH::copy(list.begin(), list.end(), _elts);
          }
 
       // Assignment operator

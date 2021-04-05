@@ -136,4 +136,17 @@ TEST( test_move_operator )
     ASSERT_EQUAL( moved.size(), 100 );
    }
 
+TEST( test_init_list_constructor )
+    {
+    APESEARCH::vector<int> initializer_list_test = 
+        {
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+        };
+    for (int i = 0; i < 10; ++i)
+        {
+        std::cout << i << "!=" << initializer_list_test[i] << std::endl;
+        ASSERT_EQUAL(i, initializer_list_test[i]);
+        }
+    }
+
 TEST_MAIN()
