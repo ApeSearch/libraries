@@ -433,6 +433,14 @@ class string
                os << *ptr++;
             return os;
             }
+      // Convert To Lower
+      // REQUIRES: Nothing
+      // MODIFIES: *this->buffer
+      // EFFECTS: Converts all the characters in the string to lowercase
+      void convertToLower() {
+         for ( char *p = begin(); p != end(); ++p)
+            *p = tolower(*p);
+      }
 
    static constexpr size_t npos = static_cast<size_t>( -1 );
    private:
