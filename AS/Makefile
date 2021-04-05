@@ -7,8 +7,8 @@ CC=g++ -g3 -std=c++17 -Wall -pedantic -Wconversion -Wextra -Wreorder -fno-builti
 ifeq ($(shell uname -s | tr A-Z a-z), darwin)
 	FLAGS:=MACOS
 endif
-ifeq ($(shello uname -s | tr A-Z a-z), linux)
-	LDFLAGS
+ifeq ($(shell uname -s | tr A-Z a-z), linux)
+	FLAGS:=LINUX
 endif
 
 
@@ -44,7 +44,7 @@ ${UNITTESTDIR}/unit_test_framework.o:
 UNIT_TEST_SRC:=$(basename $(wildcard ${UNITTESTDIR}/*.cpp))
 $(UNIT_TEST_SRC): %: %.cpp ${UNITTESTDIR}/unit_test_framework.o ${OBJS}
 	${CC} -D${FLAGS} -o ${EXECDIR}/$(notdir $@) $^ -pthread
-	${CC} -D ${FLAGS} -D STD -o ${STDEXECDIR}/$(notdir $@) $^ -pthread
+	${CC} -D ${FLAGS} -DSTD -o ${STDEXECDIR}/$(notdir $@) $^ -pthread
 
 unit_test: ${UNIT_TEST_SRC}
 
