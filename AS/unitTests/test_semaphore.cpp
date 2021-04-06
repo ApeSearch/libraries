@@ -30,7 +30,7 @@ static void *thread( void *arg )
     unsigned id = val++;
     std::cout << "Num: " <<  val << std::endl;
     coutlk.unlock();
-    argument->sema.acquire();
+    argument->sema.down();
     coutlk.lock();
     std::cout << id << " acquired semaphore " << std::endl;
     coutlk.unlock();
@@ -40,7 +40,7 @@ static void *thread( void *arg )
 
 
     argument->ss << "\nJust Exiting...\n";
-    argument->sema.release();
+    argument->sema.up();
  
     return nullptr;
    }
