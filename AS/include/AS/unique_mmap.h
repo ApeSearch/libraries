@@ -28,7 +28,7 @@
  *       file: A file object. If such an object is passed into the constructor, unique_mmap becomes
  *              responsible for the deallocation ( closing of the file object ).
 */
-
+namespace APESEARCH
 
 class unique_mmap
    {
@@ -181,6 +181,8 @@ public:
       return map;
       } // end getPointer()
    };
+
+} // end namespace
 
 
 #endif
