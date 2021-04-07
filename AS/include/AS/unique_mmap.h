@@ -12,6 +12,7 @@
 #include <string>
 #include <sys/mman.h> // mmap
 #include "algorithms.h"
+#include <unistd.h> // for close() file
 
 //------------------------------------------------------------------------------------------------
 //
@@ -28,8 +29,6 @@
  *       file: A file object. If such an object is passed into the constructor, unique_mmap becomes
  *              responsible for the deallocation ( closing of the file object ).
 */
-namespace APESEARCH
-
 class unique_mmap
    {
    void *map;
@@ -181,8 +180,6 @@ public:
       return map;
       } // end getPointer()
    };
-
-} // end namespace
 
 
 #endif

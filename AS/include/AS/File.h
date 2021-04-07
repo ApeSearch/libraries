@@ -12,6 +12,7 @@
 #include <string>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <unistd.h> // for close() file
 
 namespace APESEARCH
 {
@@ -74,7 +75,9 @@ namespace APESEARCH
              throw failure( "Issue with opening file", errno, 0 );
              } // end if
           }
-
+      
+      // The main purpose of this constructor is to encapsulate a file's lifetime in an object
+       File( int _fd, int flags = 0, mode_t mode = 0600 ) : fd( _fd  ) {}
        // More efficent than std::swap
        File( File&& file ) : fd( file.fd )
           {
