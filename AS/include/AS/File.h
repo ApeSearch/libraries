@@ -11,6 +11,7 @@
 #include <cerrno> // for errno
 #include <string>
 #include <sys/stat.h>
+#include <fcntl.h>
 
 namespace APESEARCH
 {

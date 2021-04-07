@@ -56,7 +56,7 @@ class string
          if ( len == npos )
             strncpy( buffer, cstr + pos, length ); // OK to use c-string functions bc cstr is passed in
          else
-            APESEARCH::copy(  cstr + pos, cstr + pos + len, buffer );
+            copy(  cstr + pos, cstr + pos + len, buffer );
          }
 
       // string substring constructor
@@ -67,7 +67,7 @@ class string
                buffer( new char [ length + NULLCHAR ] )
          {
          assert( length <= s.length && pos < s.length );
-         APESEARCH::copy( s.cbegin() + pos, s.cbegin() + pos + length, buffer );
+         copy( s.cbegin() + pos, s.cbegin() + pos + length, buffer );
          }
 
       // copy Constructor
@@ -302,8 +302,8 @@ class string
       void operator+= ( const string& other )
          {
          string temp( length + other.size() );
-         APESEARCH::copy( cbegin(), cend(), temp.buffer ); // Copy original
-         APESEARCH::copy( other.cbegin(), other.cend(), temp.buffer + length ); // Copy other string
+         copy( cbegin(), cend(), temp.buffer ); // Copy original
+         copy( other.cbegin(), other.cend(), temp.buffer + length ); // Copy other string
          swap( temp ); // Swap contents
          }
 
@@ -314,7 +314,7 @@ class string
       void push_back ( char c )
          {
          string temp( length + 1 );
-         APESEARCH::copy( cbegin(), cend(), temp.begin() );
+         copy( cbegin(), cend(), temp.begin() );
          * ( temp.buffer + length ) = c;
          swap( temp );
          } // end push_back()

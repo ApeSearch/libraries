@@ -113,7 +113,7 @@ template<class T, class U>
 
 // shared_ptr I/O:
 template<class E, class T, class Y>
-    basic_ostream<E, T>& operator<< (basic_ostream<E, T>& os, shared_ptr<Y> const& p);
+    basic_ostream<E, T>& operator<< (std::basic_ostream<E, T>& os, shared_ptr<Y> const& p);
 
 // shared_ptr get_deleter:
 template<class D, class T> D* get_deleter(shared_ptr<T> const& p) noexcept;
