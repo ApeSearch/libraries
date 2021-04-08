@@ -8,8 +8,6 @@
 
 #ifdef testing
     #include<memory>
-    using std::shared_ptr;
-    using std::make_shared;
 #else
     #include "shared_ptr.h"
     using APESEARCH::shared_ptr;
@@ -111,6 +109,10 @@ class PThreadPool
 public:
    PThreadPool( size_t numThreads, defer_init_t, size_t _maxSubmits = DEFAULTMAXSUBMITS ) 
          noexcept : _threads( numThreads ), maxSubmits( _maxSubmits ), halt( true ) {}
+   
+   // Construct with custom container
+    PThreadPool( Container&& c, size_t numThreads, size_t _maxSubmits = DEFAULTMAXSUBMITS ) 
+         noexcept : _queue( std::forward<Container>( c ) ), _threads( numThreads ), maxSubmits( _maxSubmits ), halt( true ) {}
 
    PThreadPool( size_t numThreads, size_t _maxSubmits = DEFAULTMAXSUBMITS ) noexcept 
          : PThreadPool( numThreads, defer_init, _maxSubmits )
@@ -179,7 +181,7 @@ public:
 
       // Create a function object
       std::function<decltype( f(args...) )( )> func = std::bind( std::forward<Func>( f ), std::forward<Args>( args )... );
-      auto taskPtr = make_shared<std::packaged_task<decltype( f(args...) )( )>>( func );
+      auto taskPtr = std::make_shared<std::packaged_task<decltype( f(args...) )( )>>( func );
       
       // Wrap taskPtr inside a void function
       std::function<void()> wrapperFunc = [taskPtr]() { 
@@ -205,7 +207,7 @@ public:
          {
          std::function<decltype( f(args...) )( )> func = std::bind( std::forward<Func>( f ), std::forward<Args>( args )... );
 
-         auto taskPtr = make_shared<std::function<decltype( f(args...) )( )>>( func );
+         auto taskPtr = std::make_shared<std::function<decltype( f(args...) )( )>>( func );
          std::function<void()> wrapper = [taskPtr]()
             {
             (*taskPtr)(); // invoke the callable entity here
