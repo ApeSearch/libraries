@@ -66,7 +66,7 @@ class string
       string ( const string& s, size_t pos, size_t len = npos ) noexcept : length( len == npos ? s.length - pos : len ),
                buffer( new char [ length + NULLCHAR ] )
          {
-         assert( length <= s.length && pos < s.length );
+         assert( length <= s.length && ( len == npos || pos < s.length ) );
          copy( s.cbegin() + pos, s.cbegin() + pos + length, buffer );
          }
 
