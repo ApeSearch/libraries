@@ -273,7 +273,7 @@ class string
       // REQUIRES: 0 <= i < size()
       // MODIFIES: Allows modification of the i'th element
       // EFFECTS: Returns the i'th character of the string
-      char& operator [ ] ( size_t i )
+      char& operator [ ] ( size_t i ) const
          {
          return * ( buffer + i );
          }
