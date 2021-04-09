@@ -294,6 +294,22 @@ class string
          return buffer[0];
       }
 
+      // string back
+      // REQUIRES: Nothing
+      // MODIFIES: Nothing
+      // EFFECTS: Returns a reference to the last character of the string.
+      char& back() {
+         return buffer[length - 1];
+      }
+
+      // string back
+      // REQUIRES: Nothing
+      // MODIFIES: Nothing
+      // EFFECTS: Returns a const-qualified reference to the last character of the string.
+      const char& back() const {
+         return buffer[length - 1];
+      }
+
       // string Append
       // REQUIRES: Nothing
       // MODIFIES: *this
@@ -316,6 +332,18 @@ class string
          string temp( length + 1 );
          copy( cbegin(), cend(), temp.begin() );
          * ( temp.buffer + length ) = c;
+         swap( temp );
+         } // end push_back()
+
+      // Push Back
+      // REQUIRES: Nothing
+      // MODIFIES: *this
+      // EFFECTS: Appends c to the string
+      void push_front ( char c )
+         {
+         string temp( length + 1 );
+         *temp.buffer = c;
+         copy( cbegin(), cend(), temp.begin() + 1 );
          swap( temp );
          } // end push_back()
 
