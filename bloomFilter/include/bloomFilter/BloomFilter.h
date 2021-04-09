@@ -16,8 +16,13 @@ class BitArray{
             int numOfInt = (size + NUM_OF_BITS_INT - 1) / NUM_OF_BITS_INT; //https://stackoverflow.com/questions/17944/how-to-round-up-the-result-of-integer-division
             numOfBits = size;
             array = new int[numOfInt];
-            memset(array, 0, sizeof(*array));
+            memset(array, 0, sizeof( int ) * numOfInt );
         }
+        ~BitArray()
+           {
+            delete[] array;
+           }
+
         void set(unsigned int index){
             array[index/NUM_OF_BITS_INT] |= (1U << (index%NUM_OF_BITS_INT));
             }

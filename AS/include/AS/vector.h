@@ -12,10 +12,11 @@
 
 #define DEFAULT_BUCKET_SIZE 8
 
-static inline size_t computeTwosPowCeiling(size_t num) 
+static inline size_t computeTwosPowCeiling( ssize_t num ) 
    {
+   num--;
    size_t powerNum = 1;
-   for (; num; num >>=1 )
+   for (; num > 0; num >>=1 )
       powerNum <<= 1;
    return powerNum;
    }
@@ -23,8 +24,8 @@ static inline size_t computeTwosPowCeiling(size_t num)
 namespace APESEARCH
 {
 
-template<typename T>
-class vector
+   template<typename T>
+   class vector
    {
    // Required since malloc doesn't call destructor
    // automaically ( like new and new[] does )
@@ -64,7 +65,7 @@ class vector
       // EFFECTS: Constructs a vector with size num_elements,
       //    all default constructed
       // ! It is okay to call new[0] but delete must also be done
-      vector ( size_t num_elements ) : _capacity( num_elements ? computeTwosPowCeiling(num_elements) : 0 )
+      vector ( size_t num_elements ) : _capacity( num_elements ? computeTwosPowCeiling( (ssize_t) num_elements) : 0 )
             , _size( num_elements ) ,_elts( ( T *) malloc( sizeof( T ) * _capacity ) )
          {
          for (T *ptr = _elts, * const end = _elts + _size; ptr != end; )
@@ -75,7 +76,7 @@ class vector
       // REQUIRES: Capacity > 0
       // MODIFIES: *this
       // EFFECTS: Creates a vector with size num_elements, all assigned to val
-      vector ( size_t num_elements, const T& val ) : _capacity( num_elements ? computeTwosPowCeiling(num_elements) : 0 )
+      vector ( size_t num_elements, const T& val ) : _capacity( num_elements ? computeTwosPowCeiling( (ssize_t) num_elements) : 0 )
             , _size( num_elements ) ,_elts( ( T * ) malloc( sizeof( T ) * _capacity ) )
          {
          for (T *ptr = _elts, * const end = _elts + _size; ptr != end; )
@@ -93,10 +94,13 @@ class vector
          }
 
       // Initializer List Constructor
-      vector(std::initializer_list<T> list): _capacity( list.size() ? computeTwosPowCeiling(list.size()) : 0 )
-            , _size(list.size()), _elts(new T[list.size()])
+      vector(std::initializer_list<T> list): _capacity( list.size() ? computeTwosPowCeiling( (ssize_t) list.size()) : 0 )
+            , _size(list.size()), _elts( ( T * ) malloc( sizeof( T ) * _capacity ) )
          {
-        APESEARCH::copy(list.begin(), list.end(), _elts);
+         T *ptr = _elts;
+         for ( const T& item : list )
+            new ( ptr++ ) T( item );
+         //APESEARCH::copy(list.begin(), list.end(), _elts);
          }
 
       // Assignment operator
