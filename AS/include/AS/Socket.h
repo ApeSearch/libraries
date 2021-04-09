@@ -11,11 +11,14 @@ class Socket
 {
    public:
 
-      //Client Socket
+      //Client Socket using hostname
       Socket(const Address& address, time_t seconds);
 
       //Server Socket
       Socket(int port);
+      
+      //Client socket using ip specified in addr
+      Socket::Socket(const struct sockaddr_in &addr);
 
       //Default Constructor
       Socket();
