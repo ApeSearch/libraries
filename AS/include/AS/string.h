@@ -152,6 +152,11 @@ class string
          return length;
          }
 
+      bool empty( ) const
+         {
+         return !length;
+         }
+
       // Find
       // REQUIRES: Nothing
       // MODIFIES: Nothing

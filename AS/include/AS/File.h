@@ -63,6 +63,7 @@ namespace APESEARCH
           if ( fd == -1 )
              {
              perror("Error opening file");
+             fprintf( stderr, "%s\n", pathname );
              throw failure( "Issue with opening file", errno, 0 );
              } // end if
           }  // end File
@@ -72,6 +73,7 @@ namespace APESEARCH
           if ( fd == -1 )
              {
              perror("Error opening file");
+             fprintf( stderr, "%s\n", pathname );
              throw failure( "Issue with opening file", errno, 0 );
              } // end if
           }

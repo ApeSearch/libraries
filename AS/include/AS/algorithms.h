@@ -86,6 +86,16 @@ namespace APESEARCH
     return end;
     } // end find()
 
+    template<class ForwardIterator, class T>
+    void replace( ForwardIterator first, ForwardIterator last, const T& valTobeRep, const T&newVal )
+       {
+        for ( ; first != last; ++first )
+           {
+            if ( *first == valTobeRep )
+               *first = newVal;
+           }
+       }
+
 
 } // end namespace APESEARCH
 
