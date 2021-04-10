@@ -18,7 +18,7 @@ class Socket
       Socket(int port);
       
       //Client socket using ip specified in addr
-      Socket::Socket(const struct sockaddr_in &addr);
+      Socket(const struct sockaddr_in &addr);
 
       //Default Constructor
       Socket();
