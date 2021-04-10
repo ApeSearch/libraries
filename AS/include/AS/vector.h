@@ -24,8 +24,8 @@ static inline size_t computeTwosPowCeiling( ssize_t num )
 namespace APESEARCH
 {
 
-template<typename T>
-class vector
+   template<typename T>
+   class vector
    {
    // Required since malloc doesn't call destructor
    // automaically ( like new and new[] does )

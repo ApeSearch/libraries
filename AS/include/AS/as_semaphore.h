@@ -80,7 +80,7 @@ namespace APESEARCH
                 sem_destroy( &pSema );
             #endif
             }
-        inline void release( std::size_t __update = 1 )
+        inline void down( std::size_t __update = 1 )
             {
             for(; __update; --__update)
                 {
@@ -91,7 +91,7 @@ namespace APESEARCH
                 #endif
                 }
             }
-        void acquire()
+        void up()
             {
             #ifdef MACOS
                sem_wait( pSema );

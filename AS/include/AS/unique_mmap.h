@@ -10,6 +10,9 @@
 #include <exception>
 #include <cerrno> // for errno
 #include <string>
+#include <sys/mman.h> // mmap
+#include "algorithms.h"
+#include <unistd.h> // for close() file
 
 //------------------------------------------------------------------------------------------------
 //
@@ -26,15 +29,11 @@
  *       file: A file object. If such an object is passed into the constructor, unique_mmap becomes
  *              responsible for the deallocation ( closing of the file object ).
 */
-
-namespace APESEARCH
-{
-
 class unique_mmap
    {
    void *map;
    size_t bytesMapped;
-   File file;
+   APESEARCH::File file;
 
 public:
    class failure : public std::exception
@@ -123,7 +122,7 @@ public:
    unique_mmap( std::size_t length, int prot, int flags, int fd, off_t offset ) : 
       unique_mmap( 0, length, prot, flags, fd, offset ) {}
 
-   unique_mmap( void *addr, std::size_t length, int prot, int flags, off_t offset, File&& fd )
+   unique_mmap( void *addr, std::size_t length, int prot, int flags, off_t offset, APESEARCH::File&& fd )
       : bytesMapped( length ), file( std::move( fd ) )
       {
       if ( !length )
@@ -156,14 +155,9 @@ public:
 
    void swap( unique_mmap& other )
       {
-      #ifdef LOCAL
-            using APESEARCH::swap;
-      #else
-            using std::swap;
-      #endif
-      swap( map, other.map );
-      swap( bytesMapped, other.bytesMapped );
-      swap( file, other.file );
+      APESEARCH::swap( map, other.map );
+      APESEARCH::swap( bytesMapped, other.bytesMapped );
+      APESEARCH::swap( file, other.file );
       }
 
    /* 
@@ -186,8 +180,6 @@ public:
       return map;
       } // end getPointer()
    };
-
-} // end namespace
 
 
 #endif

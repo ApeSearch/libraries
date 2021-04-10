@@ -56,7 +56,7 @@ class string
          if ( len == npos )
             strncpy( buffer, cstr + pos, length ); // OK to use c-string functions bc cstr is passed in
          else
-            APESEARCH::copy(  cstr + pos, cstr + pos + len, buffer );
+            copy(  cstr + pos, cstr + pos + len, buffer );
          }
 
       // string substring constructor
@@ -66,8 +66,8 @@ class string
       string ( const string& s, size_t pos, size_t len = npos ) noexcept : length( len == npos ? s.length - pos : len ),
                buffer( new char [ length + NULLCHAR ] )
          {
-         assert( length <= s.length && pos < s.length );
-         APESEARCH::copy( s.cbegin() + pos, s.cbegin() + pos + length, buffer );
+         assert( length <= s.length && ( len == npos || pos < s.length ) );
+         copy( s.cbegin() + pos, s.cbegin() + pos + length, buffer );
          }
 
       // copy Constructor
@@ -150,6 +150,11 @@ class string
       size_t size ( ) const
          {
          return length;
+         }
+
+      bool empty( ) const
+         {
+         return !length;
          }
 
       // Find
@@ -273,7 +278,7 @@ class string
       // REQUIRES: 0 <= i < size()
       // MODIFIES: Allows modification of the i'th element
       // EFFECTS: Returns the i'th character of the string
-      char& operator [ ] ( size_t i )
+      char& operator [ ] ( size_t i ) const
          {
          return * ( buffer + i );
          }
@@ -294,6 +299,22 @@ class string
          return buffer[0];
       }
 
+      // string back
+      // REQUIRES: Nothing
+      // MODIFIES: Nothing
+      // EFFECTS: Returns a reference to the last character of the string.
+      char& back() {
+         return buffer[length - 1];
+      }
+
+      // string back
+      // REQUIRES: Nothing
+      // MODIFIES: Nothing
+      // EFFECTS: Returns a const-qualified reference to the last character of the string.
+      const char& back() const {
+         return buffer[length - 1];
+      }
+
       // string Append
       // REQUIRES: Nothing
       // MODIFIES: *this
@@ -302,8 +323,8 @@ class string
       void operator+= ( const string& other )
          {
          string temp( length + other.size() );
-         APESEARCH::copy( cbegin(), cend(), temp.buffer ); // Copy original
-         APESEARCH::copy( other.cbegin(), other.cend(), temp.buffer + length ); // Copy other string
+         copy( cbegin(), cend(), temp.buffer ); // Copy original
+         copy( other.cbegin(), other.cend(), temp.buffer + length ); // Copy other string
          swap( temp ); // Swap contents
          }
 
@@ -314,8 +335,20 @@ class string
       void push_back ( char c )
          {
          string temp( length + 1 );
-         APESEARCH::copy( cbegin(), cend(), temp.begin() );
+         copy( cbegin(), cend(), temp.begin() );
          * ( temp.buffer + length ) = c;
+         swap( temp );
+         } // end push_back()
+
+      // Push Back
+      // REQUIRES: Nothing
+      // MODIFIES: *this
+      // EFFECTS: Appends c to the string
+      void push_front ( char c )
+         {
+         string temp( length + 1 );
+         *temp.buffer = c;
+         copy( cbegin(), cend(), temp.begin() + 1 );
          swap( temp );
          } // end push_back()
 

@@ -14,9 +14,9 @@
 struct args
    {
     std::stringstream &ss;
-    semaphore& sema;
+    APESEARCH::semaphore& sema;
 
-    args( std::stringstream& _ss, semaphore& _sema ) : ss( _ss ), sema( _sema ) {}
+    args( std::stringstream& _ss, APESEARCH::semaphore& _sema ) : ss( _ss ), sema( _sema ) {}
    };
 
 static unsigned val = 0;
@@ -30,7 +30,7 @@ static void *thread( void *arg )
     unsigned id = val++;
     std::cout << "Num: " <<  val << std::endl;
     coutlk.unlock();
-    argument->sema.acquire();
+    argument->sema.down();
     coutlk.lock();
     std::cout << id << " acquired semaphore " << std::endl;
     coutlk.unlock();
@@ -40,7 +40,7 @@ static void *thread( void *arg )
 
 
     argument->ss << "\nJust Exiting...\n";
-    argument->sema.release();
+    argument->sema.up();
  
     return nullptr;
    }
@@ -48,7 +48,7 @@ static void *thread( void *arg )
 TEST( test_native_semaphore )
    {
     std::stringstream strStream;
-    semaphore sema( 1 );
+    APESEARCH::semaphore sema( 1 );
     pthread_t t1, t2;
     APESEARCH::unique_ptr< args > argument( new args( strStream, sema ) );
     void * convArgs = (void * )argument.get();
