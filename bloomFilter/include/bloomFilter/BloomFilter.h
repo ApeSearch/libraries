@@ -14,16 +14,21 @@
 //-D_LARGEFILE64_SOURCE
 
 #define NUM_OF_BITS_INT (8 * sizeof(unsigned int))
+#define NUM_OF_OBJECTS 200000000
+#define FILE_NAME "bloomFilter.bin"
+#define FALSE_POS_RATE 0.0001
 
 class BitArray{
     public:
-        BitArray(ssize_t size, int fd){
+        BitArray(ssize_t size, int fd) {
             ssize_t numOfInt = (size + NUM_OF_BITS_INT - 1) / NUM_OF_BITS_INT; //https://stackoverflow.com/questions/17944/how-to-round-up-the-result-of-integer-division
             numOfBits = size;
-            ssize_t fileSize = lseek64(fd, 0, SEEK_END);
+            int fileSize = lseek( fd, 0, SEEK_END );
+            //ssize_t fileSize = lseek64(fd, 0, SEEK_END);
             if((long unsigned int)fileSize < numOfInt * sizeof(unsigned int))
                 {
-                ssize_t result = lseek64( fd, off64_t( ( numOfInt * sizeof(int) ) - 1 ), SEEK_SET );
+                int result = lseek( fd, int( ( numOfInt * sizeof(int) ) - 1 ), SEEK_SET );
+                //ssize_t result = lseek64( fd, off64_t( ( numOfInt * sizeof(int) ) - 1 ), SEEK_SET );
                 if ( result == -1 )
                     {
                     perror( "Issue with lseek while trying to stretch file" );
@@ -35,20 +40,17 @@ class BitArray{
                    perror( "Error writing bytes to file" );
                    return;
                    }
-                struct stat64 buf;
-                fstat64( fd, &buf );
-                assert( buf.st_size == fileSize );
+                //struct stat64 buf;
+                //fstat( fd, &buf );
+                //fstat64( fd, &buf );
+                //assert( buf.st_size == fileSize );
                 }
             array = (int *) mmap(NULL, numOfInt * sizeof(unsigned int), PROT_WRITE | PROT_READ, MAP_SHARED, fd, 0);
             
         }
-        ~BitArray(){
+        ~BitArray() {
             munmap( array, numOfBits * sizeof(char) * sizeof(int) );
         }
-        ~BitArray()
-           {
-            delete[] array;
-           }
 
         void set(unsigned int index){
             array[index/NUM_OF_BITS_INT] |= (1U << (index%NUM_OF_BITS_INT));
@@ -74,9 +76,11 @@ class BitArray{
 
 class Bloomfilter {
 public:
-    Bloomfilter(int num_objects, double false_positive_rate, const APESEARCH::string& name) {
+    Bloomfilter() {
         //Determine the size of bits of our data vector, and resize
-
+        int num_objects = NUM_OF_OBJECTS;
+        double false_positive_rate = FALSE_POS_RATE;
+        const APESEARCH::string name(FILE_NAME);
         //Determine number of hash functions to use]
         numOfExpectedObjects = num_objects;
         falsePostiveRate = false_positive_rate;
