@@ -32,6 +32,11 @@ class Socket
 
       virtual ssize_t receive(char *buffer, int length);
 
+      int fd() const 
+         {
+         return socketFD;
+         }
+
    protected:
       struct timeval tv;
       int socketFD;
