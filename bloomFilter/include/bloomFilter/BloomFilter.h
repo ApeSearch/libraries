@@ -45,6 +45,11 @@ class BitArray{
         ~BitArray(){
             munmap( array, numOfBits * sizeof(char) * sizeof(int) );
         }
+        ~BitArray()
+           {
+            delete[] array;
+           }
+
         void set(unsigned int index){
             array[index/NUM_OF_BITS_INT] |= (1U << (index%NUM_OF_BITS_INT));
             }

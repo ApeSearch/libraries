@@ -120,8 +120,8 @@ TEST( test_move_constructor )
         strings.emplace_back( "testing" );
     APESEARCH::vector<APESEARCH::string> moved( std::move( strings ) ); 
 
-    ASSERT_EQUAL( strings.size(), 0 );
-    ASSERT_EQUAL( moved.size(), 100 );
+    ASSERT_EQUAL( strings.size(), 0u );
+    ASSERT_EQUAL( moved.size(), 100u );
    }
 
 TEST( test_move_operator )
@@ -132,8 +132,21 @@ TEST( test_move_operator )
     APESEARCH::vector<APESEARCH::string> moved; 
     moved = std::move( strings );
 
-    ASSERT_EQUAL( strings.size(), 0 );
-    ASSERT_EQUAL( moved.size(), 100 );
+    ASSERT_EQUAL( strings.size(), 0u );
+    ASSERT_EQUAL( moved.size(), 100u );
    }
+
+TEST( test_init_list_constructor )
+    {
+    APESEARCH::vector<int> initializer_list_test
+        {
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+        };
+    for (int i = 0; i < 10; ++i)
+        {
+        std::cout << i << "!=" << initializer_list_test[(unsigned)i] << std::endl;
+        ASSERT_EQUAL(i, initializer_list_test[(unsigned)i]);
+        }
+    }
 
 TEST_MAIN()

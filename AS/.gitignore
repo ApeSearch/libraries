@@ -8,3 +8,4 @@ tests/output
 *.dSYM
 *.o
 .DS_Store
+output.txt

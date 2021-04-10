@@ -7,6 +7,10 @@
 Socket::Socket(const Address& address, time_t seconds)
 {
     socketFD = socket(address.hints.ai_family, address.hints.ai_socktype, address.hints.ai_protocol);
+
+    if(socketFD < 0)
+      //TODO
+      throw;
     
     if(seconds > 0)
     {
@@ -26,14 +30,28 @@ Socket::Socket(const Address& address, time_t seconds)
          
     if(connect(socketFD, address.info->ai_addr, address.info->ai_addrlen) < 0)
     {
+      //TODO
         throw;
     }
 }
 
 
+Socket::Socket(const struct sockaddr_in &addr)
+{
+  socketFD = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+  if(socketFD < 0)
+    //TODO
+    throw;
+  
+  if(connect(socketFD, (struct sockaddr *) &addr, sizeof(addr)) < 0)
+    //TODO
+    throw;
+
+}
+
 Socket::Socket(int port)
 {
-    socketFD = socket(AF_INET, SOCK_STREAM, 0);
+    socketFD = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
     if(socketFD < 0)
         //TODO
@@ -70,6 +88,9 @@ Socket::Socket() : socketFD(-1){}
 APESEARCH::unique_ptr<Socket> Socket::accept(struct sockaddr *addr, socklen_t *addrlen)
 {
         int connectionFD = ::accept(socketFD, addr, addrlen);
+	if(connectionFD < 0 )
+	  throw;
+
         APESEARCH::unique_ptr<Socket> socket( new Socket() );
         socket->socketFD = connectionFD;
 

@@ -22,9 +22,6 @@ priority_queue<T, Container, Compare>::priority_queue(InputIterator first, Input
                        const Compare& comp, Container&& c) : 
         priority_queue<T, Container, Compare>::priority_queue<InputIterator>( first, last, comp, c ) {}
 
-#include "vector.h"
-#include "utility.h"
-#include "assert.h"
 
 inline static int alignDivision( const int index )
    {
