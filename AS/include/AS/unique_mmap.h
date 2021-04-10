@@ -187,7 +187,7 @@ public:
       } // end getPointer()
    };
 
-
+} // end namespace
 
 
 #endif
