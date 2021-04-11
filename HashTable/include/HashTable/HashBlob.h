@@ -39,15 +39,7 @@ constexpr size_t RoundUpConstExpr( size_t length, size_t boundary = 8 )
    return ( length + ( boundary - 1 ) ) & ~( boundary - 1 );
    }
 
-size_t RoundUp( size_t length, size_t boundary = 8 )
-   {
-   // Round up to the next multiple of the boundary, which
-   // must be a power of 2.
-
-   static const size_t oneless = boundary - 1,
-      mask = ~( oneless );
-   return ( length + oneless ) & mask;
-   }
+size_t RoundUp( size_t length, size_t boundary = 8 );
 
 
 struct SerialTuple
