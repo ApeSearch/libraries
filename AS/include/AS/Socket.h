@@ -32,7 +32,7 @@ class Socket
 
       virtual ssize_t receive(char *buffer, int length);
 
-      int fd() const 
+      int getFD() const 
          {
          return socketFD;
          }

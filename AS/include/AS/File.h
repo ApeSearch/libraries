@@ -83,8 +83,55 @@ namespace APESEARCH
        // More efficent than std::swap
        File( File&& file ) : fd( file.fd )
           {
+          
           file.fd = -1;
           }
+      
+      ssize_t write( const char *buf, size_t nbyte )
+         {
+         ssize_t bytesWritten = 0;
+         ssize_t revd = 0;
+         const char *end = buf + nbyte;
+         while ( buf != end )
+            {
+            revd = ::write( fd, buf, nbyte );
+
+            if ( revd < 0 )
+               {
+               perror("Error with writing to file");
+               throw failure( "Issue iwth writing to file", errno, 0 );
+               } // end if
+
+            bytesWritten += revd;
+            nbyte -= revd;
+            buf += revd;
+            }
+         return bytesWritten;
+         }
+      
+      ssize_t read( char *buf, size_t nbyte )
+         {
+         ssize_t bytesRead = 0;
+         ssize_t revd = 0;
+         while( nbyte && ( revd = ::read( fd, buf, nbyte ) ) > 0 )
+            {
+            
+            bytesRead += revd;
+            nbyte -= revd;
+            buf += revd;
+            } // end while
+         if ( revd < 0 )
+            {
+            perror("Error with writing to file");
+            throw failure( "Issue with writing to file", errno, 0 );
+            } // end if
+            
+         return bytesRead;
+         }
+
+      ssize_t truncate(size_t length){
+         ftruncate(fd, length);
+      }
 
        File& operator=( File&& file )
           {

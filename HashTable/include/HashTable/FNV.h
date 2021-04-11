@@ -1,3 +1,9 @@
+
+#pragma once
+
+#ifndef FNV_H_AS
+#define FNV_H_AS
+ 
 class FNV
 {
 public:
@@ -19,3 +25,5 @@ public:
       return hash;
       } //end operator()
 };
+
+#endif

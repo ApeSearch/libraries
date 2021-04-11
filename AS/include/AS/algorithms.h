@@ -95,6 +95,18 @@ namespace APESEARCH
                *first = newVal;
            }
        }
+    
+    template<class ForwardIterator, class T>
+    std::size_t count( ForwardIterator first, ForwardIterator last, const T& val )
+       {
+        std::size_t n = 0;
+        for (; first != last; ++first) 
+            {
+            if ( *first == val )
+                ++n;
+            } // end for
+        return n;
+       } // end count()
 
 
 } // end namespace APESEARCH
