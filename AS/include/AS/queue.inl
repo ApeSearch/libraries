@@ -116,6 +116,11 @@ public:
 
    explicit BinaryPQ( COMP comp = COMP() ) : BaseClass( comp ) {}
 
+   explicit BinaryPQ( const size_t _size, COMP comp = COMP() ) : BaseClass( comp ) 
+      {
+      data.reserve( _size );
+      }
+
    template<typename InputIterator>
    BinaryPQ( InputIterator start, InputIterator end, COMP comp = COMP() ) 
          : BaseClass{ comp }, data( start, end )
