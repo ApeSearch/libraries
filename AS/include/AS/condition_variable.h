@@ -8,6 +8,7 @@
 #include "mutex.h"
 #include <chrono>
 #include <errno.h> // for errno
+#include <iostream>
 
 namespace APESEARCH
 {
