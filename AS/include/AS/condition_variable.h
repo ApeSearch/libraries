@@ -69,7 +69,6 @@ public:
             switch( rt )
             {
             case EAGAIN:
-                return cv_status::timeout;
             case ETIMEDOUT:
                 return cv_status::timeout;
             case EINVAL:
