@@ -133,6 +133,13 @@ namespace APESEARCH
          ftruncate(fd, length);
       }
 
+      size_t fileSize( )
+         {
+         struct stat fileInfo;
+         fstat( fd, &fileInfo );
+         return ( size_t )fileInfo.st_size;
+         }
+
        File& operator=( File&& file )
           {
           #ifdef LOCAL

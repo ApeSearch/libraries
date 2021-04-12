@@ -90,7 +90,7 @@ public:
     * prot: Describes desired memory protection of mapping ( of which must not conflict with open mode 
     *       of file ).
     *       Following: PROT_EXEC: Pages may be executed ( forked )
-    *       Prot_READ: pages may be read
+    *       PROT_READ: pages may be read
     *       PROT_WRITE: Pages may be written
     *       PROT_NONE: Pages may be not accessed
     * 
