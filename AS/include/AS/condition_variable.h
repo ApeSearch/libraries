@@ -64,9 +64,9 @@ public:
 
         struct timespec t{ secs.time_since_epoch().count(), ns.count() };     
         int rt;
-        if ( ( rt = pthread_cond_timedwait( &cv_construct, lock.mutex()->native_handle() , &t ) ) < 0 )                           
+        if ( ( rt = pthread_cond_timedwait( &cv_construct, lock.mutex()->native_handle() , &t ) ) != 0 )                           
             {
-            switch( errno )
+            switch( rt )
             {
             case EAGAIN:
                 return cv_status::timeout;
