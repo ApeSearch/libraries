@@ -53,13 +53,18 @@ public:
         //auto secs = duration_cast<std::chrono::seconds>( inNano - Clock::now() );
         //auto ns = duration_cast<std::chrono::seconds>( inNano - secs );
 
-        std::chrono::nanoseconds ns = inNano - Clock::now();
-        auto secs = std::chrono::duration_cast< std::chrono::seconds >( ns ); // truncate nanoseconds
-        ns -= secs; // get it back
+        //std::chrono::nanoseconds ns = inNano - Clock::now();
+        //auto secs = std::chrono::duration_cast< std::chrono::seconds >( ns ); // truncate nanoseconds
+        //ns -= secs; // get it back
 
-        struct timespec t{ secs.count(), ns.count() };     
+        auto secs = std::chrono::time_point_cast< std::chrono::seconds >( inNano );
+        auto ns = std::chrono::time_point_cast< std::chrono::nanoseconds >( inNano ) - 
+            std::chrono::time_point_cast< std::chrono::nanoseconds >( secs );
 
-        if (pthread_cond_timedwait( &cv_construct, lock.mutex()->native_handle() , &t ) != 0)                           
+
+        struct timespec t{ secs.time_since_epoch().count(), ns.count() };     
+        int rt;
+        if ( ( rt = pthread_cond_timedwait( &cv_construct, lock.mutex()->native_handle() , &t ) ) < 0 )                           
             {
             switch( errno )
             {
