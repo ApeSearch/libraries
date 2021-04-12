@@ -51,13 +51,6 @@ public:
         std::chrono::time_point<Clock, std::chrono::nanoseconds> inNano = 
         std::chrono::time_point<Clock, std::chrono::nanoseconds>( abs_time.time_since_epoch() );
 
-        //auto secs = duration_cast<std::chrono::seconds>( inNano - Clock::now() );
-        //auto ns = duration_cast<std::chrono::seconds>( inNano - secs );
-
-        //std::chrono::nanoseconds ns = inNano - Clock::now();
-        //auto secs = std::chrono::duration_cast< std::chrono::seconds >( ns ); // truncate nanoseconds
-        //ns -= secs; // get it back
-
         auto secs = std::chrono::time_point_cast< std::chrono::seconds >( inNano );
         auto ns = std::chrono::time_point_cast< std::chrono::nanoseconds >( inNano ) - 
             std::chrono::time_point_cast< std::chrono::nanoseconds >( secs );
