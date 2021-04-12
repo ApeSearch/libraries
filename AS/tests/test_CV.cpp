@@ -22,17 +22,20 @@ void waits(int idx)
         std::cerr << "Thread " << idx << " finished waiting. i == " << i << '\n';
     else
         std::cerr << "Thread " << idx << " timed out. i == " << i << '\n';
+
+    APESEARCH::cv_status status = cv.wait_until( lk, now + idx*300ms );
+    assert( status == APESEARCH::cv_status::timeout );
 }
  
 void signals()
 {
-    std::this_thread::sleep_for(120ms);
+    std::this_thread::sleep_for(220ms);
     std::cerr << "Notifying...\n";
-    cv.notify_all();
+    //cv.notify_all();
     std::this_thread::sleep_for(100ms);
     i = 1;
-    std::cerr << "Notifying again...\n";
-    cv.notify_all();
+    //std::cerr << "Notifying again...\n";
+    //cv.notify_all();
 }
 
 void *signalsWrapper( void * )
