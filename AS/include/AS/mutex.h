@@ -7,6 +7,7 @@
 #include <pthread.h>
 #include "assert.h"
 #include <system_error>
+#include "algorithms.h" // for APESEARCH::swap()
 
 namespace APESEARCH
 {
@@ -71,7 +72,7 @@ namespace APESEARCH
 
         void unlock();
 
-        void swapUM(unique_lock& u) noexcept;
+        void swap(unique_lock& u) noexcept;
         mutex_type* release() noexcept;
 
         bool owns_lock() const noexcept;
@@ -87,10 +88,10 @@ template <class Mutex>
   void swap(unique_lock<Mutex>& x, unique_lock<Mutex>& y) noexcept;
 
 
+#include "mutex.inl" // unique_lock Inline Definition 
 
 } // end namespace APESEARCH
 
-#include "mutex.inl" // unique_lock Inline Definition 
 
 
 #endif
