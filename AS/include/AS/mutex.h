@@ -87,11 +87,9 @@ namespace APESEARCH
 template <class Mutex>
   void swap(unique_lock<Mutex>& x, unique_lock<Mutex>& y) noexcept;
 
-
-#include "mutex.inl" // unique_lock Inline Definition 
-
 } // end namespace APESEARCH
 
+#include "mutex.inl" // unique_lock Inline Definition 
 
 
 #endif
