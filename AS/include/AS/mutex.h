@@ -71,7 +71,7 @@ namespace APESEARCH
 
         void unlock();
 
-        void swapUM(unique_lock& u) noexcept;
+        void swap(unique_lock& u) noexcept;
         mutex_type* release() noexcept;
 
         bool owns_lock() const noexcept;

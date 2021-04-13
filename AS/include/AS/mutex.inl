@@ -46,7 +46,7 @@
    APESEARCH::unique_lock<Mutex>::unique_lock( unique_lock<Mutex>&& u ) noexcept : mutexOf( nullptr )
       {
        // Assumes that the lock is already acquired
-       u.swapUM( *this );
+       u.swap( *this );
       }
 
    template<class Mutex>
@@ -54,7 +54,7 @@
       {
       unique_lock<Mutex> temp;
       swap( u, temp );
-      temp.swapUM( *this ); // swap what was taken from temp (allows temp to do whatever freeing is necessary)
+      temp.swap( *this ); // swap what was taken from temp (allows temp to do whatever freeing is necessary)
       return *this;
       }
 
@@ -83,7 +83,7 @@
       }
 
    template<class Mutex>
-   void APESEARCH::unique_lock<Mutex>::swapUM( unique_lock<Mutex>& u ) noexcept
+   void APESEARCH::unique_lock<Mutex>::swap( unique_lock<Mutex>& u ) noexcept
      {
       swap( mutexOf, u.mutexOf );
       swap( hasLock, u.hasLock );
@@ -118,5 +118,5 @@
    template <class Mutex>
      void APESEARCH::swap(unique_lock<Mutex>& x, unique_lock<Mutex>& y) noexcept
         {
-         x.swapUM( y );
+         x.swap( y );
         }
