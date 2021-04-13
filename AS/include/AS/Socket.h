@@ -11,11 +11,14 @@ class Socket
 {
    public:
 
-      //Client Socket
+      //Client Socket using hostname
       Socket(const Address& address, time_t seconds);
 
       //Server Socket
       Socket(int port);
+      
+      //Client socket using ip specified in addr
+      Socket(const struct sockaddr_in &addr);
 
       //Default Constructor
       Socket();
@@ -28,6 +31,11 @@ class Socket
       virtual ssize_t send(const char* buffer, int length);
 
       virtual ssize_t receive(char *buffer, int length);
+
+      int getFD() const 
+         {
+         return socketFD;
+         }
 
    protected:
       struct timeval tv;

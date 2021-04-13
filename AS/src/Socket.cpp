@@ -7,6 +7,10 @@
 Socket::Socket(const Address& address, time_t seconds)
 {
     socketFD = socket(address.hints.ai_family, address.hints.ai_socktype, address.hints.ai_protocol);
+
+    if(socketFD < 0)
+      //TODO
+      throw "fail";
     
     if(seconds > 0)
     {
@@ -17,32 +21,47 @@ Socket::Socket(const Address& address, time_t seconds)
         //Setting socket options
         if(setsockopt(socketFD, SOL_SOCKET, SO_RCVTIMEO, (const char*) &tv, sizeof tv) == -1)
             //TODO
-            throw;
+            throw "fail";
 
         if(setsockopt(socketFD, SOL_SOCKET, SO_SNDTIMEO, (const char*) &tv, sizeof tv) == -1)
             //TODO
-            throw;
+            throw "fail";
     }
          
     if(connect(socketFD, address.info->ai_addr, address.info->ai_addrlen) < 0)
     {
-        throw;
+      //TODO
+        throw "fail";
     }
 }
 
 
+Socket::Socket(const struct sockaddr_in &addr)
+{
+  socketFD = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+  if(socketFD < 0)
+    //TODO
+    throw "fail";
+  
+  if(connect(socketFD, (struct sockaddr *) &addr, sizeof(addr)) < 0)
+    //TODO
+    throw "fail";
+}
+
 Socket::Socket(int port)
 {
-    socketFD = socket(AF_INET, SOCK_STREAM, 0);
+    socketFD = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
     if(socketFD < 0)
         //TODO
-        throw;
+        throw "fail";
 
     //Set socket options to reuse address and port
-    if (setsockopt(socketFD, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, reinterpret_cast<void *>(1), sizeof(int)) < 0)
+    int enable = 1;
+
+    if (setsockopt(socketFD, SOL_SOCKET, SO_REUSEPORT, &enable, sizeof(int)) < 0)
         //TODO
-        throw;
+        throw "fail";
     
     struct sockaddr_in addr;
     memset(&addr, 0, sizeof(addr));
@@ -57,12 +76,12 @@ Socket::Socket(int port)
     //Bind socket
     if(bind(socketFD, (sockaddr *) &addr, sizeof(addr)) < 0)
         //TODO
-        throw;
+        throw "fail";
 
     //Mark this socket as listening passively    
     if(listen(socketFD, QUEUESIZE) < 0)
         //TODO
-        throw;
+        throw "fail";
 }
 
 Socket::Socket() : socketFD(-1){}
@@ -70,6 +89,9 @@ Socket::Socket() : socketFD(-1){}
 APESEARCH::unique_ptr<Socket> Socket::accept(struct sockaddr *addr, socklen_t *addrlen)
 {
         int connectionFD = ::accept(socketFD, addr, addrlen);
+	if(connectionFD < 0 )
+	  throw "fail";
+
         APESEARCH::unique_ptr<Socket> socket( new Socket() );
         socket->socketFD = connectionFD;
 
@@ -98,7 +120,7 @@ ssize_t Socket::send(const char* buffer, int length)
     //TODO Write custom exception
     if (socketFD == -1) 
     {
-        throw;
+        throw "fail";
     }
     int res = ::send(socketFD, buffer, length, 0);
     if( res == -1 )
@@ -109,11 +131,11 @@ ssize_t Socket::send(const char* buffer, int length)
 
 void checkErrno()
    {
-    switch( errno )
-    {
-    case EWOULDBLOCK:
-        throw;
-    default:
-        throw;
-    }
+        switch( errno )
+        {
+        case EWOULDBLOCK:
+            throw;
+        default:
+            throw;
+        }
    }

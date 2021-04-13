@@ -5,7 +5,6 @@
 //------------------------------------------------------------------------------------------------
 //*** Look at mutex.h For full interface
 
-#include "algorithms.h" // for APESEARCH::swap()
 
    template<class Mutex>
    APESEARCH::unique_lock<Mutex>::unique_lock() noexcept : mutexOf( nullptr ), hasLock( false ) {}
@@ -53,7 +52,7 @@
    APESEARCH::unique_lock<Mutex>& APESEARCH::unique_lock<Mutex>::operator=( unique_lock<Mutex>&& u ) noexcept
       {
       unique_lock<Mutex> temp;
-      swap( u, temp );
+      APESEARCH::swap( u, temp );
       temp.swap( *this ); // swap what was taken from temp (allows temp to do whatever freeing is necessary)
       return *this;
       }
@@ -85,15 +84,15 @@
    template<class Mutex>
    void APESEARCH::unique_lock<Mutex>::swap( unique_lock<Mutex>& u ) noexcept
      {
-      swap( mutexOf, u.mutexOf );
-      swap( hasLock, u.hasLock );
+      APESEARCH::swap( mutexOf, u.mutexOf );
+      APESEARCH::swap( hasLock, u.hasLock );
      } // end swap()
 
    template<class Mutex>
    Mutex* APESEARCH::unique_lock<Mutex>::release() noexcept
       {
       mutex_type *ptr = nullptr;
-      swap( ptr, mutexOf );
+      APESEARCH::swap( ptr, mutexOf );
       return ptr;
       } // end release()
 

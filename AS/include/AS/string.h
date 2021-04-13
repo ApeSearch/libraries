@@ -152,6 +152,11 @@ class string
          return length;
          }
 
+      bool empty( ) const
+         {
+         return !length;
+         }
+
       // Find
       // REQUIRES: Nothing
       // MODIFIES: Nothing
@@ -273,7 +278,7 @@ class string
       // REQUIRES: 0 <= i < size()
       // MODIFIES: Allows modification of the i'th element
       // EFFECTS: Returns the i'th character of the string
-      char& operator [ ] ( size_t i )
+      char& operator [ ] ( size_t i ) const
          {
          return * ( buffer + i );
          }
@@ -292,6 +297,22 @@ class string
       // EFFECTS: Returns a const-qualified reference to the first character of the string.
       const char& front() const {
          return buffer[0];
+      }
+
+      // string back
+      // REQUIRES: Nothing
+      // MODIFIES: Nothing
+      // EFFECTS: Returns a reference to the last character of the string.
+      char& back() {
+         return buffer[length - 1];
+      }
+
+      // string back
+      // REQUIRES: Nothing
+      // MODIFIES: Nothing
+      // EFFECTS: Returns a const-qualified reference to the last character of the string.
+      const char& back() const {
+         return buffer[length - 1];
       }
 
       // string Append
@@ -316,6 +337,18 @@ class string
          string temp( length + 1 );
          copy( cbegin(), cend(), temp.begin() );
          * ( temp.buffer + length ) = c;
+         swap( temp );
+         } // end push_back()
+
+      // Push Back
+      // REQUIRES: Nothing
+      // MODIFIES: *this
+      // EFFECTS: Appends c to the string
+      void push_front ( char c )
+         {
+         string temp( length + 1 );
+         *temp.buffer = c;
+         copy( cbegin(), cend(), temp.begin() + 1 );
          swap( temp );
          } // end push_back()
 

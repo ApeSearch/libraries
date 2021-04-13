@@ -243,7 +243,13 @@ namespace APESEARCH
          end = new ( _elts + _size++ ) T( std::forward<Args>( args )... );
          return *end;
          }
-
+      
+      void shrink_to_fit()
+         {
+         if ( _size < _capacity )
+            reserve( _size );
+         }
+      
       // REQUIRES: Nothing
       // MODIFIES: this, size()
       // EFFECTS: Removes the last element of the vector,

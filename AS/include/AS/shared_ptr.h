@@ -1,3 +1,5 @@
+//! Not Done
+
 #pragma once
 
 #ifndef SHARED_PTR_APE_SEARCH
@@ -9,6 +11,9 @@
 
 namespace APESEARCH
 {
+
+template<class T>
+class weak_ptr;
 
 template<class T>
 class shared_ptr
@@ -31,7 +36,7 @@ public:
     template<class Y> shared_ptr(shared_ptr<Y>&& r) noexcept;
     template<class Y> explicit shared_ptr(const weak_ptr<Y>& r);
     //template <class Y, class D> shared_ptr(unique_ptr<Y, D>&& r);
-    shared_ptr(nullptr_t) : shared_ptr() { }
+    shared_ptr(std::nullptr_t) : shared_ptr() { }
 
     // destructor:
     ~shared_ptr();
@@ -76,29 +81,29 @@ template<class T, class U>
     bool operator>=(shared_ptr<T> const& a, shared_ptr<U> const& b) noexcept;
 
 template <class T>
-    bool operator==(const shared_ptr<T>& x, nullptr_t) noexcept;
+    bool operator==(const shared_ptr<T>& x, std::nullptr_t) noexcept;
 template <class T>
-    bool operator==(nullptr_t, const shared_ptr<T>& y) noexcept;
+    bool operator==(std::nullptr_t, const shared_ptr<T>& y) noexcept;
 template <class T>
-    bool operator!=(const shared_ptr<T>& x, nullptr_t) noexcept;
+    bool operator!=(const shared_ptr<T>& x, std::nullptr_t) noexcept;
 template <class T>
-    bool operator!=(nullptr_t, const shared_ptr<T>& y) noexcept;
+    bool operator!=(std::nullptr_t, const shared_ptr<T>& y) noexcept;
 template <class T>
-    bool operator<(const shared_ptr<T>& x, nullptr_t) noexcept;
+    bool operator<(const shared_ptr<T>& x, std::nullptr_t) noexcept;
 template <class T>
-bool operator<(nullptr_t, const shared_ptr<T>& y) noexcept;
+bool operator<(std::nullptr_t, const shared_ptr<T>& y) noexcept;
 template <class T>
-    bool operator<=(const shared_ptr<T>& x, nullptr_t) noexcept;
+    bool operator<=(const shared_ptr<T>& x, std::nullptr_t) noexcept;
 template <class T>
-    bool operator<=(nullptr_t, const shared_ptr<T>& y) noexcept;
+    bool operator<=(std::nullptr_t, const shared_ptr<T>& y) noexcept;
 template <class T>
-    bool operator>(const shared_ptr<T>& x, nullptr_t) noexcept;
+    bool operator>(const shared_ptr<T>& x, std::nullptr_t) noexcept;
 template <class T>
-    bool operator>(nullptr_t, const shared_ptr<T>& y) noexcept;
+    bool operator>(std::nullptr_t, const shared_ptr<T>& y) noexcept;
 template <class T>
-    bool operator>=(const shared_ptr<T>& x, nullptr_t) noexcept;
+    bool operator>=(const shared_ptr<T>& x, std::nullptr_t) noexcept;
 template <class T>
-    bool operator>=(nullptr_t, const shared_ptr<T>& y) noexcept;
+    bool operator>=(std::nullptr_t, const shared_ptr<T>& y) noexcept;
 
 // shared_ptr specialized algorithms:
 template<class T> void swap(shared_ptr<T>& a, shared_ptr<T>& b) noexcept;
@@ -113,7 +118,7 @@ template<class T, class U>
 
 // shared_ptr I/O:
 template<class E, class T, class Y>
-    basic_ostream<E, T>& operator<< (std::basic_ostream<E, T>& os, shared_ptr<Y> const& p);
+    std::basic_ostream<E, T>& operator<< (std::basic_ostream<E, T>& os, shared_ptr<Y> const& p);
 
 // shared_ptr get_deleter:
 template<class D, class T> D* get_deleter(shared_ptr<T> const& p) noexcept;

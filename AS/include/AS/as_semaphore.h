@@ -37,16 +37,15 @@ using binary_semaphore = counting_semaphore<1>;
 }
 */
 
+#include <atomic>
+#include <chrono>
+#include <semaphore.h>
+#include <iostream>
+#include <limits>
+
 namespace APESEARCH
 {
-    #include <atomic>
-    #include <chrono>
-    
     //Uses native semaphores
-    
-    #include <semaphore.h>
-    #include <iostream>
-    #include <limits>
     
     #define SEMAPHORE_MAX (std::numeric_limits<std::size_t>::max())
     
@@ -57,9 +56,10 @@ namespace APESEARCH
     #else
         sem_t pSema;
     #endif
+    std::size_t number;
     
     public:
-        semaphore(std::size_t __count)
+        semaphore(std::size_t __count) : number ( __count ) 
             {
             #ifdef MACOS
                 if ( ( pSema = sem_open( "/s", O_CREAT, 0645, __count ) ) == SEM_FAILED )
@@ -82,7 +82,7 @@ namespace APESEARCH
             }
         inline void down( std::size_t __update = 1 )
             {
-            for(; __update; --__update)
+            for(; __update; --__update, --number )
                 {
                 #ifdef MACOS
                    sem_post( pSema );
@@ -90,6 +90,7 @@ namespace APESEARCH
                    sem_post( &pSema );
                 #endif
                 }
+            
             }
         void up()
             {
@@ -98,12 +99,17 @@ namespace APESEARCH
             #else
                sem_wait( &pSema );
             #endif
+            ++number;
             }
             //    
             // bool try_acquire_for(std::chrono::nanoseconds __rel_time)
             // {
             //     return __libcpp_semaphore_wait_timed(&__semaphore, __rel_time);
             // }
+        std::size_t getCount() const 
+           {
+            return number;
+           }
     };
     
     #if __cplusplus > 201703L

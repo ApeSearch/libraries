@@ -32,7 +32,7 @@ class atomic_queue
    static mutex classMutex; // dealing with move constructors
 public:
    atomic_queue() {}
-   atomic_queue( Container&& c ) : safeQueue( std::forward<T>( c ) )
+   atomic_queue( Container&& c ) : safeQueue( std::forward<Container>( c ) )
       {
       }
 
