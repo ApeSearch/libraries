@@ -36,7 +36,7 @@ static void *thread( void *arg )
     coutlk.unlock();
     argument->ss << "\nEntered..\n";
 
-    sleep( 4 );
+    sleep( 6 );
 
 
     argument->ss << "\nJust Exiting...\n";
@@ -48,13 +48,13 @@ static void *thread( void *arg )
 TEST( test_native_semaphore )
    {
     std::stringstream strStream;
-    APESEARCH::semaphore sema( 1 );
+    APESEARCH::semaphore sema( 0 );
     pthread_t t1, t2;
     APESEARCH::unique_ptr< args > argument( new args( strStream, sema ) );
     void * convArgs = (void * )argument.get();
     pthread_create( &t1, NULL, thread, convArgs );
-
     sleep( 2 );
+    sema.up();
     pthread_create( &t2, NULL, thread, convArgs );
     pthread_join( t1, NULL );
     pthread_join( t2, NULL );
