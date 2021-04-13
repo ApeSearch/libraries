@@ -112,7 +112,10 @@ public:
    
    // Construct with custom container
     PThreadPool( Container&& c, size_t numThreads, size_t _maxSubmits = DEFAULTMAXSUBMITS ) 
-         noexcept : _queue( std::forward<Container>( c ) ), _threads( numThreads ), maxSubmits( _maxSubmits ), halt( true ) {}
+         noexcept : _queue( std::forward<Container>( c ) ), _threads( numThreads ), maxSubmits( _maxSubmits ), halt( true ) 
+      {
+      init();
+      }
 
    PThreadPool( size_t numThreads, size_t _maxSubmits = DEFAULTMAXSUBMITS ) noexcept 
          : PThreadPool( numThreads, defer_init, _maxSubmits )
@@ -126,7 +129,7 @@ public:
     PThreadPool( PThreadPool && ) = delete;
 
     PThreadPool& operator=( const PThreadPool& ) = delete;
-    PThreadPool& operator=( const PThreadPool&& ) = delete;
+    PThreadPool& operator=( PThreadPool&& ) = delete;
 
    // Gives user program more freedom with when they want to allow threads to start running
    void init()
