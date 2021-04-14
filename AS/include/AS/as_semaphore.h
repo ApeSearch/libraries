@@ -42,6 +42,7 @@ using binary_semaphore = counting_semaphore<1>;
 #include <semaphore.h>
 #include <iostream>
 #include <limits>
+#include <atomic>
 
 namespace APESEARCH
 {
@@ -56,10 +57,10 @@ namespace APESEARCH
     #else
         sem_t pSema;
     #endif
-    std::size_t number;
+    std::atomic<ssize_t> number;
     
     public:
-        semaphore(std::size_t __count) : number ( __count ) 
+        semaphore(std::size_t __count) : number ( ssize_t( __count ) ) 
             {
             #ifdef MACOS
                 if ( ( pSema = sem_open( "/s", O_CREAT, 0645, __count ) ) == SEM_FAILED )
@@ -82,31 +83,34 @@ namespace APESEARCH
             }
         inline void down( std::size_t __update = 1 )
             {
-            for(; __update; --__update, --number )
+            for(; __update; --__update )
                 {
+                --number;
+                #ifdef MACOS
+                   sem_wait( pSema );
+                #else
+                   sem_wait( &pSema );
+                #endif
+                }
+            }
+        void up( std::size_t __update = 1 )
+            {
+            for(; __update; --__update )
+                {
+                ++number;
                 #ifdef MACOS
                    sem_post( pSema );
                 #else
                    sem_post( &pSema );
                 #endif
-                }
-            
-            }
-        void up()
-            {
-            #ifdef MACOS
-               sem_wait( pSema );
-            #else
-               sem_wait( &pSema );
-            #endif
-            ++number;
+                } // end for
             }
             //    
             // bool try_acquire_for(std::chrono::nanoseconds __rel_time)
             // {
             //     return __libcpp_semaphore_wait_timed(&__semaphore, __rel_time);
             // }
-        std::size_t getCount() const 
+        ssize_t getCount() const 
            {
             return number;
            }
