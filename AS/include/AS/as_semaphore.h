@@ -73,6 +73,7 @@ namespace APESEARCH
                 sem_init( &pSema, 0, (unsigned) __count );
             #endif
             }
+        semaphore( semaphore&& other ) : pSema( std::move( other.pSema ) ), number( other.number.load( ) ) { }
         inline ~semaphore() 
             {
             #if MACOS
