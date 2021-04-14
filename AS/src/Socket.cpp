@@ -88,7 +88,7 @@ Socket::Socket() : socketFD(-1){}
 
 APESEARCH::unique_ptr<Socket> Socket::accept(struct sockaddr *addr, socklen_t *addrlen)
 {
-        int connectionFD = ::accept(socketFD, addr, addrlen);
+    int connectionFD = ::accept(socketFD, addr, addrlen);
 	if(connectionFD < 0 )
 	  throw "fail";
 
