@@ -11,7 +11,7 @@ APESEARCH::vector<uint8_t> encodeDelta(size_t tokenLoc){
     APESEARCH::vector<uint8_t> encodedBytes;
     uint8_t byte;
 
-    std::cout << tokenLoc << ' ';
+    //std::cout << tokenLoc << ' ';
 
     while (tokenLoc > 127) {
         byte = tokenLoc | 0x80;
@@ -21,7 +21,7 @@ APESEARCH::vector<uint8_t> encodeDelta(size_t tokenLoc){
 
     encodedBytes.emplace_back(tokenLoc);
 
-    std::cout << encodedBytes.size() << std::endl;
+    //std::cout << encodedBytes.size() << std::endl;
     return encodedBytes;
 }
 
