@@ -44,8 +44,17 @@ Socket::Socket(const struct sockaddr_in &addr)
     throw "fail";
   
   if(connect(socketFD, (struct sockaddr *) &addr, sizeof(addr)) < 0)
-    //TODO
+  {
+    if(errno == ECONNREFUSED)
+    {
+#ifdef TESTING
+        sleep(5u);
+#else
+        sleep(30u);
+#endif
+    }
     throw "fail";
+  }
 }
 
 Socket::Socket(int port)
