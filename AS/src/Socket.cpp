@@ -95,7 +95,7 @@ APESEARCH::unique_ptr<Socket> Socket::accept(struct sockaddr *addr, socklen_t *a
         APESEARCH::unique_ptr<Socket> socket( new Socket() );
         socket->socketFD = connectionFD;
 
-        return std::move( socket );
+        return socket;
 }
 
 Socket::~Socket() 
