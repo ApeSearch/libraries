@@ -40,5 +40,5 @@ size_t decodeDelta(APESEARCH::vector<uint8_t> deltas){
         shift += 7;
     }
 
-    return addedDeltas;
+    return index;
 }
