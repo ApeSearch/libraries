@@ -13,6 +13,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h> // for close() file
+#ifdef LINUX
+#define _LARGE_FILE_API
+#endif
 
 namespace APESEARCH
 {
@@ -132,6 +135,20 @@ namespace APESEARCH
       ssize_t truncate(size_t length){
          ftruncate(fd, length);
       }
+
+      size_t fileSize( )
+         {
+#ifdef MACOS
+         struct stat fileInfo;
+         if ( fstat( fd, &fileInfo ) )
+            perror( "fstat( ) erro ");
+#else
+         struct stat64 fileInfo;
+         if ( fstat64( fd, &fileInfo ) != 0 )
+            perror( "fstat64( ) erro ");
+#endif
+         return (size_t) fileInfo.st_size;
+         }
 
        File& operator=( File&& file )
           {

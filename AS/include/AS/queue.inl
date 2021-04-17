@@ -68,7 +68,7 @@ class BinaryPQ : public ApesearchPQ<T, COMP>
         for ( ; parent >= 1 && BaseClass::compare( data[ unsigned( parent >>= 1 ) ], data[ (unsigned) child ] );
               child = parent, parent = alignDivision( child ) )
            {
-            swap( data[ (unsigned)parent ], data[ (unsigned)child ] );
+            APESEARCH::swap( data[ (unsigned)parent ], data[ (unsigned)child ] );
            } // end for
         return;
       } // end fixUp()
@@ -93,7 +93,7 @@ class BinaryPQ : public ApesearchPQ<T, COMP>
           if ( !BaseClass::compare( data[ parent ], data[ child ] ) )
              break;
         
-          swap( data[ parent ], data[ child ] );
+          APESEARCH::swap( data[ parent ], data[ child ] );
           parent = child;
           child = ( parent + 1 ) << 1;
          } // end while
@@ -105,7 +105,7 @@ class BinaryPQ : public ApesearchPQ<T, COMP>
          {
          --child;
          if ( BaseClass::compare( data[ parent ], data[ child ] ) )
-                swap( data[ parent ], data[ child ] );
+                APESEARCH::swap( data[ parent ], data[ child ] );
          } // end if
       } // end fixDown()
 public:
@@ -115,6 +115,11 @@ public:
    //typedef typename std::size_t       size_type;
 
    explicit BinaryPQ( COMP comp = COMP() ) : BaseClass( comp ) {}
+
+   explicit BinaryPQ( const size_t _size, COMP comp = COMP() ) : BaseClass( comp ) 
+      {
+      data.reserve( _size );
+      }
 
    template<typename InputIterator>
    BinaryPQ( InputIterator start, InputIterator end, COMP comp = COMP() ) 
@@ -170,7 +175,7 @@ public:
    
    virtual void pop() noexcept override
       {
-      swap( data.front(), data.back() );
+      APESEARCH::swap( data.front(), data.back() );
       data.pop_back();
       fixDown( 0 );
       } // end pop()

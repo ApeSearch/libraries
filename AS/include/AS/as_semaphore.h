@@ -37,16 +37,16 @@ using binary_semaphore = counting_semaphore<1>;
 }
 */
 
+#include <atomic>
+#include <chrono>
+#include <semaphore.h>
+#include <iostream>
+#include <limits>
+#include <atomic>
+
 namespace APESEARCH
 {
-    #include <atomic>
-    #include <chrono>
-    
     //Uses native semaphores
-    
-    #include <semaphore.h>
-    #include <iostream>
-    #include <limits>
     
     #define SEMAPHORE_MAX (std::numeric_limits<std::size_t>::max())
     
@@ -57,9 +57,10 @@ namespace APESEARCH
     #else
         sem_t pSema;
     #endif
+    std::atomic<ssize_t> number;
     
     public:
-        semaphore(std::size_t __count)
+        semaphore(std::size_t __count) : number ( ssize_t( __count ) ) 
             {
             #ifdef MACOS
                 if ( ( pSema = sem_open( "/s", O_CREAT, 0645, __count ) ) == SEM_FAILED )
@@ -72,6 +73,7 @@ namespace APESEARCH
                 sem_init( &pSema, 0, (unsigned) __count );
             #endif
             }
+        semaphore( semaphore&& other ) : pSema( std::move( other.pSema ) ), number( other.number.load( ) ) { }
         inline ~semaphore() 
             {
             #if MACOS
@@ -82,28 +84,37 @@ namespace APESEARCH
             }
         inline void down( std::size_t __update = 1 )
             {
-            for(; __update; --__update)
+            for(; __update; --__update )
                 {
+                --number;
+                #ifdef MACOS
+                   sem_wait( pSema );
+                #else
+                   sem_wait( &pSema );
+                #endif
+                }
+            }
+        void up( std::size_t __update = 1 )
+            {
+            for(; __update; --__update )
+                {
+                ++number;
                 #ifdef MACOS
                    sem_post( pSema );
                 #else
                    sem_post( &pSema );
                 #endif
-                }
-            }
-        void up()
-            {
-            #ifdef MACOS
-               sem_wait( pSema );
-            #else
-               sem_wait( &pSema );
-            #endif
+                } // end for
             }
             //    
             // bool try_acquire_for(std::chrono::nanoseconds __rel_time)
             // {
             //     return __libcpp_semaphore_wait_timed(&__semaphore, __rel_time);
             // }
+        ssize_t getCount() const 
+           {
+            return number;
+           }
     };
     
     #if __cplusplus > 201703L

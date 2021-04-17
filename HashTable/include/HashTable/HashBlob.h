@@ -20,6 +20,7 @@
 #endif
 #include <unistd.h>
 #include <sys/mman.h> // for mmap and munmap
+#include "../../../AS/include/AS/unique_mmap.h"
 
 #include "HashTable.h" // for hashTable
 #include <utility> // for std::swap and std::move
@@ -39,15 +40,7 @@ constexpr size_t RoundUpConstExpr( size_t length, size_t boundary = 8 )
    return ( length + ( boundary - 1 ) ) & ~( boundary - 1 );
    }
 
-size_t RoundUp( size_t length, size_t boundary = 8 )
-   {
-   // Round up to the next multiple of the boundary, which
-   // must be a power of 2.
-
-   static const size_t oneless = boundary - 1,
-      mask = ~( oneless );
-   return ( length + oneless ) & mask;
-   }
+size_t RoundUp( size_t length, size_t boundary = 8 );
 
 
 struct SerialTuple
@@ -537,7 +530,7 @@ public:
  *              the object knows how many bytes is needed to be freed.
  *       file: A file object. If such an object is passed into the constructor, unique_mmap becomes
  *              responsible for the deallocation ( closing of the file object ).
-*/
+*//*
 class unique_mmap
    {
    void *map;
@@ -608,7 +601,7 @@ public:
     * 
     * offset: The location in file in which mmap is started from
     *        ( this must be a multiple of page size which can be returned by sysconf(_SC_PAGE_SIZE)
-   */
+   
    unique_mmap( void *addr, std::size_t length, int prot, int flags, int fd, off_t offset ) : bytesMapped( length )
       {
       if ( !length )
@@ -679,7 +672,7 @@ public:
     *   the other hand, closing the file descriptor does not unmap the
     *   region.
     *   Note: this destructor needs to be made allowalbe to throw in case munmap fails.
-   */
+   
    ~unique_mmap( ) noexcept(false)
       {
       if ( map &&  munmap( map, bytesMapped ) == -1 )
@@ -694,6 +687,8 @@ public:
       return map;
       } // end getPointer()
    };
+
+   */
 
 class HashFile
    {

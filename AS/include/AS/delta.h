@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <stdint.h>
+#include <iostream>
 #include "./vector.h"
 
 // LEB128 Encode
@@ -10,28 +11,34 @@ APESEARCH::vector<uint8_t> encodeDelta(size_t tokenLoc){
     APESEARCH::vector<uint8_t> encodedBytes;
     uint8_t byte;
 
+    //std::cout << tokenLoc << ' ';
+
     while (tokenLoc > 127) {
-        byte = tokenLoc | 0b10000000;
+        byte = tokenLoc | 0x80;
         encodedBytes.emplace_back(byte);
         tokenLoc >>= 7;
     }
 
+    encodedBytes.emplace_back(tokenLoc);
+
+    //std::cout << encodedBytes.size() << std::endl;
     return encodedBytes;
 }
 
-size_t decodeDelta(uint8_t *deltaPtr){
-    size_t addedDeltas = 0;
-    uint8_t shift = 0;
+size_t decodeDelta(APESEARCH::vector<uint8_t> deltas){
+    size_t addedDeltas = 0, index = 0;
 
-    uint8_t bitmaskLower = 0b01111111;
-    uint8_t highBitmask = ~bitmaskLower;
+    int mask = 0x7F;
 
-    uint8_t byte;
-    do {
-        uint8_t byte = *(deltaPtr++);
-        addedDeltas |= (bitmaskLower | byte) << shift;
+    int shift = 0;
+
+    while(true) {
+        uint8_t byte = deltas[index++];
+        addedDeltas |= (byte & mask) << shift;
+        if(!(~mask & byte))
+            break;
         shift += 7;
-    } while ((highBitmask & byte) == 0);
+    }
 
-    return addedDeltas;
+    return index;
 }

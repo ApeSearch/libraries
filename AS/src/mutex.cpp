@@ -9,7 +9,6 @@
 //
 //------------------------------------------------------------------------------------------------
 
-
 APESEARCH::mutex::mutex() noexcept
     {
     if (pthread_mutex_init( &pThreadLock, nullptr ) != 0 )

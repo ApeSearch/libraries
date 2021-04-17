@@ -80,7 +80,7 @@ TEST(A_Swap) {
     ASSERT_FALSE( moveToUniqLk.owns_lock() );
 
     // Swap
-    uniqLk.swapUM( moveToUniqLk );
+    uniqLk.swap( moveToUniqLk );
     ASSERT_FALSE( uniqLk.owns_lock() );
     ASSERT_TRUE( moveToUniqLk.owns_lock() );
 }
