@@ -1,6 +1,6 @@
 #include "../include/HashTable/HashBlob.h"
 
-size_t RoundUp( size_t length, size_t boundary = 8 )
+size_t RoundUp( size_t length, size_t boundary)
    {
    // Round up to the next multiple of the boundary, which
    // must be a power of 2.
