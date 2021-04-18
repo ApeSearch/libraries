@@ -11,7 +11,7 @@ char cwd[PATH_MAX];
 
 TEST(list_invalid_directory)
     {
-    APESEARCH::vector files = listdirAbsolute("this/doesnt/exist");
+    APESEARCH::vector<APESEARCH::string> files = listdirAbsolute("this/doesnt/exist");
     ASSERT_EQUAL(files.size(), 0);
     }
 
