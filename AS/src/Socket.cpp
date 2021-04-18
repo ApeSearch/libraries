@@ -44,6 +44,14 @@ Socket::Socket(const struct sockaddr_in &addr)
     throw "fail";
   
   if(connect(socketFD, (struct sockaddr *) &addr, sizeof(addr)) < 0)
+  {
+    perror("Issue with connect:" );
+    printf("Errno: %d\n", errno);
+      if(errno == ECONNREFUSED)
+      {
+          sleep(30u);
+      }
+  }
     //TODO
     throw "fail";
 }
