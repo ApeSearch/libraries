@@ -195,7 +195,7 @@ namespace APESEARCH
             } // end if
          else if ( newSize < _size ) // need to shrink size
             {
-            size_t amount = newSize - _size;
+            size_t amount = _size - newSize;
             for ( size_t n = 0; n < amount; ++n )
                pop_back( );
             }
