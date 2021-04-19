@@ -187,7 +187,8 @@ namespace APESEARCH
       void resize( const size_t newSize )
          {
          vector temp( newSize );
-         APESEARCH::copy( _elts, _elts + _size, temp._elts );
+         if ( _elts )
+            APESEARCH::copy( _elts, _elts + _size, temp._elts );
          swap( temp );
          } // end resize( )
 
