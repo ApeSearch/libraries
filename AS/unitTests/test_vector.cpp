@@ -149,4 +149,37 @@ TEST( test_init_list_constructor )
         }
     }
 
+TEST( test_Resize )
+   {
+   APESEARCH::vector<int> myVec;
+   
+   for ( unsigned n = 1; n < 10; ++n )
+      myVec.push_back( n );
+
+   myVec.resize( 5 );
+   ASSERT_EQUAL( myVec.size( ), 5 );
+   for ( unsigned n = 0; n < myVec.size( ); ++n )
+      ASSERT_EQUAL( n + 1, myVec[ n ] );
+
+   myVec.resize( 12 );
+
+   for ( unsigned n = 0; n < 5; ++n )
+      ASSERT_EQUAL( n + 1, myVec[ n ] );  
+    
+   for ( unsigned n = 5; n < myVec.size( ); ++n )
+      ASSERT_EQUAL( 0, myVec[ n ] );
+
+   myVec.resize( 12 );
+   
+   for ( unsigned n = 0; n < 5; ++n )
+      ASSERT_EQUAL( n + 1, myVec[ n ] );  
+    
+   for ( unsigned n = 5; n < myVec.size( ); ++n )
+      ASSERT_EQUAL( 0, myVec[ n ] );
+   myVec.resize( 0 );
+
+   ASSERT_EQUAL( myVec.size( ), 0 );
+   
+   }
+
 TEST_MAIN()
