@@ -47,13 +47,10 @@ Socket::Socket(const struct sockaddr_in &addr)
   {
     perror("Issue with connect:" );
     printf("Errno: %d\n", errno);
-      if(errno == ECONNREFUSED)
-      {
-          sleep(30u);
-      }
-  }
+    sleep(30u);
     //TODO
     throw "fail";
+  }
 }
 
 Socket::Socket(int port)
