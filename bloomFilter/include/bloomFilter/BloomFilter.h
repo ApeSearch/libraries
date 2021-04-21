@@ -5,7 +5,9 @@
 #include <string>
 #include "../../../AS/include/AS/string.h"
 #include "../../../AS/include/AS/File.h"
+#include "../../../AS/include/AS/mutex.h"
 #include "../../../AS/include/AS/utility.h"
+#include <shared_mutex>
 #include <openssl/md5.h>
 #include <sys/types.h>
 #include <sys/mman.h>
@@ -94,8 +96,11 @@ public:
         delete bitSet;
     }
 
-    void insert(const APESEARCH::string& s) {
+    void insert(const APESEARCH::string& s) 
+    {
         //Hash the string into two unique hashes
+        lock.lock();
+
         APESEARCH::pair<uint64_t, uint64_t> hashPair = hash(s);
         uint64_t index;
 
@@ -104,6 +109,7 @@ public:
             bitSet->set(index);
         }
 
+        lock.unlock();
     }
 
     bool contains(const APESEARCH::string& s) {
@@ -113,17 +119,21 @@ public:
         //If bit is false, we know for certain this unique string has not been inserted
 
         //If all bits were true, the string is likely inserted, but false positive is possible
+        lock.lock_shared();
+
         APESEARCH::pair<uint64_t, uint64_t> hashPair = hash(s);
         uint64_t index;
-
+        bool retVal = true;
         for(uint64_t i = 0; i < numOfHashFunc; i++){
             index = (hashPair.first() + i * hashPair.second()) % size;
-            if(bitSet->test(index) == 0){
-                return false;
-            }
+            if(bitSet->test(index) == 0)
+                {
+                retVal = false;
+                break;
+                }   
         }
-
-        return true;   
+        lock.unlock_shared();
+        return retVal;
     }
 
 private:
@@ -133,6 +143,7 @@ private:
     uint64_t numOfHashFunc;
     double falsePostiveRate;
     BitArray *bitSet;
+    std::shared_timed_mutex lock;
 
 
     APESEARCH::pair<uint64_t, uint64_t> hash(const APESEARCH::string& datum) {

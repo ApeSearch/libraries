@@ -17,6 +17,8 @@ using std::sort;
    #include <utility> // testing std::swap
 #endif
 
+#include "../../../AS/include/AS/vector.h"
+
 #include <stdlib.h>
 #include <time.h>
 
@@ -25,14 +27,14 @@ using std::sort;
 #define MAX 16430 // Golden Random number credited by MC
 #define LOWEREPSILON -0.175
 
-static inline size_t computeTwosPowCeiling( ssize_t num ) 
+/*static inline size_t computeTwosPowCeiling( ssize_t num ) 
    {
    num--; // Account for num already being a two's power
    size_t powerNum = 1;
    for (; num > 0; num >>=1 )
       powerNum <<= 1;
    return powerNum;
-   }
+   }*/
 
 static inline size_t computeTwosPow( ssize_t num, bool computeCeiling = true ) 
    {

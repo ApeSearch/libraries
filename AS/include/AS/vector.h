@@ -93,6 +93,13 @@ namespace APESEARCH
             new (ptr++) T( *otherPtr++ );
          }
 
+      //// Range Constructor
+      //template<class InputIterator>
+      //vector ( InputIterator first, InputIterator last ) : ( size_t( last - first ) ) 
+      //   {
+      //   APESEARCH::copy( first, last, _elts );
+      //   }
+
       // Initializer List Constructor
       vector(std::initializer_list<T> list): _capacity( list.size() ? computeTwosPowCeiling( (ssize_t) list.size()) : 0 )
             , _size(list.size()), _elts( ( T * ) malloc( sizeof( T ) * _capacity ) )
@@ -176,6 +183,29 @@ namespace APESEARCH
          _elts = newElements;
          _capacity = newCapacity;
          }
+      
+      void resize( const size_t newSize )
+         {
+         if ( _capacity < newSize  )
+            {
+            vector temp( newSize );
+            if ( _elts )
+               APESEARCH::copy( _elts, _elts + _size, temp._elts );
+            swap( temp );
+            } // end if
+         else if ( newSize < _size ) // need to shrink size
+            {
+            size_t amount = _size - newSize;
+            for ( size_t n = 0; n < amount; ++n )
+               pop_back( );
+            }
+         else // Need to push_back
+            {
+            size_t amount = newSize - _size;
+            for ( size_t n = 0; n < amount; ++n )
+               emplace_back( );
+            }
+         } // end resize( )
 
       // REQUIRES: Nothing
       // MODIFIES: Nothing

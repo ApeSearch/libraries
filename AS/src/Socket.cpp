@@ -37,7 +37,7 @@ Socket::Socket(const Address& address, time_t seconds)
 
 
 Socket::Socket(const struct sockaddr_in &addr)
-{
+  {
   socketFD = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
   if(socketFD < 0)
     //TODO
@@ -45,17 +45,15 @@ Socket::Socket(const struct sockaddr_in &addr)
   
   if(connect(socketFD, (struct sockaddr *) &addr, sizeof(addr)) < 0)
   {
-    if(errno == ECONNREFUSED)
-    {
-#ifdef TESTING
-        sleep(5u);
-#else
-        sleep(30u);
-#endif
-    }
+    perror("Issue with connect:" );
+    printf("Errno: %d\n", errno);
+
+    sleep(30u);
+        
+  }
+    //TODO
     throw "fail";
   }
-}
 
 Socket::Socket(int port)
 {

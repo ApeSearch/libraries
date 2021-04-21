@@ -44,5 +44,6 @@ APESEARCH::vector<APESEARCH::string> listdirAbsolute(const char * directory)
             }
          }
       }
+   closedir(dir);
    return files;
    }
