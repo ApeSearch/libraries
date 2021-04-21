@@ -143,7 +143,7 @@ private:
     uint64_t numOfHashFunc;
     double falsePostiveRate;
     BitArray *bitSet;
-    std::shared_mutex lock;
+    std::shared_timed_mutex lock;
 
 
     APESEARCH::pair<uint64_t, uint64_t> hash(const APESEARCH::string& datum) {
