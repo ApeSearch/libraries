@@ -54,7 +54,6 @@ Socket::Socket(const struct sockaddr_in &addr)
     //TODO
     throw "fail";
   }
-}
 
 Socket::Socket(int port)
 {
