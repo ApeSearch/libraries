@@ -26,7 +26,7 @@ struct Address {
         if (getaddrinfo( Host, (Port == nullptr) ? "80": Port, &hints, &info ) != 0 ) 
         {
             //TODO use exception handling
-            perror("Error inside Address Constructor occured");
+            //perror("Error inside Address Constructor occured");
             valid = false;
         } // end if
         head = info;

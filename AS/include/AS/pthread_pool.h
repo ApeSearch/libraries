@@ -147,6 +147,7 @@ public:
                {
                delete startingFunc;
                // Any threads that already started are signaled to free their resources
+               perror("Issue with pthread_create");
                halt.store( true ); 
                waitingProd.notify_all();
                throw std::runtime_error("Pthread_create returned an error");
