@@ -49,10 +49,9 @@ Socket::Socket(const struct sockaddr_in &addr)
     printf("Errno: %d\n", errno);
 
     sleep(30u);
-        
-  }
     //TODO
     throw "fail";
+  }
   }
 
 Socket::Socket(int port)
