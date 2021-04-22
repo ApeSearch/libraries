@@ -37,7 +37,7 @@ Socket::Socket(const Address& address, time_t seconds)
 
 
 Socket::Socket(const struct sockaddr_in &addr)
-{
+  {
   socketFD = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
   if(socketFD < 0)
     //TODO
@@ -54,7 +54,6 @@ Socket::Socket(const struct sockaddr_in &addr)
     //TODO
     throw "fail";
   }
-}
 
 Socket::Socket(int port)
 {
