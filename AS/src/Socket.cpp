@@ -48,11 +48,11 @@ Socket::Socket(const struct sockaddr_in &addr)
     perror("Issue with connect:" );
     printf("Errno: %d\n", errno);
 
-    sleep(30u);
-        
+    sleep(60u);    
+    
+    throw "fail";
   }
     //TODO
-    throw "fail";
   }
 
 Socket::Socket(int port)
