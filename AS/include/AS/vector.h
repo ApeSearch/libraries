@@ -188,10 +188,10 @@ namespace APESEARCH
          {
          if ( _size < newSize  )
             {
-            reserve( newSize );
+            reserve( newSize ); // reserve up to desired amount
             size_t amount = newSize - _size;
             for ( size_t n = 0; n < amount; ++n )
-               emplace_back( );
+               emplace_back( ); // default construct up to newSize
             } // end if
          else // need to shrink size
             {
