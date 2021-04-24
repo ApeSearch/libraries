@@ -104,6 +104,7 @@ APESEARCH::unique_ptr<Socket> Socket::accept(struct sockaddr *addr, socklen_t *a
         return socket;
 }
 
+
 Socket::~Socket() 
 {
     if (socketFD != -1) 

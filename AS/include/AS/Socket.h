@@ -20,6 +20,19 @@ class Socket
       //Client socket using ip specified in addr
       Socket(const struct sockaddr_in &addr);
 
+      Socket( Socket&& other ) : tv( other.tv ), socketFD( other.socketFD ) 
+         { 
+         other.socketFD = -1;
+         }
+      
+      Socket& operator=( Socket&& other )
+         {
+         socketFD = other.socketFD;
+         other.socketFD = -1;
+         tv = other.tv;
+         return *this;
+         }
+
       //Default Constructor
       Socket();
 
