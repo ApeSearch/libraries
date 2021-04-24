@@ -186,24 +186,18 @@ namespace APESEARCH
       
       void resize( const size_t newSize )
          {
-         if ( _capacity < newSize  )
+         if ( _size < newSize  )
             {
-            vector temp( newSize );
-            if ( _elts )
-               APESEARCH::copy( _elts, _elts + _size, temp._elts );
-            swap( temp );
+            reserve( newSize ); // reserve up to desired amount
+            size_t amount = newSize - _size;
+            for ( size_t n = 0; n < amount; ++n )
+               emplace_back( ); // default construct up to newSize
             } // end if
-         else if ( newSize < _size ) // need to shrink size
+         else // need to shrink size
             {
             size_t amount = _size - newSize;
             for ( size_t n = 0; n < amount; ++n )
                pop_back( );
-            }
-         else // Need to push_back
-            {
-            size_t amount = newSize - _size;
-            for ( size_t n = 0; n < amount; ++n )
-               emplace_back( );
             }
          } // end resize( )
 
