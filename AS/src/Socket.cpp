@@ -44,14 +44,14 @@ Socket::Socket(const struct sockaddr_in &addr)
     throw "fail";
   
   if(connect(socketFD, (struct sockaddr *) &addr, sizeof(addr)) < 0)
-  {
+    {
     perror("Issue with connect:" );
     printf("Errno: %d\n", errno);
 
     sleep(30u);
-    //TODO
-    throw "fail";
-  }
+	  
+    throw "fail";	  
+    } // end if
   }
 
 Socket::Socket(int port)
