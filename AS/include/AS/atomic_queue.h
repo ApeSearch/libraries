@@ -90,7 +90,7 @@ public:
          }
       T val = std::move( safeQueue.front() );
       safeQueue.pop();
-      return std::move( val );
+      return val;
       } // end dequeue()
 };
 
