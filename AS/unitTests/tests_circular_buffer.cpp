@@ -1,6 +1,7 @@
 
 #include "dependencies/unit_test_framework.h"
 #include "../include/AS/circular_buffer.h"
+#include "../include/AS/DynamicBuffer.h"
 #include "../include/AS/string.h"
 #include <iostream>
 using std::cout;
@@ -131,6 +132,27 @@ TEST( test_emplace )
 
     cbuf.emplace( "Barack Obama", "United States", 2008 );
 
+   }
+
+TEST( test_Dynamic )
+   {
+   APESEARCH::circular_buffer< President, APESEARCH::dynamicBuffer< President > >cbuf( 100 ); 
+    cbuf.emplace( President( "Franklin Delano Roosevelt", "the USA", 1936 )  );
+    ASSERT_EQUAL( cbuf.getHead(), 0u );
+    ASSERT_EQUAL( cbuf.getTail(), 1u );
+    ASSERT_EQUAL( cbuf.size(), 1u );
+    ASSERT_EQUAL( cbuf.front().name, "Franklin Delano Roosevelt" );
+    ASSERT_EQUAL( cbuf.front().country, "the USA" );
+    ASSERT_EQUAL( cbuf.front().year, 1936 );
+
+    cbuf.emplace( President( "Barack Obama", "United States", 2008 ) );
+    while( cbuf.emplace( President( "Barack Obama", "United States", 2008 ) ) );
+    
+    //while( !cbuf.empty( ) )
+    //   {
+    //    cbuf.pop_front( );
+    //   } // end while
+    //while( cbuf.emplace( President( "Barack Obama", "United States", 2008 ) ) );
    }
 
 

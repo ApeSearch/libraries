@@ -4,6 +4,7 @@
 #define DYNAMICBUFF_H_AS
 
 #include "circular_buffer.h"
+#include "vector.h"
 
 namespace APESEARCH
    {
