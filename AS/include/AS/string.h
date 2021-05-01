@@ -347,7 +347,7 @@ class string
       // EFFECTS: Appends c to the string
       void push_front ( char c )
          {
-         string temp( length + 1 NULLCHAR );
+         string temp( length + 1 + NULLCHAR );
          *temp.buffer = c;
          copy( cbegin(), cend(), temp.begin() + 1 );
          swap( temp );
