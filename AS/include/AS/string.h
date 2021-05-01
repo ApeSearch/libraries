@@ -36,7 +36,7 @@ class string
          }
       
       // Gives a string with a buffer that remains undefined
-      explicit string( size_t len ) noexcept : length ( len ), buffer( new char[length + NULLCHAR] ) {}
+      explicit string( size_t len ) noexcept : length ( len ), buffer( new char[ length + NULLCHAR ] ) {}
 
       // string Literal / C string Constructor
       // REQUIRES: cstr is a null terminated C style string
@@ -234,7 +234,8 @@ class string
       // REQUIRES: Nothing
       // MODIFIES: Nothing
       // EFFECTS: Returns a pointer to a null terminated C string of *this
-      //! Warning, this implies that the user should be very careful with cstr,
+      //! Warning, this implies that the user should be very careful with cstr
+      //!(which they already should be since this is returning a pointer),
       //! if the buffer every changes (even with size) as the null-character
       //! no longer gets updated.
       const char* cstr ( ) const
@@ -288,7 +289,7 @@ class string
       // MODIFIES: Nothing
       // EFFECTS: Returns a reference to the first character of the string.
       char& front() {
-         return buffer[0];
+         return *buffer;
       }
 
       // string front
@@ -296,7 +297,7 @@ class string
       // MODIFIES: Nothing
       // EFFECTS: Returns a const-qualified reference to the first character of the string.
       const char& front() const {
-         return buffer[0];
+         return *buffer;
       }
 
       // string back
@@ -322,7 +323,7 @@ class string
       //      memory at most once
       void operator+= ( const string& other )
          {
-         string temp( length + other.size() );
+         string temp( length + other.size() + NULLCHAR );
          copy( cbegin(), cend(), temp.buffer ); // Copy original
          copy( other.cbegin(), other.cend(), temp.buffer + length ); // Copy other string
          swap( temp ); // Swap contents
@@ -334,7 +335,7 @@ class string
       // EFFECTS: Appends c to the string
       void push_back ( char c )
          {
-         string temp( length + 1 );
+         string temp( length + 1 + NULLCHAR );
          copy( cbegin(), cend(), temp.begin() );
          * ( temp.buffer + length ) = c;
          swap( temp );
@@ -346,7 +347,7 @@ class string
       // EFFECTS: Appends c to the string
       void push_front ( char c )
          {
-         string temp( length + 1 );
+         string temp( length + 1 NULLCHAR );
          *temp.buffer = c;
          copy( cbegin(), cend(), temp.begin() + 1 );
          swap( temp );
@@ -358,7 +359,7 @@ class string
       // EFFECTS: Removes the last charater of the string
       void pop_back ( )
          {
-         assert(length); // For our safety...
+         assert( length ); // For our safety...
          --length;
          //! Should the size be shrunk? (perhaps if reaches half of capacity?)
          }
