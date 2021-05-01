@@ -421,7 +421,7 @@ class string
 
       /*
        * REQUIRES: other to be a valid string.
-       *  EFFECTS: Returns an int that, depending on the range:
+       *  EFFECTS: Returns an int value that, depending on the range:
        *           0 < value : implies that *this < other
        *           0 = value : implies that *this == other
        *           0 > value : implies that *this > other.
@@ -430,7 +430,7 @@ class string
        *  The criteria for the return value depends on the following: 
        *  1) The present character; if any character differs, returns the difference of 
        *     this.buffer[i] - other.buffer[i].
-       *  2) Otherwise if in any case the end of a buffer is reached on any end
+       *  2) Otherwise if in any case the end of a buffer is reached on any end (this or other)
        *     ending on the criteria that either c_str1 == str1End || c_str2 == str2End  )
        *     then in the case that other string has not yet reached the end, this < other (returns neg number).
        *     If other has reached the end, it clearly means that this > other returning a pos number.
@@ -453,19 +453,19 @@ class string
          if ( c_str1 == str1End )
             {
             if ( c_str2 != str2End )
-               return -1; 
+               return -1; // Implies that c_str2 still has characters and thus c_str1 < c_str2
             }
          else if ( c_str2 == str2End )
-            return 1; 
+            return 1; // c_str1 != str1End && c_str2 == str2End ( c_str1 > c_str2 )
          return 0;
          } // end compare()
 
-         friend std::ostream& operator<< ( std::ostream& os, const string& s )
-            {
-            for ( const char *ptr = s.cbegin(), *const end = s.cend(); ptr != end; )
-               os << *ptr++;
-            return os;
-            }
+      friend std::ostream& operator<< ( std::ostream& os, const string& s )
+         {
+         for ( const char *ptr = s.cbegin(), *const end = s.cend(); ptr != end; )
+            os << *ptr++;
+         return os;
+         }
    
       // Convert To Lower
       // REQUIRES: Nothing
