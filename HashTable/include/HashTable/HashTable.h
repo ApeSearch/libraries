@@ -350,7 +350,6 @@ template< typename Key, typename Value, class Hash = Murmur, class Comparator = 
       std::vector< Bucket< Key, Value> * > bucketVec;
       bucketVec.reserve( numberOfBuckets );
 
-      // ++ happens first then dereference
       for ( Bucket< Key, Value > **const end = buckets + tableSize; 
             mainLevel != end && bucketVec.size() < numberOfBuckets; ++mainLevel )
          {

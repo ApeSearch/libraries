@@ -472,9 +472,9 @@ class string
       // REQUIRES: Nothing
       // MODIFIES: *this->buffer
       // EFFECTS: Converts all the characters in the string to lowercase
-      string&  convertToLower() {
+      string& convertToLower() {
          for ( char *p = begin(); p != end(); ++p)
-            *p = tolower(*p);
+            *p = static_cast<char>( tolower(*p) );
          return *this;
       }
 
