@@ -41,9 +41,9 @@ class Socket
       APESEARCH::unique_ptr<Socket> accept(struct sockaddr *addr, socklen_t *addrlen);
       
 
-      virtual ssize_t send(const char* buffer, int length);
+      virtual ssize_t send(const char* buffer, size_t length);
 
-      virtual ssize_t receive(char *buffer, int length);
+      virtual ssize_t receive(char *buffer, size_t length);
 
       int getFD() const 
          {
