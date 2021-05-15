@@ -7,6 +7,7 @@
 
 
 #include <unordered_map>
+#include <initializer_list>
 #include "utility.h"
 #include "allocator.h"
 using APESEARCH::pair;
@@ -46,7 +47,8 @@ public:
     explicit unordered_Map(size_type n, const hashers& hf = hasher(),
           const key_equal& eql = key_equal(), const allocator_type& a = allocator_type()):
 
-
+    template<class InputIterator>
+        unordered_map( InputIterator f, InputIterator l, size_type n = 0, const hasher& hf = hasher( ) )
 
 
 

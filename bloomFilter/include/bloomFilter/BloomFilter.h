@@ -25,12 +25,18 @@ class BitArray{
         BitArray(ssize_t size, int fd) {
             ssize_t numOfInt = (size + NUM_OF_BITS_INT - 1) / NUM_OF_BITS_INT; //https://stackoverflow.com/questions/17944/how-to-round-up-the-result-of-integer-division
             numOfBits = size;
+#ifdef MACOS
             int fileSize = lseek( fd, 0, SEEK_END );
-            //ssize_t fileSize = lseek64(fd, 0, SEEK_END);
+#else
+            ssize_t fileSize = lseek64(fd, 0, SEEK_END);
+#endif
             if((long unsigned int)fileSize < numOfInt * sizeof(unsigned int))
                 {
+#ifdef MACOS
                 int result = lseek( fd, int( ( numOfInt * sizeof(int) ) - 1 ), SEEK_SET );
-                //ssize_t result = lseek64( fd, off64_t( ( numOfInt * sizeof(int) ) - 1 ), SEEK_SET );
+#else
+                ssize_t result = lseek64( fd, off64_t( ( numOfInt * sizeof(int) ) - 1 ), SEEK_SET );
+#endif
                 if ( result == -1 )
                     {
                     perror( "Issue with lseek while trying to stretch file" );

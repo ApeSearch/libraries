@@ -64,12 +64,11 @@ namespace APESEARCH
       // MODIFIES: *this
       // EFFECTS: Constructs a vector with size num_elements,
       //    all default constructed
-      // ! It is okay to call new[0] but delete must also be done
       vector ( size_t num_elements ) : _capacity( num_elements ? computeTwosPowCeiling( (ssize_t) num_elements) : 0 )
             , _size( num_elements ) ,_elts( ( T *) malloc( sizeof( T ) * _capacity ) )
          {
          for (T *ptr = _elts, * const end = _elts + _size; ptr != end; )
-              new (ptr++) T( );
+            new (ptr++) T( );
          }
 
       // Fill Constructor
@@ -80,7 +79,7 @@ namespace APESEARCH
             , _size( num_elements ) ,_elts( ( T * ) malloc( sizeof( T ) * _capacity ) )
          {
          for (T *ptr = _elts, * const end = _elts + _size; ptr != end; )
-              new (ptr++) T( val );
+            new (ptr++) T( val );
          }
 
       // Copy Constructor
@@ -204,12 +203,12 @@ namespace APESEARCH
       // REQUIRES: Nothing
       // MODIFIES: Nothing
       // EFFECTS: Returns the number of elements in the vector
-      size_t size() const
+      inline size_t size() const
          { 
-            return _size;
+         return _size;
          }
       
-      bool empty() const
+      inline bool empty() const
          {
          return !_size;
          }
@@ -217,9 +216,9 @@ namespace APESEARCH
       // REQUIRES: Nothing
       // MODIFIES: Nothing
       // EFFECTS: Returns the maximum size the vector can attain before resizing
-      size_t capacity() const
+      inline size_t capacity() const
          {
-            return _capacity;
+         return _capacity;
          }
 
       // REQUIRES: 0 <= i < size()

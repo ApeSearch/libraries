@@ -26,7 +26,7 @@ using std::sort;
 #define DEFAULTSIZE 4096
 #define MAX 16430 // Golden Random number credited by MC
 #define LOWEREPSILON -0.175
-
+namespace hash {
 /*static inline size_t computeTwosPowCeiling( ssize_t num ) 
    {
    num--; // Account for num already being a two's power
@@ -81,9 +81,9 @@ public:
     return k;
    }
 
-   virtual size_t operator()( const char *key ) const
+   virtual size_t operator()( std::string key ) const
    {
-   size_t len = strlen( key );
+   size_t len = key.length();
    uint32_t k;
    size_t h = 420;
    
@@ -91,7 +91,7 @@ public:
     for (size_t i = len >> 2; i; i--) {
         // Here is a source of differing results across endiannesses.
         // A swap here has no effects on hash properties though.
-        memcpy(&k, key, sizeof(uint32_t));
+        memcpy(&k, &key.front(), sizeof(uint32_t));
         key += sizeof(uint32_t);
         h ^= murmur_32_scramble(k);
         h = (h << 13) | (h >> 19);
@@ -132,6 +132,16 @@ public:
 
 };
 
+class STDStringComparator
+{
+public:
+
+   bool operator()( std::string L, std::string R ) const
+      {
+      return L == R;
+      }
+
+};
 
 template< typename Key, typename Value > class Tuple
    {
@@ -325,7 +335,7 @@ public:
 };
 
 
-template< typename Key, typename Value, class Hash = Murmur, class Comparator = CStringComparator > class HashTable
+template< typename Key, typename Value, class Hash = Murmur, class Comparator = STDStringComparator > class HashTable
    {
    private:
 
@@ -338,7 +348,7 @@ template< typename Key, typename Value, class Hash = Murmur, class Comparator = 
       Comparator compare;
       Hash *hashFunc;
 
-      template< Key, Value>
+      // template< Key, Value>
       friend class Iterator;
       friend class HashBlob;
    
@@ -350,7 +360,6 @@ template< typename Key, typename Value, class Hash = Murmur, class Comparator = 
       std::vector< Bucket< Key, Value> * > bucketVec;
       bucketVec.reserve( numberOfBuckets );
 
-      // ++ happens first then dereference
       for ( Bucket< Key, Value > **const end = buckets + tableSize; 
             mainLevel != end && bucketVec.size() < numberOfBuckets; ++mainLevel )
          {
@@ -484,7 +493,7 @@ template< typename Key, typename Value, class Hash = Murmur, class Comparator = 
       // Your constructor may take as many default arguments
       // as you like.
 
-      HashTable( size_t tb = DEFAULTSIZE, Hash *hasher = new Hash(), Comparator comp = CStringComparator() ) : tableSize( computeTwosPow( (ssize_t)tb ) ), 
+      HashTable( size_t tb = DEFAULTSIZE, Hash *hasher = new Hash(), Comparator comp = STDStringComparator() ) : tableSize( computeTwosPow( (ssize_t)tb ) ), 
          buckets( new Bucket< Key, Value > *[ tableSize ] ), numberOfBuckets( 0 ), compare( comp ), hashFunc( hasher )
          {
          assert( tb );
@@ -563,6 +572,10 @@ template< typename Key, typename Value, class Hash = Murmur, class Comparator = 
          return false;
          }
       
+      std::vector< std::vector< Bucket< Key, Value> *> > vectorOfBuckets() const {
+         return _vectorOfBuckets();
+      }
+      
 private:
 
       void assertLinkedList( std::vector< Bucket< Key, Value> *>& vec ) const
@@ -575,7 +588,7 @@ private:
                assert( ( *currBucket )->next == *( currBucket + 1 ) );
             }
          } // end assertLinkedList()
-      std::vector< std::vector< Bucket< Key, Value> *> > vectorOfBuckets() const
+      std::vector< std::vector< Bucket< Key, Value> *> > _vectorOfBuckets() const
          {
          Bucket< Key, Value > **mainLevel = buckets;
          Bucket< Key, Value > **const end = buckets + tableSize;
@@ -789,4 +802,4 @@ public:
       {
       lhs.swap( rhs );
       }
-
+} // end namespace hash

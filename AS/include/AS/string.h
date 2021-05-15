@@ -36,7 +36,7 @@ class string
          }
       
       // Gives a string with a buffer that remains undefined
-      explicit string( size_t len ) noexcept : length ( len ), buffer( new char[length + NULLCHAR] ) {}
+      explicit string( size_t len ) noexcept : length ( len ), buffer( new char[ length + NULLCHAR ] ) {}
 
       // string Literal / C string Constructor
       // REQUIRES: cstr is a null terminated C style string
@@ -234,7 +234,8 @@ class string
       // REQUIRES: Nothing
       // MODIFIES: Nothing
       // EFFECTS: Returns a pointer to a null terminated C string of *this
-      //! Warning, this implies that the user should be very careful with cstr,
+      //! Warning, this implies that the user should be very careful with cstr
+      //!(which they already should be since this is returning a pointer),
       //! if the buffer every changes (even with size) as the null-character
       //! no longer gets updated.
       const char* cstr ( ) const
@@ -288,7 +289,7 @@ class string
       // MODIFIES: Nothing
       // EFFECTS: Returns a reference to the first character of the string.
       char& front() {
-         return buffer[0];
+         return *buffer;
       }
 
       // string front
@@ -296,7 +297,7 @@ class string
       // MODIFIES: Nothing
       // EFFECTS: Returns a const-qualified reference to the first character of the string.
       const char& front() const {
-         return buffer[0];
+         return *buffer;
       }
 
       // string back
@@ -322,7 +323,7 @@ class string
       //      memory at most once
       void operator+= ( const string& other )
          {
-         string temp( length + other.size() );
+         string temp( length + other.size() + NULLCHAR );
          copy( cbegin(), cend(), temp.buffer ); // Copy original
          copy( other.cbegin(), other.cend(), temp.buffer + length ); // Copy other string
          swap( temp ); // Swap contents
@@ -334,7 +335,7 @@ class string
       // EFFECTS: Appends c to the string
       void push_back ( char c )
          {
-         string temp( length + 1 );
+         string temp( length + 1 + NULLCHAR );
          copy( cbegin(), cend(), temp.begin() );
          * ( temp.buffer + length ) = c;
          swap( temp );
@@ -346,7 +347,7 @@ class string
       // EFFECTS: Appends c to the string
       void push_front ( char c )
          {
-         string temp( length + 1 );
+         string temp( length + 1 + NULLCHAR );
          *temp.buffer = c;
          copy( cbegin(), cend(), temp.begin() + 1 );
          swap( temp );
@@ -358,7 +359,7 @@ class string
       // EFFECTS: Removes the last charater of the string
       void pop_back ( )
          {
-         assert(length); // For our safety...
+         assert( length ); // For our safety...
          --length;
          //! Should the size be shrunk? (perhaps if reaches half of capacity?)
          }
@@ -421,7 +422,7 @@ class string
 
       /*
        * REQUIRES: other to be a valid string.
-       *  EFFECTS: Returns an int that, depending on the range:
+       *  EFFECTS: Returns an int value that, depending on the range:
        *           0 < value : implies that *this < other
        *           0 = value : implies that *this == other
        *           0 > value : implies that *this > other.
@@ -430,7 +431,7 @@ class string
        *  The criteria for the return value depends on the following: 
        *  1) The present character; if any character differs, returns the difference of 
        *     this.buffer[i] - other.buffer[i].
-       *  2) Otherwise if in any case the end of a buffer is reached on any end
+       *  2) Otherwise if in any case the end of a buffer is reached on any end (this or other)
        *     ending on the criteria that either c_str1 == str1End || c_str2 == str2End  )
        *     then in the case that other string has not yet reached the end, this < other (returns neg number).
        *     If other has reached the end, it clearly means that this > other returning a pos number.
@@ -453,25 +454,25 @@ class string
          if ( c_str1 == str1End )
             {
             if ( c_str2 != str2End )
-               return -1; 
+               return -1; // Implies that c_str2 still has characters and thus c_str1 < c_str2
             }
          else if ( c_str2 == str2End )
-            return 1; 
+            return 1; // c_str1 != str1End && c_str2 == str2End ( c_str1 > c_str2 )
          return 0;
          } // end compare()
 
-         friend std::ostream& operator<< ( std::ostream& os, const string& s )
-            {
-            for ( const char *ptr = s.cbegin(), *const end = s.cend(); ptr != end; )
-               os << *ptr++;
-            return os;
-            }
+      friend std::ostream& operator<< ( std::ostream& os, const string& s )
+         {
+         for ( const char *ptr = s.cbegin(), *const end = s.cend(); ptr != end; )
+            os << *ptr++;
+         return os;
+         }
    
       // Convert To Lower
       // REQUIRES: Nothing
       // MODIFIES: *this->buffer
       // EFFECTS: Converts all the characters in the string to lowercase
-      string&  convertToLower() {
+      string& convertToLower() {
          for ( char *p = begin(); p != end(); ++p)
             *p = static_cast<char>( tolower(*p) );
          return *this;
