@@ -25,10 +25,12 @@ class Socket
          other.socketFD = -1;
          }
       
+      //TODO Why not we just check and close here?
       Socket& operator=( Socket&& other )
          {
+         int ourFD = socketFD;
          socketFD = other.socketFD;
-         other.socketFD = -1;
+         other.socketFD = ourFD; // Was previously set to -1 but this Socket could've actually had a valid socket
          tv = other.tv;
          return *this;
          }

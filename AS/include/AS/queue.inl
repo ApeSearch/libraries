@@ -63,7 +63,7 @@ class BinaryPQ : public ApesearchPQ<T, COMP>
    void fixUp( int child )
       {
         assert( child < ( int )data.size() );
-        int parent = child & 1 ? child : child - 1;
+        int parent = child & 1 ? child : child - 1; // Aka just align division. Ensures that when dividing by two, that parent index always results.
         // While parent < child ( where values comparied is priority )
         for ( ; parent >= 1 && BaseClass::compare( data[ unsigned( parent >>= 1 ) ], data[ (unsigned) child ] );
               child = parent, parent = alignDivision( child ) )

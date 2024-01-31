@@ -129,7 +129,7 @@ private:
     size_t tail = 0;
     bool _full = false;
 
-    void interal_push();
+    void interal_push(); //! Will overwrite values if full
     void internal_pop();
 };
 

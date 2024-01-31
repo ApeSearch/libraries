@@ -103,7 +103,7 @@ template <class T, class buffer_type>
 void APESEARCH::circular_buffer<T, buffer_type>::interal_push()
    {
     
-    if( _full )
+    if( _full ) // Overwrite value
        {
        assert( head == tail );
        if( ++tail == buffer.getCapacity() )

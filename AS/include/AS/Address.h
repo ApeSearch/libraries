@@ -12,8 +12,8 @@ struct Address {
     Address() {}
 
     // ai_family specifies the address family: which restricts the kind of addresses to the same type.
-    // i.ei AF_UNIX are UNIX sockets, AF_IPS, IPX. Bluetooh has AF_BLUETOOTH.
-    // AF_INET6 is for v6 addresses (Use AF_INET as it's the safest option)
+    // i.e. AF_UNIX are UNIX sockets, AF_IPS, IPX. Bluetooth has AF_BLUETOOTH.
+    // AF_INET6 is for IPv6 addresses (Use AF_INET as it's the safest option)
     Address(char *Host, char const * const Port, int addrFamily = AF_INET, 
           int sockType = SOCK_STREAM, int transportProtocol = IPPROTO_TCP) : valid( true ) 
     {
