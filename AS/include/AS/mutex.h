@@ -59,7 +59,13 @@ namespace APESEARCH
         unique_lock(mutex_type& m, try_to_lock_t);
         unique_lock(mutex_type& m, adopt_lock_t);
 
-        ~unique_lock();
+        // If defined outside of scope, apple clang gives the following warning:
+        // ISO C++ requires the name after '::~' to be found in the same scope as the name before '::~' [-Wdtor-name]
+        ~unique_lock()
+            {
+            if ( mutexOf && hasLock )
+                mutexOf->unlock();
+            }
 
         unique_lock(unique_lock const&) = delete;
         unique_lock& operator=(unique_lock const&) = delete;

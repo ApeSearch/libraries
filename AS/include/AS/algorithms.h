@@ -107,6 +107,13 @@ namespace APESEARCH
             } // end for
         return n;
        } // end count()
+    
+    template<class ForwardIterator, class T, class UnaryPredicate>
+    ForwardIterator find_if ( ForwardIterator first, ForwardIterator last, UnaryPredicate pred )
+        {
+        for( ; first != last && !pred( *first ); ++first );
+        return first;
+        } // end find_if
 
 
 } // end namespace APESEARCH

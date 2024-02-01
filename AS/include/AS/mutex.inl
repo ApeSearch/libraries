@@ -32,14 +32,14 @@
    APESEARCH::unique_lock<Mutex>::unique_lock(Mutex& m, adopt_lock_t) : mutexOf( &m ), hasLock( true )
       {
       }
-
+/*
    template<class Mutex>
    APESEARCH::unique_lock<Mutex>::~unique_lock()
       {
        if ( mutexOf && hasLock )
           mutexOf->unlock();
       }
-
+*/
 
    template<class Mutex>
    APESEARCH::unique_lock<Mutex>::unique_lock( unique_lock<Mutex>&& u ) noexcept : mutexOf( nullptr )
