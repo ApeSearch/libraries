@@ -113,7 +113,7 @@ Socket::~Socket()
 
 void checkErrno();
 
-ssize_t Socket::receive(char *buffer, size_t length)
+ssize_t Socket::receive(char *buffer, int length)
 {
     //TODO Write custom exception
     if(socketFD == -1)
@@ -122,7 +122,7 @@ ssize_t Socket::receive(char *buffer, size_t length)
     return ::recv(socketFD, buffer, length, 0);
 }
 
-ssize_t Socket::send(const char* buffer, size_t length) 
+ssize_t Socket::send(const char* buffer, int length) 
 {
     //TODO Write custom exception
     if (socketFD == -1) 
